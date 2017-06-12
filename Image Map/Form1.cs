@@ -11,12 +11,28 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using fNbt;
+using System.IO;
 
 namespace Image_Map
 {
     public partial class TheForm : Form
     {
+        string LastOpenPath = "";
+        string LastExportPath = "";
         List<BetterPicBox> Pictures = new List<BetterPicBox>();
+        List<BetterPicBox> PicsToAdd = new List<BetterPicBox>();
+
+        SaveFileDialog ExportDialog = new SaveFileDialog()
+        {
+            Title = "Export your maps somewhere",
+            Filter = "Map Files|*.dat|All Files|*.*",
+        };
+        OpenFileDialog OpenDialog = new OpenFileDialog()
+        {
+            Title = "Import image files to turn into maps",
+            Filter = "Image Files|*.png;*.bmp;*.jpg;*.gif|All Files|*.*",
+            Multiselect = true,
+        };
         Dictionary<Color, byte> ColorMap;
         public TheForm()
         {
@@ -28,7 +44,6 @@ namespace Image_Map
             ColorMap = new Dictionary<Color, byte>()
             {
                 #region color definitions
-                { Color.Transparent, 0x00 },
                 { Color.FromArgb(88,124,39), 0x04 },
                 { Color.FromArgb(108,151,47), 0x05 },
                 { Color.FromArgb(126,176,55), 0x06 },
@@ -235,9 +250,12 @@ namespace Image_Map
                 { Color.FromArgb(19,11,8), 0xcf },
                 #endregion
             };
+            InterpolationCombo.SelectedIndex = Properties.Settings.Default.InterpolationIndex;
+            LastOpenPath = Properties.Settings.Default.LastOpenPath;
+            LastExportPath = Properties.Settings.Default.LastExportPath;
         }
 
-        public Image Mapify(Image img, NearestColorAlgorithm alg)
+        public Image Mapify(Image img)
         {
             Bitmap map = new Bitmap(img);
             for (int i = 0; i < img.Width; i++)
@@ -245,7 +263,7 @@ namespace Image_Map
                 for (int j = 0; j < img.Height; j++)
                 {
                     Color pixelcolor = map.GetPixel(i, j);
-                   if (pixelcolor.A < 128)
+                    if (pixelcolor.A < 128)
                     {
                         map.SetPixel(i, j, Color.Transparent);
                         continue;
@@ -274,42 +292,30 @@ namespace Image_Map
 
         private void OpenButton_Click(object sender, EventArgs e)
         {
-            OpenFileDialog open = new OpenFileDialog()
+            OpenDialog.InitialDirectory = LastOpenPath;
+            OpenDialog.FileName = "";
+            if (OpenDialog.ShowDialog() == DialogResult.OK)
             {
-                Title = "Import image files to turn into maps",
-                Filter = "Image Files|*.png;*.bmp;*.jpg;*.gif|All Files|*.*",
-                Multiselect = true
-            };
-            if (open.ShowDialog() == DialogResult.OK)
-            {
-                foreach (string path in open.FileNames)
+                LastOpenPath = OpenDialog.FileName;
+                ImportBar.Visible = true;
+                List<BetterPicBox> newboxes = new List<BetterPicBox>();
+                foreach (string path in OpenDialog.FileNames)
                 {
-                    LoadPicture(path,InterpolationMode.NearestNeighbor, false);
+                    BetterPicBox pic = new BetterPicBox(null, ResizeImg(Image.FromFile(path), 128, 128, InterpolationCombo.SelectedIndex == 0 ? InterpolationMode.NearestNeighbor : InterpolationMode.HighQualityBicubic))
+                    {
+                        Width = 128,
+                        Height = 128,
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        BorderStyle = BorderStyle.FixedSingle
+                    };
+                    Pictures.Add(pic);
+                    newboxes.Add(pic);
+                    pic.MouseClick += Pic_MouseClick;
                 }
-                PictureZone_Resize(null, null);
+                ExportButton.Enabled = true;
+                // mapify the new images in the background
+                ImportProcessor.RunWorkerAsync(newboxes);
             }
-        }
-
-        private void LoadPicture(string path, InterpolationMode mode, bool doresort = true)
-        {
-            Bitmap img = new Bitmap(ResizeImg(Image.FromFile(path), 128, 128,mode));
-            if (img.Height != img.Width)
-            {
-                FixImageDialog d = new FixImageDialog(img);
-                d.ShowDialog(this);
-            }
-            BetterPicBox pic = new BetterPicBox(Mapify(img, NearestColorAlgorithm.RGBSpace), img)
-            {
-                Width = 128,
-                Height = 128,
-                SizeMode = PictureBoxSizeMode.StretchImage,
-                BorderStyle = BorderStyle.FixedSingle,
-            };
-            Pictures.Add(pic);
-            PictureZone.Controls.Add(pic);
-            if (doresort)
-                PictureZone_Resize(null, null);
-            pic.MouseClick += Pic_MouseClick;
         }
 
         private void Pic_MouseClick(object sender, MouseEventArgs e)
@@ -320,6 +326,7 @@ namespace Image_Map
                 Pictures.Remove(b);
                 PictureZone.Controls.Remove(b);
                 PictureZone_Resize(null, null);
+                ExportButton.Enabled = Pictures.Count > 0;
             }
         }
 
@@ -342,41 +349,28 @@ namespace Image_Map
 
         private void ExportButton_Click(object sender, EventArgs e)
         {
-            foreach (BetterPicBox box in Pictures)
+            ExportDialog.InitialDirectory = LastExportPath;
+            ExportDialog.FileName = "map_0.dat";
+            if (ExportDialog.ShowDialog() == DialogResult.OK)
             {
-                Bitmap img = new Bitmap(box.Image);
-                var data = img.LockBits(
-                new Rectangle(Point.Empty, img.Size),
-                ImageLockMode.ReadWrite, img.PixelFormat);
-                var pixelSize = data.PixelFormat == PixelFormat.Format32bppArgb ? 4 : 3; // only works with 32 or 24 pixel-size bitmap!
-                var padding = data.Stride - (data.Width * pixelSize);
-                var bytes = new byte[data.Height * data.Stride];
-
-                // copy the bytes from bitmap to array
-                Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
-
-                var index = 0;
-                var builder = new StringBuilder();
-
-                byte[] mapbytes = new byte[16384];
-                int anotherindex = 0;
-                for (var y = 0; y < data.Height; y++)
+                LastExportPath = ExportDialog.FileName;
+                int.TryParse(System.Text.RegularExpressions.Regex.Match(ExportDialog.FileName, @"\d+").Value, out int index);
+                foreach (BetterPicBox box in Pictures)
                 {
-                    for (var x = 0; x < data.Width; x++)
+                    Bitmap bmp = new Bitmap(box.MainImage);
+                    byte[] mapbytes = new byte[128 * 128];
+                    for (int i = 0; i < 128; i++)
                     {
-                        Color pixelColor = Color.FromArgb(
-                            pixelSize == 3 ? 255 : bytes[index + 3], // A component if present
-                            bytes[index + 2], // R component
-                            bytes[index + 1], // G component
-                            bytes[index]      // B component
-                            );
-                        mapbytes[anotherindex] = GetClosestColorID(pixelColor);
-                        anotherindex++;
-                        index += pixelSize;
+                        for (int j = 0; j < 128; j++)
+                        {
+                            Color pixel = bmp.GetPixel(j, i);
+                            if (pixel == Color.Transparent)
+                                mapbytes[128 * i + j] = 0x00;
+                            else
+                                mapbytes[128 * i + j] = ColorMap[pixel];
+                        }
                     }
-                    index += padding;
-                }
-                NbtCompound map = new NbtCompound("map")
+                    NbtCompound map = new NbtCompound("map")
                     {
                         new NbtCompound("data")
                         {
@@ -391,58 +385,73 @@ namespace Image_Map
                             new NbtByteArray("colors",mapbytes)
                         }
                     };
-                NbtFile file = new NbtFile(map);
-                file.SaveToFile(@"J:\map_0.dat", NbtCompression.GZip);
+                    NbtFile file = new NbtFile(map);
+                    file.SaveToFile(Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + index.ToString() + ".dat"), NbtCompression.GZip);
+                    index++;
+                }
             }
         }
 
-        public byte GetClosestColorID(Color color)
+        public Image ResizeImg(Image image, int width, int height, InterpolationMode mode)
         {
-            var colorDiffs = ColorMap.Keys.Select(n => ColorDiff(n, color)).Min(n => n);
-            return ColorMap.Values.Where(n => ColorDiff(ColorMap.FirstOrDefault(x => x.Value == n).Key, color) == colorDiffs).First();
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = mode;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            return destImage;
         }
 
-        int ColorDiff(Color c1, Color c2)
+        private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            return (int)Math.Sqrt((c1.R - c2.R) * (c1.R - c2.R)
-                                   + (c1.G - c2.G) * (c1.G - c2.G)
-                                   + (c1.B - c2.B) * (c1.B - c2.B));
+            Properties.Settings.Default.LastExportPath = LastExportPath;
+            Properties.Settings.Default.LastOpenPath = LastOpenPath;
+            Properties.Settings.Default.InterpolationIndex = InterpolationCombo.SelectedIndex;
+            Properties.Settings.Default.Save();
         }
 
-        public Image ResizeImg(Image originalImage, int w, int h, InterpolationMode mode)
+        private void ImportProcessor_DoWork(object sender, DoWorkEventArgs e)
         {
-            //Original Image attributes
-            int originalWidth = originalImage.Width;
-            int originalHeight = originalImage.Height;
-
-            // Figure out the ratio
-            double ratioX = (double)w / (double)originalWidth;
-            double ratioY = (double)h / (double)originalHeight;
-            // use whichever multiplier is smaller
-            double ratio = ratioX < ratioY ? ratioX : ratioY;
-
-            // now we can get the new height and width
-            int newHeight = Convert.ToInt32(originalHeight * ratio);
-            int newWidth = Convert.ToInt32(originalWidth * ratio);
-
-            Image thumbnail = new Bitmap(newWidth, newHeight);
-            Graphics graphic = Graphics.FromImage(thumbnail);
-
-            graphic.InterpolationMode = mode;
-            graphic.SmoothingMode = SmoothingMode.HighQuality;
-            graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            graphic.CompositingQuality = CompositingQuality.HighQuality;
-
-            graphic.Clear(Color.Transparent);
-            graphic.DrawImage(originalImage, 0, 0, newWidth, newHeight);
-
-            return thumbnail;
+            int prog = 0;
+            foreach (BetterPicBox pic in (List<BetterPicBox>)e.Argument)
+            {
+                pic.MainImage = Mapify(pic.HoverImage);
+                prog++;
+                ImportProcessor.ReportProgress(prog * 100 / OpenDialog.FileNames.Length);
+            }
+            PicsToAdd = (List<BetterPicBox>)e.Argument;
         }
-    }
 
-    public enum NearestColorAlgorithm
-    {
-        RGBSpace
+        private void ImportProcessor_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ImportBar.Value = e.ProgressPercentage;
+        }
+
+        private void ImportProcessor_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            foreach (BetterPicBox box in PicsToAdd)
+            {
+                box.Image = box.MainImage;
+            }
+            PictureZone.Controls.AddRange(PicsToAdd.ToArray());
+            PictureZone_Resize(null, null);
+            ImportBar.Visible = false;
+        }
     }
 
     public class BetterPicBox : PictureBox

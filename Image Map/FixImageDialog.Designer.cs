@@ -46,9 +46,10 @@
             // ImageBox
             // 
             this.ImageBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ImageBox.Location = new System.Drawing.Point(12, 12);
+            this.ImageBox.Location = new System.Drawing.Point(18, 18);
+            this.ImageBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ImageBox.Name = "ImageBox";
-            this.ImageBox.Size = new System.Drawing.Size(128, 128);
+            this.ImageBox.Size = new System.Drawing.Size(191, 196);
             this.ImageBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.ImageBox.TabIndex = 0;
             this.ImageBox.TabStop = false;
@@ -57,20 +58,22 @@
             // 
             this.FixImageInfo.AutoSize = true;
             this.FixImageInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F);
-            this.FixImageInfo.Location = new System.Drawing.Point(158, 12);
+            this.FixImageInfo.Location = new System.Drawing.Point(237, 18);
+            this.FixImageInfo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.FixImageInfo.Name = "FixImageInfo";
-            this.FixImageInfo.Size = new System.Drawing.Size(312, 50);
+            this.FixImageInfo.Size = new System.Drawing.Size(381, 72);
             this.FixImageInfo.TabIndex = 1;
-            this.FixImageInfo.Text = "Your image is not a perfect square.\r\nWhat should be done?";
+            this.FixImageInfo.Text = "Your image is not 128×128.\r\nWhat should be done?";
             // 
             // StretchRadio
             // 
             this.StretchRadio.AutoSize = true;
             this.StretchRadio.Checked = true;
             this.StretchRadio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.StretchRadio.Location = new System.Drawing.Point(163, 81);
+            this.StretchRadio.Location = new System.Drawing.Point(244, 125);
+            this.StretchRadio.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.StretchRadio.Name = "StretchRadio";
-            this.StretchRadio.Size = new System.Drawing.Size(114, 24);
+            this.StretchRadio.Size = new System.Drawing.Size(163, 33);
             this.StretchRadio.TabIndex = 2;
             this.StretchRadio.TabStop = true;
             this.StretchRadio.Text = "Stretch to fit";
@@ -81,9 +84,10 @@
             // 
             this.CropRadio.AutoSize = true;
             this.CropRadio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.CropRadio.Location = new System.Drawing.Point(163, 111);
+            this.CropRadio.Location = new System.Drawing.Point(244, 171);
+            this.CropRadio.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.CropRadio.Name = "CropRadio";
-            this.CropRadio.Size = new System.Drawing.Size(100, 24);
+            this.CropRadio.Size = new System.Drawing.Size(149, 33);
             this.CropRadio.TabIndex = 4;
             this.CropRadio.Text = "Crop extra";
             this.CropRadio.UseVisualStyleBackColor = true;
@@ -91,14 +95,15 @@
             // ColumnsInput
             // 
             this.ColumnsInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.ColumnsInput.Location = new System.Drawing.Point(163, 171);
+            this.ColumnsInput.Location = new System.Drawing.Point(244, 263);
+            this.ColumnsInput.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ColumnsInput.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.ColumnsInput.Name = "ColumnsInput";
-            this.ColumnsInput.Size = new System.Drawing.Size(51, 29);
+            this.ColumnsInput.Size = new System.Drawing.Size(76, 39);
             this.ColumnsInput.TabIndex = 5;
             this.ColumnsInput.Value = new decimal(new int[] {
             1,
@@ -110,14 +115,15 @@
             // RowsInput
             // 
             this.RowsInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.RowsInput.Location = new System.Drawing.Point(226, 171);
+            this.RowsInput.Location = new System.Drawing.Point(339, 263);
+            this.RowsInput.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.RowsInput.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.RowsInput.Name = "RowsInput";
-            this.RowsInput.Size = new System.Drawing.Size(51, 29);
+            this.RowsInput.Size = new System.Drawing.Size(76, 39);
             this.RowsInput.TabIndex = 6;
             this.RowsInput.Value = new decimal(new int[] {
             1,
@@ -130,9 +136,10 @@
             // 
             this.ColumnInfo.AutoSize = true;
             this.ColumnInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ColumnInfo.Location = new System.Drawing.Point(158, 203);
+            this.ColumnInfo.Location = new System.Drawing.Point(237, 312);
+            this.ColumnInfo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.ColumnInfo.Name = "ColumnInfo";
-            this.ColumnInfo.Size = new System.Drawing.Size(62, 17);
+            this.ColumnInfo.Size = new System.Drawing.Size(90, 25);
             this.ColumnInfo.TabIndex = 7;
             this.ColumnInfo.Text = "Columns";
             // 
@@ -140,27 +147,29 @@
             // 
             this.RowInfo.AutoSize = true;
             this.RowInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.RowInfo.Location = new System.Drawing.Point(226, 203);
+            this.RowInfo.Location = new System.Drawing.Point(339, 312);
+            this.RowInfo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.RowInfo.Name = "RowInfo";
-            this.RowInfo.Size = new System.Drawing.Size(42, 17);
+            this.RowInfo.Size = new System.Drawing.Size(60, 25);
             this.RowInfo.TabIndex = 8;
             this.RowInfo.Text = "Rows";
             // 
             // ResultBox
             // 
             this.ResultBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ResultBox.Location = new System.Drawing.Point(12, 146);
+            this.ResultBox.Location = new System.Drawing.Point(18, 225);
+            this.ResultBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ResultBox.Name = "ResultBox";
-            this.ResultBox.Size = new System.Drawing.Size(128, 128);
+            this.ResultBox.Size = new System.Drawing.Size(191, 196);
             this.ResultBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.ResultBox.TabIndex = 9;
             this.ResultBox.TabStop = false;
             // 
             // FixImageDialog
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(482, 284);
+            this.ClientSize = new System.Drawing.Size(723, 437);
             this.Controls.Add(this.ResultBox);
             this.Controls.Add(this.RowInfo);
             this.Controls.Add(this.ColumnInfo);
@@ -170,6 +179,7 @@
             this.Controls.Add(this.StretchRadio);
             this.Controls.Add(this.FixImageInfo);
             this.Controls.Add(this.ImageBox);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "FixImageDialog";
             this.Text = "Fix Image";
             ((System.ComponentModel.ISupportInitialize)(this.ImageBox)).EndInit();
