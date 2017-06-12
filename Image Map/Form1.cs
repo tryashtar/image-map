@@ -298,6 +298,7 @@ namespace Image_Map
             {
                 LastOpenPath = OpenDialog.FileName;
                 ImportBar.Visible = true;
+                ImportLabel.Visible = true;
                 List<BetterPicBox> newboxes = new List<BetterPicBox>();
                 foreach (string path in OpenDialog.FileNames)
                 {
@@ -312,7 +313,7 @@ namespace Image_Map
                     newboxes.Add(pic);
                     pic.MouseClick += Pic_MouseClick;
                 }
-                ExportButton.Enabled = true;
+                OpenButton.Enabled = false;
                 // mapify the new images in the background
                 ImportProcessor.RunWorkerAsync(newboxes);
             }
@@ -440,6 +441,7 @@ namespace Image_Map
         private void ImportProcessor_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             ImportBar.Value = e.ProgressPercentage;
+            ImportLabel.Text = "Mapifying... (" + e.ProgressPercentage.ToString() + "%)";
         }
 
         private void ImportProcessor_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -451,6 +453,9 @@ namespace Image_Map
             PictureZone.Controls.AddRange(PicsToAdd.ToArray());
             PictureZone_Resize(null, null);
             ImportBar.Visible = false;
+            ImportLabel.Visible = false;
+            OpenButton.Enabled = true;
+            ExportButton.Enabled = true;
         }
     }
 

@@ -35,6 +35,7 @@
             this.InterpolationLabel = new System.Windows.Forms.Label();
             this.ImportProcessor = new System.ComponentModel.BackgroundWorker();
             this.ImportBar = new System.Windows.Forms.ProgressBar();
+            this.ImportLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // OpenButton
@@ -69,7 +70,7 @@
             this.PictureZone.BackColor = System.Drawing.SystemColors.ControlLight;
             this.PictureZone.Location = new System.Drawing.Point(196, 12);
             this.PictureZone.Name = "PictureZone";
-            this.PictureZone.Size = new System.Drawing.Size(591, 383);
+            this.PictureZone.Size = new System.Drawing.Size(708, 383);
             this.PictureZone.TabIndex = 2;
             this.PictureZone.Resize += new System.EventHandler(this.PictureZone_Resize);
             // 
@@ -105,17 +106,29 @@
             // 
             // ImportBar
             // 
-            this.ImportBar.Location = new System.Drawing.Point(12, 280);
+            this.ImportBar.Location = new System.Drawing.Point(12, 315);
             this.ImportBar.Name = "ImportBar";
             this.ImportBar.Size = new System.Drawing.Size(178, 19);
             this.ImportBar.TabIndex = 7;
             this.ImportBar.Visible = false;
             // 
+            // ImportLabel
+            // 
+            this.ImportLabel.AutoSize = true;
+            this.ImportLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.ImportLabel.Location = new System.Drawing.Point(12, 287);
+            this.ImportLabel.Name = "ImportLabel";
+            this.ImportLabel.Size = new System.Drawing.Size(111, 25);
+            this.ImportLabel.TabIndex = 8;
+            this.ImportLabel.Text = "Mapifying...";
+            this.ImportLabel.Visible = false;
+            // 
             // TheForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(794, 408);
+            this.ClientSize = new System.Drawing.Size(911, 408);
+            this.Controls.Add(this.ImportLabel);
             this.Controls.Add(this.ImportBar);
             this.Controls.Add(this.InterpolationLabel);
             this.Controls.Add(this.InterpolationCombo);
@@ -140,6 +153,7 @@
         private System.Windows.Forms.Label InterpolationLabel;
         private System.ComponentModel.BackgroundWorker ImportProcessor;
         private System.Windows.Forms.ProgressBar ImportBar;
+        private System.Windows.Forms.Label ImportLabel;
     }
 }
 
