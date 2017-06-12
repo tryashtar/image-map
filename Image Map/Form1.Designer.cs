@@ -48,7 +48,7 @@
             // ExportButton
             // 
             this.ExportButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
-            this.ExportButton.Location = new System.Drawing.Point(8, 58);
+            this.ExportButton.Location = new System.Drawing.Point(8, 59);
             this.ExportButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.ExportButton.Name = "ExportButton";
             this.ExportButton.Size = new System.Drawing.Size(119, 52);

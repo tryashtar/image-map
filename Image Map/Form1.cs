@@ -16,7 +16,7 @@ namespace Image_Map
 {
     public partial class TheForm : Form
     {
-        List<BetterPicBox> pics = new List<BetterPicBox>();
+        List<BetterPicBox> Pictures = new List<BetterPicBox>();
         Dictionary<Color, byte> ColorMap;
         public TheForm()
         {
@@ -28,6 +28,7 @@ namespace Image_Map
             ColorMap = new Dictionary<Color, byte>()
             {
                 #region color definitions
+                { Color.Transparent, 0x00 },
                 { Color.FromArgb(88,124,39), 0x04 },
                 { Color.FromArgb(108,151,47), 0x05 },
                 { Color.FromArgb(126,176,55), 0x06 },
@@ -236,6 +237,41 @@ namespace Image_Map
             };
         }
 
+        public Image Mapify(Image img, NearestColorAlgorithm alg)
+        {
+            Bitmap map = new Bitmap(img);
+            for (int i = 0; i < img.Width; i++)
+            {
+                for (int j = 0; j < img.Height; j++)
+                {
+                    Color pixelcolor = map.GetPixel(i, j);
+                   if (pixelcolor.A < 128)
+                    {
+                        map.SetPixel(i, j, Color.Transparent);
+                        continue;
+                    }
+                    int index = 0;
+                    double[] diffs = new double[ColorMap.Keys.Count];
+                    foreach (Color mapcolor in ColorMap.Keys)
+                    {
+                        diffs[index] = ColorDistance(pixelcolor, mapcolor);
+                        index++;
+                    }
+                    map.SetPixel(i, j, ColorMap.Keys.ElementAt(diffs.ToList().IndexOf(diffs.Min())));
+                }
+            }
+            return map;
+        }
+
+        public double ColorDistance(Color e1, Color e2)
+        {
+            long rmean = ((long)e1.R + (long)e2.R) / 2;
+            long r = (long)e1.R - (long)e2.R;
+            long g = (long)e1.G - (long)e2.G;
+            long b = (long)e1.B - (long)e2.B;
+            return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
+        }
+
         private void OpenButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog()
@@ -248,29 +284,28 @@ namespace Image_Map
             {
                 foreach (string path in open.FileNames)
                 {
-                    LoadPicture(path, false);
+                    LoadPicture(path,InterpolationMode.NearestNeighbor, false);
                 }
                 PictureZone_Resize(null, null);
             }
         }
 
-        private void LoadPicture(string path, bool doresort = true)
+        private void LoadPicture(string path, InterpolationMode mode, bool doresort = true)
         {
-            Image img = Image.FromFile(path);
+            Bitmap img = new Bitmap(ResizeImg(Image.FromFile(path), 128, 128,mode));
             if (img.Height != img.Width)
             {
                 FixImageDialog d = new FixImageDialog(img);
                 d.ShowDialog(this);
             }
-            BetterPicBox pic = new BetterPicBox()
+            BetterPicBox pic = new BetterPicBox(Mapify(img, NearestColorAlgorithm.RGBSpace), img)
             {
                 Width = 128,
                 Height = 128,
                 SizeMode = PictureBoxSizeMode.StretchImage,
                 BorderStyle = BorderStyle.FixedSingle,
-                Image = img
             };
-            pics.Add(pic);
+            Pictures.Add(pic);
             PictureZone.Controls.Add(pic);
             if (doresort)
                 PictureZone_Resize(null, null);
@@ -282,22 +317,17 @@ namespace Image_Map
             BetterPicBox b = sender as BetterPicBox;
             if (e.Button == MouseButtons.Right)
             {
-                pics.Remove(b);
+                Pictures.Remove(b);
                 PictureZone.Controls.Remove(b);
                 PictureZone_Resize(null, null);
             }
-        }
-
-        private void Pic_Click(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         private void PictureZone_Resize(object sender, EventArgs e)
         {
             int x = 10;
             int y = 10;
-            foreach (BetterPicBox box in pics)
+            foreach (BetterPicBox box in Pictures)
             {
                 if (x + box.Width > PictureZone.Width)
                 {
@@ -312,9 +342,9 @@ namespace Image_Map
 
         private void ExportButton_Click(object sender, EventArgs e)
         {
-            foreach (BetterPicBox box in pics)
+            foreach (BetterPicBox box in Pictures)
             {
-                Bitmap img = new Bitmap(ResizeImg(box.Image, 128, 128));
+                Bitmap img = new Bitmap(box.Image);
                 var data = img.LockBits(
                 new Rectangle(Point.Empty, img.Size),
                 ImageLockMode.ReadWrite, img.PixelFormat);
@@ -341,14 +371,12 @@ namespace Image_Map
                             bytes[index]      // B component
                             );
                         mapbytes[anotherindex] = GetClosestColorID(pixelColor);
-                       anotherindex++;
+                        anotherindex++;
                         index += pixelSize;
                     }
                     index += padding;
                 }
-                foreach (byte b in mapbytes)
-                {
-                    NbtCompound map = new NbtCompound("map")
+                NbtCompound map = new NbtCompound("map")
                     {
                         new NbtCompound("data")
                         {
@@ -363,16 +391,15 @@ namespace Image_Map
                             new NbtByteArray("colors",mapbytes)
                         }
                     };
-                    NbtFile file = new NbtFile(map);
-                    file.SaveToFile(@"C:\Users\Children\Desktop\map_0.dat", NbtCompression.GZip);
-                }
+                NbtFile file = new NbtFile(map);
+                file.SaveToFile(@"J:\map_0.dat", NbtCompression.GZip);
             }
         }
 
         public byte GetClosestColorID(Color color)
         {
             var colorDiffs = ColorMap.Keys.Select(n => ColorDiff(n, color)).Min(n => n);
-            return ColorMap.Values.Where(n => ColorDiff(ColorMap.FirstOrDefault(x=>x.Value==n).Key, color) == colorDiffs).First();
+            return ColorMap.Values.Where(n => ColorDiff(ColorMap.FirstOrDefault(x => x.Value == n).Key, color) == colorDiffs).First();
         }
 
         int ColorDiff(Color c1, Color c2)
@@ -382,7 +409,7 @@ namespace Image_Map
                                    + (c1.B - c2.B) * (c1.B - c2.B));
         }
 
-        public Image ResizeImg(Image originalImage, int w, int h)
+        public Image ResizeImg(Image originalImage, int w, int h, InterpolationMode mode)
         {
             //Original Image attributes
             int originalWidth = originalImage.Width;
@@ -401,7 +428,7 @@ namespace Image_Map
             Image thumbnail = new Bitmap(newWidth, newHeight);
             Graphics graphic = Graphics.FromImage(thumbnail);
 
-            graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphic.InterpolationMode = mode;
             graphic.SmoothingMode = SmoothingMode.HighQuality;
             graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
             graphic.CompositingQuality = CompositingQuality.HighQuality;
@@ -413,8 +440,34 @@ namespace Image_Map
         }
     }
 
+    public enum NearestColorAlgorithm
+    {
+        RGBSpace
+    }
+
     public class BetterPicBox : PictureBox
     {
+        public Image MainImage;
+        public Image HoverImage;
+        public BetterPicBox(Image main, Image hover)
+        {
+            MainImage = main;
+            HoverImage = hover;
+            Image = MainImage;
+            MouseEnter += BetterPicBox_MouseEnter;
+            MouseLeave += BetterPicBox_MouseLeave;
+        }
+
+        private void BetterPicBox_MouseLeave(object sender, EventArgs e)
+        {
+            Image = MainImage;
+        }
+
+        private void BetterPicBox_MouseEnter(object sender, EventArgs e)
+        {
+            Image = HoverImage;
+        }
+
         protected override void OnPaint(PaintEventArgs paintEventArgs)
         {
             paintEventArgs.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
