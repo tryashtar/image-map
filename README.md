@@ -1,5 +1,5 @@
 ## Image Map
-This is a program that lets you convert images to Minecraft maps.  
+This is a program that lets you convert images to Minecraft maps using the latest (1.12) colors.  
 Click here to download the latest version:  
 https://github.com/tryashtar/image-map/raw/master/Image%20Map/bin/Debug/Image%20Map.exe
 
