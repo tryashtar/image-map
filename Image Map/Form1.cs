@@ -265,7 +265,7 @@ namespace Image_Map
                     Color pixelcolor = map.GetPixel(i, j);
                     if (pixelcolor.A < 128)
                     {
-                        map.SetPixel(i, j, Color.Transparent);
+                        map.SetPixel(i, j, Color.FromArgb(0,0,0,0));
                         continue;
                     }
                     int index = 0;
@@ -365,7 +365,7 @@ namespace Image_Map
                         for (int j = 0; j < 128; j++)
                         {
                             Color pixel = bmp.GetPixel(j, i);
-                            if (pixel == Color.Transparent)
+                            if (pixel == Color.FromArgb(0,0,0,0))
                                 mapbytes[128 * i + j] = 0x00;
                             else
                                 mapbytes[128 * i + j] = ColorMap[pixel];
