@@ -265,7 +265,7 @@ namespace Image_Map
                     Color pixelcolor = map.GetPixel(i, j);
                     if (pixelcolor.A < 128)
                     {
-                        map.SetPixel(i, j, Color.FromArgb(0,0,0,0));
+                        map.SetPixel(i, j, Color.FromArgb(0, 0, 0, 0));
                         continue;
                     }
                     int index = 0;
@@ -356,6 +356,10 @@ namespace Image_Map
             {
                 LastExportPath = ExportDialog.FileName;
                 int.TryParse(System.Text.RegularExpressions.Regex.Match(ExportDialog.FileName, @"\d+").Value, out int index);
+                int height = (int)Math.Ceiling((double)Pictures.Count / (double)MosaicWidth.Value);
+                StringBuilder generatecommand = new StringBuilder("summon falling_block ~ ~.6 ~ {Time:1,Block:repeating_command_block,TileEntityData:{auto:1,Command:\"setblock ~ ~1 ~ activator_rail powered=true\"},Passengers:[{id:commandblock_minecart,Command:\"fill ~ ~-2 ~1 ~" + (MosaicWidth.Value - 1) + " ~" + (height-3) + " ~1 sea_lantern\"}");
+                int x = 0;
+                int y = height;
                 foreach (BetterPicBox box in Pictures)
                 {
                     Bitmap bmp = new Bitmap(box.MainImage);
@@ -365,7 +369,7 @@ namespace Image_Map
                         for (int j = 0; j < 128; j++)
                         {
                             Color pixel = bmp.GetPixel(j, i);
-                            if (pixel == Color.FromArgb(0,0,0,0))
+                            if (pixel == Color.FromArgb(0, 0, 0, 0))
                                 mapbytes[128 * i + j] = 0x00;
                             else
                                 mapbytes[128 * i + j] = ColorMap[pixel];
@@ -388,8 +392,17 @@ namespace Image_Map
                     };
                     NbtFile file = new NbtFile(map);
                     file.SaveToFile(Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + index.ToString() + ".dat"), NbtCompression.GZip);
+                    generatecommand.Append(",{id:commandblock_minecart,Command:\"summon item_frame ~" + x + " ~" + (y-3) + " ~2 {Invulnerable:1b,Silent:1b,Item:{id:filled_map,Count:1b,Damage:" + index + "s}}\"}");
                     index++;
+                    x++;
+                    if (x > MosaicWidth.Value - 1)
+                    {
+                        x = 0;
+                        y--;
+                    }
                 }
+                generatecommand.Append(",{id:commandblock_minecart,Command:\"blockdata ~ ~-1 ~ {Command:\\\"fill ~ ~-1 ~ ~ ~1 ~ air\\\",auto:1}\"},{id:commandblock_minecart,Command:\"kill @e[type=commandblock_minecart,r=1]\"}]}");
+                Clipboard.SetText(generatecommand.ToString());
             }
         }
 

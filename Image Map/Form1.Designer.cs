@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForm));
             this.OpenButton = new System.Windows.Forms.Button();
             this.ExportButton = new System.Windows.Forms.Button();
             this.PictureZone = new System.Windows.Forms.Panel();
@@ -36,6 +37,9 @@
             this.ImportProcessor = new System.ComponentModel.BackgroundWorker();
             this.ImportBar = new System.Windows.Forms.ProgressBar();
             this.ImportLabel = new System.Windows.Forms.Label();
+            this.MosaicWidth = new System.Windows.Forms.NumericUpDown();
+            this.MosaicWidthLabel = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.MosaicWidth)).BeginInit();
             this.SuspendLayout();
             // 
             // OpenButton
@@ -68,9 +72,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.PictureZone.AutoScroll = true;
             this.PictureZone.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.PictureZone.Location = new System.Drawing.Point(196, 12);
+            this.PictureZone.Location = new System.Drawing.Point(197, 12);
             this.PictureZone.Name = "PictureZone";
-            this.PictureZone.Size = new System.Drawing.Size(708, 383);
+            this.PictureZone.Size = new System.Drawing.Size(707, 383);
             this.PictureZone.TabIndex = 2;
             this.PictureZone.Resize += new System.EventHandler(this.PictureZone_Resize);
             // 
@@ -106,7 +110,7 @@
             // 
             // ImportBar
             // 
-            this.ImportBar.Location = new System.Drawing.Point(12, 315);
+            this.ImportBar.Location = new System.Drawing.Point(12, 377);
             this.ImportBar.Name = "ImportBar";
             this.ImportBar.Size = new System.Drawing.Size(178, 19);
             this.ImportBar.TabIndex = 7;
@@ -116,18 +120,48 @@
             // 
             this.ImportLabel.AutoSize = true;
             this.ImportLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ImportLabel.Location = new System.Drawing.Point(12, 287);
+            this.ImportLabel.Location = new System.Drawing.Point(12, 349);
             this.ImportLabel.Name = "ImportLabel";
             this.ImportLabel.Size = new System.Drawing.Size(111, 25);
             this.ImportLabel.TabIndex = 8;
             this.ImportLabel.Text = "Mapifying...";
             this.ImportLabel.Visible = false;
             // 
+            // MosaicWidth
+            // 
+            this.MosaicWidth.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.MosaicWidth.Location = new System.Drawing.Point(12, 294);
+            this.MosaicWidth.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.MosaicWidth.Name = "MosaicWidth";
+            this.MosaicWidth.Size = new System.Drawing.Size(90, 35);
+            this.MosaicWidth.TabIndex = 9;
+            this.MosaicWidth.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // MosaicWidthLabel
+            // 
+            this.MosaicWidthLabel.AutoSize = true;
+            this.MosaicWidthLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.MosaicWidthLabel.Location = new System.Drawing.Point(8, 268);
+            this.MosaicWidthLabel.Name = "MosaicWidthLabel";
+            this.MosaicWidthLabel.Size = new System.Drawing.Size(131, 25);
+            this.MosaicWidthLabel.TabIndex = 11;
+            this.MosaicWidthLabel.Text = "Mosaic Width";
+            // 
             // TheForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(911, 408);
+            this.Controls.Add(this.MosaicWidthLabel);
+            this.Controls.Add(this.MosaicWidth);
             this.Controls.Add(this.ImportLabel);
             this.Controls.Add(this.ImportBar);
             this.Controls.Add(this.InterpolationLabel);
@@ -135,10 +169,12 @@
             this.Controls.Add(this.PictureZone);
             this.Controls.Add(this.ExportButton);
             this.Controls.Add(this.OpenButton);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "TheForm";
             this.Text = "Image Map";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.Load += new System.EventHandler(this.TheForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.MosaicWidth)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -154,6 +190,8 @@
         private System.ComponentModel.BackgroundWorker ImportProcessor;
         private System.Windows.Forms.ProgressBar ImportBar;
         private System.Windows.Forms.Label ImportLabel;
+        private System.Windows.Forms.NumericUpDown MosaicWidth;
+        private System.Windows.Forms.Label MosaicWidthLabel;
     }
 }
 
