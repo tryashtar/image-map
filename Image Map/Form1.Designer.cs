@@ -261,7 +261,7 @@
             this.MosaicPanel.Controls.Add(this.MosaicOutputCopy);
             this.MosaicPanel.Location = new System.Drawing.Point(8, 403);
             this.MosaicPanel.Name = "MosaicPanel";
-            this.MosaicPanel.Size = new System.Drawing.Size(190, 113);
+            this.MosaicPanel.Size = new System.Drawing.Size(190, 117);
             this.MosaicPanel.TabIndex = 15;
             // 
             // TheForm
