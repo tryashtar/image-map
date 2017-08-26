@@ -19,6 +19,8 @@ namespace Image_Map
     {
         string LastOpenPath = "";
         string LastExportPath = "";
+        string[] OpenArgs;
+        bool CurrentlyImporting = false;
         List<BetterPicBox> Pictures = new List<BetterPicBox>();
         List<BetterPicBox> PicsToAdd = new List<BetterPicBox>();
 
@@ -34,9 +36,10 @@ namespace Image_Map
             Multiselect = true,
         };
         Dictionary<Color, byte> ColorMap;
-        public TheForm()
+        public TheForm(string[] args)
         {
             InitializeComponent();
+            OpenArgs = args;
         }
 
         private void TheForm_Load(object sender, EventArgs e)
@@ -253,6 +256,14 @@ namespace Image_Map
             InterpolationCombo.SelectedIndex = Properties.Settings.Default.InterpolationIndex;
             LastOpenPath = Properties.Settings.Default.LastOpenPath;
             LastExportPath = Properties.Settings.Default.LastExportPath;
+            List<string> images = new List<string>();
+            foreach (string arg in OpenArgs)
+            {
+                if (File.Exists(arg))
+                    images.Add(arg);
+            }
+            if (images.Count > 0)
+                ImportImages(images.ToArray());
         }
 
         public Image Mapify(Image img)
@@ -290,6 +301,30 @@ namespace Image_Map
             return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
         }
 
+        private void ImportImages(string[] paths)
+        {
+            if (CurrentlyImporting)
+                return;
+            CurrentlyImporting = true;
+            List<BetterPicBox> newboxes = new List<BetterPicBox>();
+            foreach (string path in paths)
+            {
+                BetterPicBox pic = new BetterPicBox(null, ResizeImg(Image.FromFile(path), 128, 128, InterpolationCombo.SelectedIndex == 0 ? InterpolationMode.NearestNeighbor : InterpolationMode.HighQualityBicubic))
+                {
+                    Width = 128,
+                    Height = 128,
+                    SizeMode = PictureBoxSizeMode.Zoom,
+                    BorderStyle = BorderStyle.FixedSingle
+                };
+                Pictures.Add(pic);
+                newboxes.Add(pic);
+                pic.MouseClick += Pic_MouseClick;
+            }
+            OpenButton.Enabled = false;
+            // mapify the new images in the background
+            ImportProcessor.RunWorkerAsync(newboxes);
+        }
+
         private void OpenButton_Click(object sender, EventArgs e)
         {
             OpenDialog.InitialDirectory = LastOpenPath;
@@ -299,23 +334,7 @@ namespace Image_Map
                 LastOpenPath = OpenDialog.FileName;
                 ImportBar.Visible = true;
                 ImportLabel.Visible = true;
-                List<BetterPicBox> newboxes = new List<BetterPicBox>();
-                foreach (string path in OpenDialog.FileNames)
-                {
-                    BetterPicBox pic = new BetterPicBox(null, ResizeImg(Image.FromFile(path), 128, 128, InterpolationCombo.SelectedIndex == 0 ? InterpolationMode.NearestNeighbor : InterpolationMode.HighQualityBicubic))
-                    {
-                        Width = 128,
-                        Height = 128,
-                        SizeMode = PictureBoxSizeMode.Zoom,
-                        BorderStyle = BorderStyle.FixedSingle
-                    };
-                    Pictures.Add(pic);
-                    newboxes.Add(pic);
-                    pic.MouseClick += Pic_MouseClick;
-                }
-                OpenButton.Enabled = false;
-                // mapify the new images in the background
-                ImportProcessor.RunWorkerAsync(newboxes);
+                ImportImages(OpenDialog.FileNames);
             }
         }
 
@@ -343,7 +362,7 @@ namespace Image_Map
                     y += box.Height + 10;
                 }
                 box.Left = x;
-                box.Top = y;
+                box.Top = y-PictureZone.VerticalScroll.Value;
                 x += box.Width + 10;
             }
         }
@@ -355,9 +374,10 @@ namespace Image_Map
             if (ExportDialog.ShowDialog() == DialogResult.OK)
             {
                 LastExportPath = ExportDialog.FileName;
-                int.TryParse(System.Text.RegularExpressions.Regex.Match(ExportDialog.FileName, @"\d+").Value, out int index);
+                string name = Path.GetFileName(ExportDialog.FileName);
+                int.TryParse(System.Text.RegularExpressions.Regex.Match(name, @"\d+").Value, out int index);
                 int height = (int)Math.Ceiling((double)Pictures.Count / (double)MosaicWidth.Value);
-                StringBuilder generatecommand = new StringBuilder("summon falling_block ~ ~.6 ~ {Time:1,Block:repeating_command_block,TileEntityData:{auto:1,Command:\"setblock ~ ~1 ~ activator_rail powered=true\"},Passengers:[{id:commandblock_minecart,Command:\"fill ~ ~-2 ~1 ~" + (MosaicWidth.Value - 1) + " ~" + (height-3) + " ~1 sea_lantern\"}");
+                StringBuilder generatecommand = new StringBuilder("summon falling_block ~ ~.6 ~ {Time:1,Block:repeating_command_block,TileEntityData:{auto:1,Command:\"setblock ~ ~1 ~ activator_rail powered=true\"},Passengers:[{id:commandblock_minecart,Command:\"fill ~ ~-2 ~1 ~" + (MosaicWidth.Value - 1) + " ~" + (height - 3) + " ~1 sea_lantern\"}");
                 int x = 0;
                 int y = height;
                 foreach (BetterPicBox box in Pictures)
@@ -392,7 +412,7 @@ namespace Image_Map
                     };
                     NbtFile file = new NbtFile(map);
                     file.SaveToFile(Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + index.ToString() + ".dat"), NbtCompression.GZip);
-                    generatecommand.Append(",{id:commandblock_minecart,Command:\"summon item_frame ~" + x + " ~" + (y-3) + " ~2 {Invulnerable:1b,Silent:1b,Item:{id:filled_map,Count:1b,Damage:" + index + "s}}\"}");
+                    generatecommand.Append(",{id:commandblock_minecart,Command:\"summon item_frame ~" + x + " ~" + (y - 3) + " ~2 {Invulnerable:1b,Silent:1b,Item:{id:filled_map,Count:1b,Damage:" + index + "s}}\"}");
                     index++;
                     x++;
                     if (x > MosaicWidth.Value - 1)
@@ -402,7 +422,9 @@ namespace Image_Map
                     }
                 }
                 generatecommand.Append(",{id:commandblock_minecart,Command:\"blockdata ~ ~-1 ~ {Command:\\\"fill ~ ~-1 ~ ~ ~1 ~ air\\\",auto:1}\"},{id:commandblock_minecart,Command:\"kill @e[type=commandblock_minecart,r=1]\"}]}");
-                Clipboard.SetText(generatecommand.ToString());
+                MosaicOutputBox.Text = generatecommand.ToString();
+                MosaicOutputBox.Visible = true;
+                MosaicOutputCopy.Visible = true;
             }
         }
 
@@ -469,6 +491,12 @@ namespace Image_Map
             ImportLabel.Visible = false;
             OpenButton.Enabled = true;
             ExportButton.Enabled = true;
+            CurrentlyImporting = false;
+        }
+
+        private void MosaicOutputCopy_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(MosaicOutputBox.Text);
         }
     }
 

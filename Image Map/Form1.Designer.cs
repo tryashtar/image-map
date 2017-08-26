@@ -39,6 +39,8 @@
             this.ImportLabel = new System.Windows.Forms.Label();
             this.MosaicWidth = new System.Windows.Forms.NumericUpDown();
             this.MosaicWidthLabel = new System.Windows.Forms.Label();
+            this.MosaicOutputBox = new System.Windows.Forms.TextBox();
+            this.MosaicOutputCopy = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.MosaicWidth)).BeginInit();
             this.SuspendLayout();
             // 
@@ -74,7 +76,7 @@
             this.PictureZone.BackColor = System.Drawing.SystemColors.ControlLight;
             this.PictureZone.Location = new System.Drawing.Point(197, 12);
             this.PictureZone.Name = "PictureZone";
-            this.PictureZone.Size = new System.Drawing.Size(707, 383);
+            this.PictureZone.Size = new System.Drawing.Size(707, 429);
             this.PictureZone.TabIndex = 2;
             this.PictureZone.Resize += new System.EventHandler(this.PictureZone_Resize);
             // 
@@ -110,7 +112,7 @@
             // 
             // ImportBar
             // 
-            this.ImportBar.Location = new System.Drawing.Point(12, 377);
+            this.ImportBar.Location = new System.Drawing.Point(12, 421);
             this.ImportBar.Name = "ImportBar";
             this.ImportBar.Size = new System.Drawing.Size(178, 19);
             this.ImportBar.TabIndex = 7;
@@ -120,7 +122,7 @@
             // 
             this.ImportLabel.AutoSize = true;
             this.ImportLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ImportLabel.Location = new System.Drawing.Point(12, 349);
+            this.ImportLabel.Location = new System.Drawing.Point(12, 393);
             this.ImportLabel.Name = "ImportLabel";
             this.ImportLabel.Size = new System.Drawing.Size(111, 25);
             this.ImportLabel.TabIndex = 8;
@@ -155,11 +157,34 @@
             this.MosaicWidthLabel.TabIndex = 11;
             this.MosaicWidthLabel.Text = "Mosaic Width";
             // 
+            // MosaicOutputBox
+            // 
+            this.MosaicOutputBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 5F);
+            this.MosaicOutputBox.Location = new System.Drawing.Point(12, 335);
+            this.MosaicOutputBox.Name = "MosaicOutputBox";
+            this.MosaicOutputBox.Size = new System.Drawing.Size(178, 19);
+            this.MosaicOutputBox.TabIndex = 12;
+            this.MosaicOutputBox.Visible = false;
+            // 
+            // MosaicOutputCopy
+            // 
+            this.MosaicOutputCopy.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.MosaicOutputCopy.Location = new System.Drawing.Point(108, 294);
+            this.MosaicOutputCopy.Name = "MosaicOutputCopy";
+            this.MosaicOutputCopy.Size = new System.Drawing.Size(82, 35);
+            this.MosaicOutputCopy.TabIndex = 13;
+            this.MosaicOutputCopy.Text = "Copy";
+            this.MosaicOutputCopy.UseVisualStyleBackColor = true;
+            this.MosaicOutputCopy.Visible = false;
+            this.MosaicOutputCopy.Click += new System.EventHandler(this.MosaicOutputCopy_Click);
+            // 
             // TheForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(911, 408);
+            this.ClientSize = new System.Drawing.Size(911, 454);
+            this.Controls.Add(this.MosaicOutputCopy);
+            this.Controls.Add(this.MosaicOutputBox);
             this.Controls.Add(this.MosaicWidthLabel);
             this.Controls.Add(this.MosaicWidth);
             this.Controls.Add(this.ImportLabel);
@@ -192,6 +217,8 @@
         private System.Windows.Forms.Label ImportLabel;
         private System.Windows.Forms.NumericUpDown MosaicWidth;
         private System.Windows.Forms.Label MosaicWidthLabel;
+        private System.Windows.Forms.TextBox MosaicOutputBox;
+        private System.Windows.Forms.Button MosaicOutputCopy;
     }
 }
 
