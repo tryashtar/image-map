@@ -253,7 +253,10 @@ namespace Image_Map
                 { Color.FromArgb(19,11,8), 0xcf },
                 #endregion
             };
-            InterpolationCombo.SelectedIndex = Properties.Settings.Default.InterpolationIndex;
+            PixelRadio.Checked = Properties.Settings.Default.PrefersPixelArt;
+            NormalRadio.Checked = !PixelRadio.Checked;
+            SplitRadio.Checked = Properties.Settings.Default.PrefersSplitting;
+            ScaleRadio.Checked = !SplitRadio.Checked;
             LastOpenPath = Properties.Settings.Default.LastOpenPath;
             LastExportPath = Properties.Settings.Default.LastExportPath;
             List<string> images = new List<string>();
@@ -309,20 +312,51 @@ namespace Image_Map
             List<BetterPicBox> newboxes = new List<BetterPicBox>();
             foreach (string path in paths)
             {
-                BetterPicBox pic = new BetterPicBox(null, ResizeImg(Image.FromFile(path), 128, 128, InterpolationCombo.SelectedIndex == 0 ? InterpolationMode.NearestNeighbor : InterpolationMode.HighQualityBicubic))
+                Image img = Image.FromFile(path);
+                List<Image> images = new List<Image>();
+                if (SplitRadio.Checked)
                 {
-                    Width = 128,
-                    Height = 128,
-                    SizeMode = PictureBoxSizeMode.Zoom,
-                    BorderStyle = BorderStyle.FixedSingle
-                };
-                Pictures.Add(pic);
-                newboxes.Add(pic);
-                pic.MouseClick += Pic_MouseClick;
+                    SplitImageForm split = new SplitImageForm();
+                    split.PicturePreview.Image = img;
+                    split.ShowDialog(this);
+                    for (int y = 0; y < split.HeightInput.Value; y++)
+                    {
+                        for (int x = 0; x < split.WidthInput.Value; x++)
+                        {
+                            images.Add(CropImage(img, new Rectangle(
+                                (int)(x * img.Width / split.WidthInput.Value),
+                                (int)(y * img.Height / split.HeightInput.Value),
+                                (int)(img.Width / split.WidthInput.Value),
+                                (int)(img.Height / split.HeightInput.Value))));
+                        }
+                    }
+                }
+                else
+                    images.Add(img);
+                foreach (Image image in images)
+                {
+                    BetterPicBox pic = new BetterPicBox(null, ResizeImg(image, 128, 128, PixelRadio.Checked ? InterpolationMode.NearestNeighbor : InterpolationMode.HighQualityBicubic))
+                    {
+                        Width = 128,
+                        Height = 128,
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        BorderStyle = BorderStyle.FixedSingle
+                    };
+                    Pictures.Add(pic);
+                    newboxes.Add(pic);
+                    pic.MouseDown += Pic_MouseDown;
+                }
             }
             OpenButton.Enabled = false;
             // mapify the new images in the background
             ImportProcessor.RunWorkerAsync(newboxes);
+        }
+
+        private Image CropImage(Image img, Rectangle cropArea)
+        {
+            Bitmap bmpImage = new Bitmap(img);
+            Bitmap bmpCrop = bmpImage.Clone(cropArea, PixelFormat.DontCare);
+            return (Image)(bmpCrop);
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
@@ -338,7 +372,7 @@ namespace Image_Map
             }
         }
 
-        private void Pic_MouseClick(object sender, MouseEventArgs e)
+        private void Pic_MouseDown(object sender, MouseEventArgs e)
         {
             BetterPicBox b = sender as BetterPicBox;
             if (e.Button == MouseButtons.Right)
@@ -362,9 +396,10 @@ namespace Image_Map
                     y += box.Height + 10;
                 }
                 box.Left = x;
-                box.Top = y-PictureZone.VerticalScroll.Value;
+                box.Top = y - PictureZone.VerticalScroll.Value;
                 x += box.Width + 10;
             }
+            MosaicPanel.Visible = Pictures.Count > 1;
         }
 
         private void ExportButton_Click(object sender, EventArgs e)
@@ -457,7 +492,8 @@ namespace Image_Map
         {
             Properties.Settings.Default.LastExportPath = LastExportPath;
             Properties.Settings.Default.LastOpenPath = LastOpenPath;
-            Properties.Settings.Default.InterpolationIndex = InterpolationCombo.SelectedIndex;
+            Properties.Settings.Default.PrefersPixelArt = PixelRadio.Checked;
+            Properties.Settings.Default.PrefersSplitting = SplitRadio.Checked;
             Properties.Settings.Default.Save();
         }
 
@@ -468,14 +504,14 @@ namespace Image_Map
             {
                 pic.MainImage = Mapify(pic.HoverImage);
                 prog++;
-                ImportProcessor.ReportProgress(prog * 100 / OpenDialog.FileNames.Length);
+                ImportProcessor.ReportProgress(prog * 100 / ((List<BetterPicBox>)e.Argument).Count);
             }
             PicsToAdd = (List<BetterPicBox>)e.Argument;
         }
 
         private void ImportProcessor_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            ImportBar.Value = e.ProgressPercentage;
+            ImportBar.Value = Math.Min(100, e.ProgressPercentage);
             ImportLabel.Text = "Mapifying... (" + e.ProgressPercentage.ToString() + "%)";
         }
 

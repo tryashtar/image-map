@@ -49,13 +49,25 @@ namespace Image_Map.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int InterpolationIndex {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool PrefersPixelArt {
             get {
-                return ((int)(this["InterpolationIndex"]));
+                return ((bool)(this["PrefersPixelArt"]));
             }
             set {
-                this["InterpolationIndex"] = value;
+                this["PrefersPixelArt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool PrefersSplitting {
+            get {
+                return ((bool)(this["PrefersSplitting"]));
+            }
+            set {
+                this["PrefersSplitting"] = value;
             }
         }
     }
