@@ -160,6 +160,7 @@
             // 
             this.MosaicOutputBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.MosaicOutputBox.Location = new System.Drawing.Point(7, 80);
+            this.MosaicOutputBox.MaxLength = 0;
             this.MosaicOutputBox.Name = "MosaicOutputBox";
             this.MosaicOutputBox.Size = new System.Drawing.Size(178, 30);
             this.MosaicOutputBox.TabIndex = 12;
