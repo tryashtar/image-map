@@ -282,14 +282,18 @@ namespace Image_Map
                         map.SetPixel(i, j, Color.FromArgb(0, 0, 0, 0));
                         continue;
                     }
-                    int index = 0;
-                    double[] diffs = new double[ColorMap.Keys.Count];
+                    double mindist = Double.PositiveInfinity;
+                    Color col = Color.Empty;
                     foreach (Color mapcolor in ColorMap.Keys)
                     {
-                        diffs[index] = ColorDistance(pixelcolor, mapcolor);
-                        index++;
+                        double distance = ColorDistance(pixelcolor, mapcolor);
+                        if (mindist > distance)
+                        {
+                            mindist = distance;
+                            col = mapcolor;
+                        }
                     }
-                    map.SetPixel(i, j, ColorMap.Keys.ElementAt(diffs.ToList().IndexOf(diffs.Min())));
+                    map.SetPixel(i, j, col);
                 }
             }
             return map;
@@ -355,8 +359,7 @@ namespace Image_Map
         private Image CropImage(Image img, Rectangle cropArea)
         {
             Bitmap bmpImage = new Bitmap(img);
-            Bitmap bmpCrop = bmpImage.Clone(cropArea, PixelFormat.DontCare);
-            return (Image)(bmpCrop);
+            return (Image)bmpImage.Clone(cropArea, PixelFormat.DontCare);
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
