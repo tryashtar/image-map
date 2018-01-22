@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using fNbt;
 using System.IO;
 
@@ -20,10 +16,7 @@ namespace Image_Map
         string LastOpenPath = "";
         string LastExportPath = "";
         string[] OpenArgs;
-        bool CurrentlyImporting = false;
-        List<BetterPicBox> Pictures = new List<BetterPicBox>();
-        List<BetterPicBox> PicsToAdd = new List<BetterPicBox>();
-
+        List<HoverablePicBox> PicsToAdd = new List<HoverablePicBox>();
         SaveFileDialog ExportDialog = new SaveFileDialog()
         {
             Title = "Export your maps somewhere",
@@ -35,7 +28,9 @@ namespace Image_Map
             Filter = "Image Files|*.png;*.bmp;*.jpg;*.gif|All Files|*.*",
             Multiselect = true,
         };
-        Dictionary<Color, byte> ColorMap;
+        ImportWindow ImportDialog = new ImportWindow();
+        List<HoverablePicBox> PicBoxes = new List<HoverablePicBox>();
+        static Dictionary<Color, byte> ColorMap;
         public TheForm(string[] args)
         {
             InitializeComponent();
@@ -253,12 +248,11 @@ namespace Image_Map
                 { Color.FromArgb(19,11,8), 0xcf },
                 #endregion
             };
-            PixelRadio.Checked = Properties.Settings.Default.PrefersPixelArt;
-            NormalRadio.Checked = !PixelRadio.Checked;
-            SplitRadio.Checked = Properties.Settings.Default.PrefersSplitting;
-            ScaleRadio.Checked = !SplitRadio.Checked;
             LastOpenPath = Properties.Settings.Default.LastOpenPath;
             LastExportPath = Properties.Settings.Default.LastExportPath;
+            ImportDialog.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
+            ImportDialog.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
+            BedrockCheck.Checked = Properties.Settings.Default.BedrockMode;
             List<string> images = new List<string>();
             foreach (string arg in OpenArgs)
             {
@@ -310,56 +304,24 @@ namespace Image_Map
 
         private void ImportImages(string[] paths)
         {
-            if (CurrentlyImporting)
-                return;
-            CurrentlyImporting = true;
-            List<BetterPicBox> newboxes = new List<BetterPicBox>();
+            var images = new List<Image>();
             foreach (string path in paths)
             {
                 Image img = Image.FromFile(path);
-                List<Image> images = new List<Image>();
-                if (SplitRadio.Checked)
-                {
-                    SplitImageForm split = new SplitImageForm();
-                    split.PicturePreview.Image = img;
-                    split.ShowDialog(this);
-                    for (int y = 0; y < split.HeightInput.Value; y++)
-                    {
-                        for (int x = 0; x < split.WidthInput.Value; x++)
-                        {
-                            images.Add(CropImage(img, new Rectangle(
-                                (int)(x * img.Width / split.WidthInput.Value),
-                                (int)(y * img.Height / split.HeightInput.Value),
-                                (int)(img.Width / split.WidthInput.Value),
-                                (int)(img.Height / split.HeightInput.Value))));
-                        }
-                    }
-                }
-                else
-                    images.Add(img);
-                foreach (Image image in images)
-                {
-                    BetterPicBox pic = new BetterPicBox(null, ResizeImg(image, 128, 128, PixelRadio.Checked ? InterpolationMode.NearestNeighbor : InterpolationMode.HighQualityBicubic))
-                    {
-                        Width = 128,
-                        Height = 128,
-                        SizeMode = PictureBoxSizeMode.Zoom,
-                        BorderStyle = BorderStyle.FixedSingle
-                    };
-                    Pictures.Add(pic);
-                    newboxes.Add(pic);
-                    pic.MouseDown += Pic_MouseDown;
-                }
+                images.Add(img);
             }
-            OpenButton.Enabled = false;
-            // mapify the new images in the background
-            ImportProcessor.RunWorkerAsync(newboxes);
-        }
-
-        private Image CropImage(Image img, Rectangle cropArea)
-        {
-            Bitmap bmpImage = new Bitmap(img);
-            return (Image)bmpImage.Clone(cropArea, PixelFormat.DontCare);
+            ImportDialog.InputImages = images;
+            ImportDialog.StartImports(this);
+            var newboxes = ImportDialog.OutputBoxes;
+            if (newboxes.Count > 0)
+            {
+                PicBoxes.AddRange(newboxes);
+                ImportBar.Visible = true;
+                ImportLabel.Visible = true;
+                OpenButton.Enabled = false;
+                // mapify the new images in the background
+                ImportProcessor.RunWorkerAsync(newboxes);
+            }
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
@@ -368,148 +330,171 @@ namespace Image_Map
             OpenDialog.FileName = "";
             if (OpenDialog.ShowDialog() == DialogResult.OK)
             {
-                LastOpenPath = OpenDialog.FileName;
-                ImportBar.Visible = true;
-                ImportLabel.Visible = true;
+                LastOpenPath = Path.GetDirectoryName(OpenDialog.FileName);
                 ImportImages(OpenDialog.FileNames);
             }
         }
 
         private void Pic_MouseDown(object sender, MouseEventArgs e)
         {
-            BetterPicBox b = sender as BetterPicBox;
+            HoverablePicBox b = sender as HoverablePicBox;
             if (e.Button == MouseButtons.Right)
             {
-                Pictures.Remove(b);
+                PicBoxes.Remove(b);
                 PictureZone.Controls.Remove(b);
-                PictureZone_Resize(null, null);
-                ExportButton.Enabled = Pictures.Count > 0;
+                ExportButton.Enabled = PicBoxes.Count > 0;
             }
         }
 
-        private void PictureZone_Resize(object sender, EventArgs e)
+        private static void SaveJavaMapFile(Bitmap bmp, int number, string path)
         {
-            int x = 10;
-            int y = 10;
-            foreach (BetterPicBox box in Pictures)
+            byte[] mapbytes = new byte[128 * 128];
+            for (int i = 0; i < 128; i++)
             {
-                if (x + box.Width > PictureZone.Width)
+                for (int j = 0; j < 128; j++)
                 {
-                    x = 10;
-                    y += box.Height + 10;
+                    Color pixel = bmp.GetPixel(j, i);
+                    if (pixel == Color.FromArgb(0, 0, 0, 0))
+                        mapbytes[128 * i + j] = 0x00;
+                    else
+                        mapbytes[128 * i + j] = ColorMap[pixel];
                 }
-                box.Left = x;
-                box.Top = y - PictureZone.VerticalScroll.Value;
-                x += box.Width + 10;
             }
-            MosaicPanel.Visible = Pictures.Count > 1;
+            NbtCompound map = new NbtCompound("map")
+            {
+                new NbtCompound("data")
+                {
+                    new NbtByte("scale", 0),
+                    new NbtByte("dimension", 0),
+                    new NbtShort("height", 128),
+                    new NbtShort("width", 128),
+                    new NbtByte("trackingPosition", 0),
+                    new NbtByte("unlimitedTracking", 0),
+                    new NbtInt("xCenter", Int32.MaxValue),
+                    new NbtInt("zCenter", Int32.MaxValue),
+                    new NbtByteArray("colors", mapbytes)
+                }
+            };
+            NbtFile file = new NbtFile(map);
+            file.SaveToFile(path, NbtCompression.GZip);
+        }
+
+        private static void SaveBedrockMapFile(Bitmap bmp, int number, LevelDB.DB bedrockdb)
+        {
+            byte[] mapbytes = new byte[128 * 128 * 4];
+            for (int i = 0; i < 128; i++)
+            {
+                for (int j = 0; j < 128; j++)
+                {
+                    Color pixel = bmp.GetPixel(j, i);
+                    mapbytes[(128 * 4 * i) + (4 * j)] = pixel.R;
+                    mapbytes[(128 * 4 * i) + (4 * j) + 1] = pixel.G;
+                    mapbytes[(128 * 4 * i) + (4 * j) + 2] = pixel.B;
+                    mapbytes[(128 * 4 * i) + (4 * j) + 3] = pixel.A;
+                }
+            }
+            NbtCompound map = new NbtCompound("map")
+            {
+                new NbtLong("mapId", number),
+                new NbtLong("parentMapId", -1),
+                new NbtList("decorations", NbtTagType.Compound),
+                new NbtByte("fullyExplored", 1),
+                new NbtByte("scale", 4),
+                new NbtByte("dimension", 0),
+                new NbtShort("height", 128),
+                new NbtShort("width", 128),
+                new NbtByte("unlimitedTracking", 0),
+                new NbtInt("xCenter", Int32.MaxValue),
+                new NbtInt("zCenter", Int32.MaxValue),
+                new NbtByteArray("colors", mapbytes)
+            };
+            NbtFile file = new NbtFile(map);
+            file.BigEndian = false;
+            byte[] bytes = file.SaveToBuffer(NbtCompression.None);
+            bedrockdb.Put("map_" + number, Encoding.Default.GetString(bytes));
         }
 
         private void ExportButton_Click(object sender, EventArgs e)
         {
-            ExportDialog.InitialDirectory = LastExportPath;
+            if (BedrockCheck.Checked)
+                ExportDialog.InitialDirectory = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
+            else
+                ExportDialog.InitialDirectory = LastExportPath;
             ExportDialog.FileName = "map_0.dat";
             if (ExportDialog.ShowDialog() == DialogResult.OK)
             {
-                LastExportPath = ExportDialog.FileName;
-                string name = Path.GetFileName(ExportDialog.FileName);
-                int.TryParse(System.Text.RegularExpressions.Regex.Match(name, @"\d+").Value, out int index);
-                int height = (int)Math.Ceiling((double)Pictures.Count / (double)MosaicWidth.Value);
-                StringBuilder generatecommand = new StringBuilder("summon falling_block ~ ~.6 ~ {Time:1,Block:repeating_command_block,TileEntityData:{auto:1,Command:\"setblock ~ ~1 ~ activator_rail powered=true\"},Passengers:[{id:commandblock_minecart,Command:\"fill ~ ~-2 ~1 ~" + (MosaicWidth.Value - 1) + " ~" + (height - 3) + " ~1 sea_lantern\"}");
-                int x = 0;
-                int y = height;
-                foreach (BetterPicBox box in Pictures)
+                string name = ExportDialog.FileName;
+                if (!BedrockCheck.Checked)
+                    LastExportPath = Path.GetDirectoryName(ExportDialog.FileName);
+                int.TryParse(System.Text.RegularExpressions.Regex.Match(Path.GetFileName(name), @"\d+").Value, out int firstmapid);
+                int mapid = firstmapid;
+                if (BedrockCheck.Checked)
                 {
-                    Bitmap bmp = new Bitmap(box.MainImage);
-                    byte[] mapbytes = new byte[128 * 128];
-                    for (int i = 0; i < 128; i++)
+                    LevelDB.DB bedrockdb = new LevelDB.DB(new LevelDB.Options(), Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "db"));
+                    byte[] playerdata = Encoding.Default.GetBytes(bedrockdb.Get("~local_player"));
+                    NbtFile file = new NbtFile();
+                    file.BigEndian = false;
+                    file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
+                    NbtCompound firstslot = (NbtCompound)file.RootTag["Inventory"][0];
+                    firstslot.Clear();
+                    firstslot.Add(new NbtByte("Count", 1));
+                    firstslot.Add(new NbtShort("Damage", 0));
+                    firstslot.Add(new NbtShort("id", 54));
+                    firstslot.Add(new NbtShort("Slot", 0));
+                    NbtList items = new NbtList("Items", NbtTagType.Compound);
+                    firstslot.Add(new NbtCompound("tag") { items });
+                    byte slot = 0;
+                    foreach (HoverablePicBox box in PicBoxes)
                     {
-                        for (int j = 0; j < 128; j++)
+                        try { SaveBedrockMapFile(new Bitmap(box.HoverImage), mapid, bedrockdb); }
+                        catch { MessageBox.Show("error"); }
+                        items.Add(new NbtCompound()
                         {
-                            Color pixel = bmp.GetPixel(j, i);
-                            if (pixel == Color.FromArgb(0, 0, 0, 0))
-                                mapbytes[128 * i + j] = 0x00;
-                            else
-                                mapbytes[128 * i + j] = ColorMap[pixel];
-                        }
+                            new NbtByte("Count", 1),
+                            new NbtShort("Damage", 0),
+                            new NbtShort("id", 358),
+                            new NbtByte("Slot", slot),
+                            new NbtCompound("tag") { new NbtLong("map_uuid", mapid) }
+                        });
+                        mapid++;
+                        slot++;
                     }
-                    NbtCompound map = new NbtCompound("map")
+                    bedrockdb.Put("~local_player", Encoding.Default.GetString(file.SaveToBuffer(NbtCompression.None)));
+                    bedrockdb.Dispose();
+                }
+                else
+                {
+                    foreach (HoverablePicBox box in PicBoxes)
                     {
-                        new NbtCompound("data")
-                        {
-                            new NbtByte("scale",0),
-                            new NbtByte("dimension",0),
-                            new NbtShort("height",128),
-                            new NbtShort("width",128),
-                            new NbtByte("trackingPosition",0),
-                            new NbtByte("unlimitedTracking",0),
-                            new NbtInt("xCenter",2147483647),
-                            new NbtInt("zCenter",2147483647),
-                            new NbtByteArray("colors",mapbytes)
-                        }
-                    };
-                    NbtFile file = new NbtFile(map);
-                    file.SaveToFile(Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + index.ToString() + ".dat"), NbtCompression.GZip);
-                    generatecommand.Append(",{id:commandblock_minecart,Command:\"summon item_frame ~" + x + " ~" + (y - 3) + " ~2 {Invulnerable:1b,Silent:1b,Item:{id:filled_map,Count:1b,Damage:" + index + "s}}\"}");
-                    index++;
-                    x++;
-                    if (x > MosaicWidth.Value - 1)
-                    {
-                        x = 0;
-                        y--;
+                        SaveJavaMapFile(new Bitmap(box.MainImage), mapid, Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + mapid.ToString() + ".dat"));
+                        mapid++;
                     }
                 }
-                generatecommand.Append(",{id:commandblock_minecart,Command:\"blockdata ~ ~-1 ~ {Command:\\\"fill ~ ~-1 ~ ~ ~1 ~ air\\\",auto:1}\"},{id:commandblock_minecart,Command:\"kill @e[type=commandblock_minecart,r=1]\"}]}");
-                MosaicOutputBox.Text = generatecommand.ToString();
-                MosaicOutputBox.Visible = true;
-                MosaicOutputCopy.Visible = true;
             }
-        }
-
-        public Image ResizeImg(Image image, int width, int height, InterpolationMode mode)
-        {
-            var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new Bitmap(width, height);
-
-            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-
-            using (var graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = mode;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                using (var wrapMode = new ImageAttributes())
-                {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
-                }
-            }
-
-            return destImage;
         }
 
         private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             Properties.Settings.Default.LastExportPath = LastExportPath;
             Properties.Settings.Default.LastOpenPath = LastOpenPath;
-            Properties.Settings.Default.PrefersPixelArt = PixelRadio.Checked;
-            Properties.Settings.Default.PrefersSplitting = SplitRadio.Checked;
+            Properties.Settings.Default.InterpIndex = ImportDialog.InterpolationModeBox.SelectedIndex;
+            Properties.Settings.Default.ApplyAllCheck = ImportDialog.ApplyAllCheck.Checked;
+            Properties.Settings.Default.BedrockMode = BedrockCheck.Checked;
             Properties.Settings.Default.Save();
         }
 
         private void ImportProcessor_DoWork(object sender, DoWorkEventArgs e)
         {
             int prog = 0;
-            foreach (BetterPicBox pic in (List<BetterPicBox>)e.Argument)
+            foreach (HoverablePicBox pic in (List<HoverablePicBox>)e.Argument)
             {
                 pic.MainImage = Mapify(pic.HoverImage);
+                pic.Image = pic.MainImage;
+                pic.MouseDown += Pic_MouseDown;
                 prog++;
-                ImportProcessor.ReportProgress(prog * 100 / ((List<BetterPicBox>)e.Argument).Count);
+                ImportProcessor.ReportProgress(prog * 100 / ((List<HoverablePicBox>)e.Argument).Count);
             }
-            PicsToAdd = (List<BetterPicBox>)e.Argument;
+            PicsToAdd = (List<HoverablePicBox>)e.Argument;
         }
 
         private void ImportProcessor_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -520,30 +505,52 @@ namespace Image_Map
 
         private void ImportProcessor_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            foreach (BetterPicBox box in PicsToAdd)
-            {
-                box.Image = box.MainImage;
-            }
             PictureZone.Controls.AddRange(PicsToAdd.ToArray());
-            PictureZone_Resize(null, null);
+            PictureZone_Layout(null, null);
             ImportBar.Visible = false;
             ImportLabel.Visible = false;
             OpenButton.Enabled = true;
             ExportButton.Enabled = true;
-            CurrentlyImporting = false;
         }
 
-        private void MosaicOutputCopy_Click(object sender, EventArgs e)
+        private void PictureZone_Layout(object sender, LayoutEventArgs e)
         {
-            Clipboard.SetText(MosaicOutputBox.Text);
+            int x = 10;
+            int y = 10;
+            foreach (HoverablePicBox box in PicBoxes)
+            {
+                if (x + box.Width > PictureZone.Width)
+                {
+                    x = 10;
+                    y += box.Height + 10;
+                }
+                box.Left = x;
+                box.Top = y - PictureZone.VerticalScroll.Value;
+                x += box.Width + 10;
+            }
         }
     }
 
-    public class BetterPicBox : PictureBox
+    public class InterpPictureBox : PictureBox
+    {
+        private InterpolationMode InterpPrivate;
+        public InterpolationMode Interp
+        {
+            get => InterpPrivate;
+            set { InterpPrivate = value; this.Refresh(); }
+        }
+        protected override void OnPaint(PaintEventArgs paintEventArgs)
+        {
+            paintEventArgs.Graphics.InterpolationMode = Interp;
+            base.OnPaint(paintEventArgs);
+        }
+    }
+
+    public class HoverablePicBox : InterpPictureBox
     {
         public Image MainImage;
         public Image HoverImage;
-        public BetterPicBox(Image main, Image hover)
+        public HoverablePicBox(Image main, Image hover)
         {
             MainImage = main;
             HoverImage = hover;
@@ -560,12 +567,6 @@ namespace Image_Map
         private void BetterPicBox_MouseEnter(object sender, EventArgs e)
         {
             Image = HoverImage;
-        }
-
-        protected override void OnPaint(PaintEventArgs paintEventArgs)
-        {
-            paintEventArgs.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-            base.OnPaint(paintEventArgs);
         }
     }
 }
