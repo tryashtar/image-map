@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 using fNbt;
 using System.IO;
+using System.Runtime.ExceptionServices;
 
 namespace Image_Map
 {
-    public partial class TheForm : Form
+    public partial class Form1 : Form
     {
         string LastOpenPath = "";
         string LastExportPath = "";
         string[] OpenArgs;
-        List<HoverablePicBox> PicsToAdd = new List<HoverablePicBox>();
+        List<MapPreviewBox> PicsToAdd = new List<MapPreviewBox>();
         SaveFileDialog ExportDialog = new SaveFileDialog()
         {
             Title = "Export your maps somewhere",
@@ -29,9 +28,8 @@ namespace Image_Map
             Multiselect = true,
         };
         ImportWindow ImportDialog = new ImportWindow();
-        List<HoverablePicBox> PicBoxes = new List<HoverablePicBox>();
-        static Dictionary<Color, byte> ColorMap;
-        public TheForm(string[] args)
+        List<MapPreviewBox> PicBoxes = new List<MapPreviewBox>();
+        public Form1(string[] args)
         {
             InitializeComponent();
             OpenArgs = args;
@@ -39,215 +37,7 @@ namespace Image_Map
 
         private void TheForm_Load(object sender, EventArgs e)
         {
-            ColorMap = new Dictionary<Color, byte>()
-            {
-                #region color definitions
-                { Color.FromArgb(88,124,39), 0x04 },
-                { Color.FromArgb(108,151,47), 0x05 },
-                { Color.FromArgb(126,176,55), 0x06 },
-                { Color.FromArgb(66,93,29), 0x07 },
-                { Color.FromArgb(172,162,114), 0x08 },
-                { Color.FromArgb(210,199,138), 0x09 },
-                { Color.FromArgb(244,230,161), 0x0a },
-                { Color.FromArgb(128,122,85), 0x0b },
-                { Color.FromArgb(138,138,138), 0x0c },
-                { Color.FromArgb(169,169,169), 0x0d },
-                { Color.FromArgb(197,197,197), 0x0e },
-                { Color.FromArgb(104,104,104), 0x0f },
-                { Color.FromArgb(178,0,0), 0x10 },
-                { Color.FromArgb(217,0,0), 0x11 },
-                { Color.FromArgb(252,0,0), 0x12 },
-                { Color.FromArgb(133,0,0), 0x13 },
-                { Color.FromArgb(111,111,178), 0x14 },
-                { Color.FromArgb(136,136,217), 0x15 },
-                { Color.FromArgb(158,158,252), 0x16 },
-                { Color.FromArgb(83,83,133), 0x17 },
-                { Color.FromArgb(116,116,116), 0x18 },
-                { Color.FromArgb(142,142,142), 0x19 },
-                { Color.FromArgb(165,165,165), 0x1a },
-                { Color.FromArgb(87,87,87), 0x1b },
-                { Color.FromArgb(0,86,0), 0x1c },
-                { Color.FromArgb(0,105,0), 0x1d },
-                { Color.FromArgb(0,123,0), 0x1e },
-                { Color.FromArgb(0,64,0), 0x1f },
-                { Color.FromArgb(178,178,178), 0x20 },
-                { Color.FromArgb(217,217,217), 0x21 },
-                { Color.FromArgb(252,252,252), 0x22 },
-                { Color.FromArgb(133,133,133), 0x23 },
-                { Color.FromArgb(114,117,127), 0x24 },
-                { Color.FromArgb(139,142,156), 0x25 },
-                { Color.FromArgb(162,166,182), 0x26 },
-                { Color.FromArgb(85,87,96), 0x27 },
-                { Color.FromArgb(105,75,53), 0x28 },
-                { Color.FromArgb(128,93,65), 0x29 },
-                { Color.FromArgb(149,108,76), 0x2a },
-                { Color.FromArgb(78,56,40), 0x2b },
-                { Color.FromArgb(78,78,78), 0x2c },
-                { Color.FromArgb(95,95,95), 0x2d },
-                { Color.FromArgb(111,111,111), 0x2e },
-                { Color.FromArgb(58,58,58), 0x2f },
-                { Color.FromArgb(44,44,178), 0x30 },
-                { Color.FromArgb(54,54,217), 0x31 },
-                { Color.FromArgb(63,63,252), 0x32 },
-                { Color.FromArgb(33,33,133), 0x33 },
-                { Color.FromArgb(99,83,49), 0x34 },
-                { Color.FromArgb(122,101,61), 0x35 },
-                { Color.FromArgb(141,118,71), 0x36 },
-                { Color.FromArgb(74,62,38), 0x37 },
-                { Color.FromArgb(178,175,170), 0x38 },
-                { Color.FromArgb(217,214,209), 0x39 },
-                { Color.FromArgb(252,249,242), 0x3a },
-                { Color.FromArgb(133,131,127), 0x3b },
-                { Color.FromArgb(150,88,36), 0x3c },
-                { Color.FromArgb(184,108,43), 0x3d },
-                { Color.FromArgb(213,126,50), 0x3e },
-                { Color.FromArgb(113,66,27), 0x3f },
-                { Color.FromArgb(124,52,150), 0x40 },
-                { Color.FromArgb(151,64,184), 0x41 },
-                { Color.FromArgb(176,75,213), 0x42 },
-                { Color.FromArgb(93,40,113), 0x43 },
-                { Color.FromArgb(71,107,150), 0x44 },
-                { Color.FromArgb(87,130,184), 0x45 },
-                { Color.FromArgb(101,151,213), 0x46 },
-                { Color.FromArgb(53,80,113), 0x47 },
-                { Color.FromArgb(159,159,36), 0x48 },
-                { Color.FromArgb(195,195,43), 0x49 },
-                { Color.FromArgb(226,226,50), 0x4a },
-                { Color.FromArgb(120,120,27), 0x4b },
-                { Color.FromArgb(88,142,17), 0x4c },
-                { Color.FromArgb(108,174,21), 0x4d },
-                { Color.FromArgb(126,202,25), 0x4e },
-                { Color.FromArgb(66,107,13), 0x4f },
-                { Color.FromArgb(168,88,115), 0x50 },
-                { Color.FromArgb(206,108,140), 0x51 },
-                { Color.FromArgb(239,126,163), 0x52 },
-                { Color.FromArgb(126,66,86), 0x53 },
-                { Color.FromArgb(52,52,52), 0x54 },
-                { Color.FromArgb(64,64,64), 0x55 },
-                { Color.FromArgb(75,75,75), 0x56 },
-                { Color.FromArgb(40,40,40), 0x57 },
-                { Color.FromArgb(107,107,107), 0x58 },
-                { Color.FromArgb(130,130,130), 0x59 },
-                { Color.FromArgb(151,151,151), 0x5a },
-                { Color.FromArgb(80,80,80), 0x5b },
-                { Color.FromArgb(52,88,107), 0x5c },
-                { Color.FromArgb(64,108,130), 0x5d },
-                { Color.FromArgb(75,126,151), 0x5e },
-                { Color.FromArgb(40,66,80), 0x5f },
-                { Color.FromArgb(88,43,124), 0x60 },
-                { Color.FromArgb(108,53,151), 0x61 },
-                { Color.FromArgb(126,62,176), 0x62 },
-                { Color.FromArgb(66,33,93), 0x63 },
-                { Color.FromArgb(36,52,124), 0x64 },
-                { Color.FromArgb(43,64,151), 0x65 },
-                { Color.FromArgb(50,75,176), 0x66 },
-                { Color.FromArgb(27,40,93), 0x67 },
-                { Color.FromArgb(71,52,36), 0x68 },
-                { Color.FromArgb(87,64,43), 0x69 },
-                { Color.FromArgb(101,75,50), 0x6a },
-                { Color.FromArgb(53,40,27), 0x6b },
-                { Color.FromArgb(71,88,36), 0x6c },
-                { Color.FromArgb(87,108,43), 0x6d },
-                { Color.FromArgb(101,126,50), 0x6e },
-                { Color.FromArgb(53,66,27), 0x6f },
-                { Color.FromArgb(107,36,36), 0x70 },
-                { Color.FromArgb(130,43,43), 0x71 },
-                { Color.FromArgb(151,50,50), 0x72 },
-                { Color.FromArgb(80,27,27), 0x73 },
-                { Color.FromArgb(17,17,17), 0x74 },
-                { Color.FromArgb(21,21,21), 0x75 },
-                { Color.FromArgb(25,25,25), 0x76 },
-                { Color.FromArgb(13,13,13), 0x77 },
-                { Color.FromArgb(174,166,53), 0x78 },
-                { Color.FromArgb(212,203,65), 0x79 },
-                { Color.FromArgb(247,235,76), 0x7a },
-                { Color.FromArgb(130,125,40), 0x7b },
-                { Color.FromArgb(63,152,148), 0x7c },
-                { Color.FromArgb(78,186,181), 0x7d },
-                { Color.FromArgb(91,216,210), 0x7e },
-                { Color.FromArgb(47,114,111), 0x7f },
-                { Color.FromArgb(51,89,178), 0x80 },
-                { Color.FromArgb(62,109,217), 0x81 },
-                { Color.FromArgb(73,126,252), 0x82 },
-                { Color.FromArgb(39,66,133), 0x83 },
-                { Color.FromArgb(0,151,40), 0x84 },
-                { Color.FromArgb(0,185,49), 0x85 },
-                { Color.FromArgb(0,214,57), 0x86 },
-                { Color.FromArgb(0,113,30), 0x87 },
-                { Color.FromArgb(90,59,34), 0x88 },
-                { Color.FromArgb(110,73,42), 0x89 },
-                { Color.FromArgb(127,85,48), 0x8a },
-                { Color.FromArgb(67,44,25), 0x8b },
-                { Color.FromArgb(78,1,0), 0x8c },
-                { Color.FromArgb(95,1,0), 0x8d },
-                { Color.FromArgb(111,2,0), 0x8e },
-                { Color.FromArgb(58,1,0), 0x8f },
-                { Color.FromArgb(145,123,112), 0x90 },
-                { Color.FromArgb(178,150,136), 0x91 },
-                { Color.FromArgb(207,175,159), 0x92 },
-                { Color.FromArgb(109,92,84), 0x93 },
-                { Color.FromArgb(111,56,25), 0x94 },
-                { Color.FromArgb(135,69,31), 0x95 },
-                { Color.FromArgb(157,81,36), 0x96 },
-                { Color.FromArgb(83,42,19), 0x97 },
-                { Color.FromArgb(104,60,75), 0x98 },
-                { Color.FromArgb(126,74,92), 0x99 },
-                { Color.FromArgb(147,86,107), 0x9a },
-                { Color.FromArgb(77,45,56), 0x9b },
-                { Color.FromArgb(78,75,96), 0x9c },
-                { Color.FromArgb(95,92,118), 0x9d },
-                { Color.FromArgb(111,107,136), 0x9e },
-                { Color.FromArgb(58,56,72), 0x9f },
-                { Color.FromArgb(129,92,25), 0xa0 },
-                { Color.FromArgb(158,113,31), 0xa1 },
-                { Color.FromArgb(184,131,36), 0xa2 },
-                { Color.FromArgb(97,69,19), 0xa3 },
-                { Color.FromArgb(71,81,37), 0xa4 },
-                { Color.FromArgb(87,99,44), 0xa5 },
-                { Color.FromArgb(102,116,52), 0xa6 },
-                { Color.FromArgb(53,60,28), 0xa7 },
-                { Color.FromArgb(111,53,54), 0xa8 },
-                { Color.FromArgb(136,65,66), 0xa9 },
-                { Color.FromArgb(158,76,77), 0xaa },
-                { Color.FromArgb(83,40,41), 0xab },
-                { Color.FromArgb(40,28,24), 0xac },
-                { Color.FromArgb(48,35,30), 0xad },
-                { Color.FromArgb(56,41,35), 0xae },
-                { Color.FromArgb(30,21,18), 0xaf },
-                { Color.FromArgb(94,74,68), 0xb0 },
-                { Color.FromArgb(115,91,83), 0xb1 },
-                { Color.FromArgb(133,106,97), 0xb2 },
-                { Color.FromArgb(70,55,50), 0xb3 },
-                { Color.FromArgb(60,63,63), 0xb4 },
-                { Color.FromArgb(74,78,78), 0xb5 },
-                { Color.FromArgb(86,91,91), 0xb6 },
-                { Color.FromArgb(45,47,47), 0xb7 },
-                { Color.FromArgb(85,50,61), 0xb8 },
-                { Color.FromArgb(104,61,74), 0xb9 },
-                { Color.FromArgb(121,72,87), 0xba },
-                { Color.FromArgb(63,38,45), 0xbb },
-                { Color.FromArgb(52,42,63), 0xbc },
-                { Color.FromArgb(64,52,78), 0xbd },
-                { Color.FromArgb(75,61,91), 0xbe },
-                { Color.FromArgb(40,32,47), 0xbf },
-                { Color.FromArgb(52,35,24), 0xc0 },
-                { Color.FromArgb(64,42,30), 0xc1 },
-                { Color.FromArgb(75,49,35), 0xc2 },
-                { Color.FromArgb(40,26,18), 0xc3 },
-                { Color.FromArgb(52,56,29), 0xc4 },
-                { Color.FromArgb(64,69,36), 0xc5 },
-                { Color.FromArgb(75,81,42), 0xc6 },
-                { Color.FromArgb(40,42,22), 0xc7 },
-                { Color.FromArgb(99,42,32), 0xc8 },
-                { Color.FromArgb(121,50,39), 0xc9 },
-                { Color.FromArgb(140,59,45), 0xca },
-                { Color.FromArgb(74,31,24), 0xcb },
-                { Color.FromArgb(26,15,11), 0xcc },
-                { Color.FromArgb(31,18,13), 0xcd },
-                { Color.FromArgb(37,22,16), 0xce },
-                { Color.FromArgb(19,11,8), 0xcf },
-                #endregion
-            };
+            // load up saved settings
             LastOpenPath = Properties.Settings.Default.LastOpenPath;
             LastExportPath = Properties.Settings.Default.LastExportPath;
             ImportDialog.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
@@ -263,45 +53,7 @@ namespace Image_Map
                 ImportImages(images.ToArray());
         }
 
-        public Image Mapify(Image img)
-        {
-            Bitmap map = new Bitmap(img);
-            for (int i = 0; i < img.Width; i++)
-            {
-                for (int j = 0; j < img.Height; j++)
-                {
-                    Color pixelcolor = map.GetPixel(i, j);
-                    if (pixelcolor.A < 128)
-                    {
-                        map.SetPixel(i, j, Color.FromArgb(0, 0, 0, 0));
-                        continue;
-                    }
-                    double mindist = Double.PositiveInfinity;
-                    Color col = Color.Empty;
-                    foreach (Color mapcolor in ColorMap.Keys)
-                    {
-                        double distance = ColorDistance(pixelcolor, mapcolor);
-                        if (mindist > distance)
-                        {
-                            mindist = distance;
-                            col = mapcolor;
-                        }
-                    }
-                    map.SetPixel(i, j, col);
-                }
-            }
-            return map;
-        }
-
-        public double ColorDistance(Color e1, Color e2)
-        {
-            long rmean = ((long)e1.R + (long)e2.R) / 2;
-            long r = (long)e1.R - (long)e2.R;
-            long g = (long)e1.G - (long)e2.G;
-            long b = (long)e1.B - (long)e2.B;
-            return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
-        }
-
+        // load up images from paths, let the user modify them, and send them to processing
         private void ImportImages(string[] paths)
         {
             var images = new List<Image>();
@@ -316,11 +68,21 @@ namespace Image_Map
             if (newboxes.Count > 0)
             {
                 PicBoxes.AddRange(newboxes);
-                ImportBar.Visible = true;
-                ImportLabel.Visible = true;
-                OpenButton.Enabled = false;
-                // mapify the new images in the background
-                ImportProcessor.RunWorkerAsync(newboxes);
+                PictureZone.Controls.AddRange(newboxes.ToArray());
+                UpdateBoxImages();
+                foreach (var box in newboxes)
+                {
+                    box.MouseDown += Pic_MouseDown;
+                }
+                ExportButton.Enabled = PicBoxes.Count > 0;
+            }
+        }
+
+        private void UpdateBoxImages()
+        {
+            foreach (var box in PicBoxes)
+            {
+                box.ViewingJava = !BedrockCheck.Checked;
             }
         }
 
@@ -335,9 +97,10 @@ namespace Image_Map
             }
         }
 
+        // right-click maps to remove them
         private void Pic_MouseDown(object sender, MouseEventArgs e)
         {
-            HoverablePicBox b = sender as HoverablePicBox;
+            MapPreviewBox b = sender as MapPreviewBox;
             if (e.Button == MouseButtons.Right)
             {
                 PicBoxes.Remove(b);
@@ -346,76 +109,11 @@ namespace Image_Map
             }
         }
 
-        private static void SaveJavaMapFile(Bitmap bmp, int number, string path)
-        {
-            byte[] mapbytes = new byte[128 * 128];
-            for (int i = 0; i < 128; i++)
-            {
-                for (int j = 0; j < 128; j++)
-                {
-                    Color pixel = bmp.GetPixel(j, i);
-                    if (pixel == Color.FromArgb(0, 0, 0, 0))
-                        mapbytes[128 * i + j] = 0x00;
-                    else
-                        mapbytes[128 * i + j] = ColorMap[pixel];
-                }
-            }
-            NbtCompound map = new NbtCompound("map")
-            {
-                new NbtCompound("data")
-                {
-                    new NbtByte("scale", 0),
-                    new NbtByte("dimension", 0),
-                    new NbtShort("height", 128),
-                    new NbtShort("width", 128),
-                    new NbtByte("trackingPosition", 0),
-                    new NbtByte("unlimitedTracking", 0),
-                    new NbtInt("xCenter", Int32.MaxValue),
-                    new NbtInt("zCenter", Int32.MaxValue),
-                    new NbtByteArray("colors", mapbytes)
-                }
-            };
-            NbtFile file = new NbtFile(map);
-            file.SaveToFile(path, NbtCompression.GZip);
-        }
-
-        private static void SaveBedrockMapFile(Bitmap bmp, int number, LevelDB.DB bedrockdb)
-        {
-            byte[] mapbytes = new byte[128 * 128 * 4];
-            for (int i = 0; i < 128; i++)
-            {
-                for (int j = 0; j < 128; j++)
-                {
-                    Color pixel = bmp.GetPixel(j, i);
-                    mapbytes[(128 * 4 * i) + (4 * j)] = pixel.R;
-                    mapbytes[(128 * 4 * i) + (4 * j) + 1] = pixel.G;
-                    mapbytes[(128 * 4 * i) + (4 * j) + 2] = pixel.B;
-                    mapbytes[(128 * 4 * i) + (4 * j) + 3] = pixel.A;
-                }
-            }
-            NbtCompound map = new NbtCompound("map")
-            {
-                new NbtLong("mapId", number),
-                new NbtLong("parentMapId", -1),
-                new NbtList("decorations", NbtTagType.Compound),
-                new NbtByte("fullyExplored", 1),
-                new NbtByte("scale", 4),
-                new NbtByte("dimension", 0),
-                new NbtShort("height", 128),
-                new NbtShort("width", 128),
-                new NbtByte("unlimitedTracking", 0),
-                new NbtInt("xCenter", Int32.MaxValue),
-                new NbtInt("zCenter", Int32.MaxValue),
-                new NbtByteArray("colors", mapbytes)
-            };
-            NbtFile file = new NbtFile(map);
-            file.BigEndian = false;
-            byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            bedrockdb.Put("map_" + number, Encoding.Default.GetString(bytes));
-        }
-
+        [HandleProcessCorruptedStateExceptions]
         private void ExportButton_Click(object sender, EventArgs e)
         {
+            // for bedrock, maps must be embedded in the world, and the worlds folder is permanent
+            // therefore it is opened every time for convenience
             if (BedrockCheck.Checked)
                 ExportDialog.InitialDirectory = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
             else
@@ -423,31 +121,57 @@ namespace Image_Map
             ExportDialog.FileName = "map_0.dat";
             if (ExportDialog.ShowDialog() == DialogResult.OK)
             {
-                string name = ExportDialog.FileName;
                 if (!BedrockCheck.Checked)
                     LastExportPath = Path.GetDirectoryName(ExportDialog.FileName);
-                int.TryParse(System.Text.RegularExpressions.Regex.Match(Path.GetFileName(name), @"\d+").Value, out int firstmapid);
+                // parse the number out of a filename like "map_53.dat" -> 53
+                int.TryParse(System.Text.RegularExpressions.Regex.Match(Path.GetFileName(ExportDialog.FileName), @"\d+").Value, out int firstmapid);
                 int mapid = firstmapid;
+                // bedrock saving
                 if (BedrockCheck.Checked)
                 {
-                    LevelDB.DB bedrockdb = new LevelDB.DB(new LevelDB.Options(), Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "db"));
+                    LevelDB.DB bedrockdb;
+                    try
+                    {
+                        string db = Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "db");
+                        if (!Directory.Exists(db))
+                            throw new ApplicationException("no leveldb found");
+                        bedrockdb = new LevelDB.DB(new LevelDB.Options() { CreateIfMissing = false }, db);
+                    }
+                    catch (ApplicationException)
+                    {
+                        MessageBox.Show("Bedrock Edition maps must be embedded directly in the world.\n\nPlease save your map file directly inside a Bedrock world folder.", "Not a valid world!");
+                        return;
+                    }
                     byte[] playerdata = Encoding.Default.GetBytes(bedrockdb.Get("~local_player"));
                     NbtFile file = new NbtFile();
                     file.BigEndian = false;
                     file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
-                    NbtCompound firstslot = (NbtCompound)file.RootTag["Inventory"][0];
-                    firstslot.Clear();
-                    firstslot.Add(new NbtByte("Count", 1));
-                    firstslot.Add(new NbtShort("Damage", 0));
-                    firstslot.Add(new NbtShort("id", 54));
-                    firstslot.Add(new NbtShort("Slot", 0));
-                    NbtList items = new NbtList("Items", NbtTagType.Compound);
-                    firstslot.Add(new NbtCompound("tag") { items });
+                    NbtCompound chestslot = null;
+                    NbtList items = null;
                     byte slot = 0;
-                    foreach (HoverablePicBox box in PicBoxes)
+                    foreach (MapPreviewBox box in PicBoxes)
                     {
-                        try { SaveBedrockMapFile(new Bitmap(box.HoverImage), mapid, bedrockdb); }
-                        catch { MessageBox.Show("error"); }
+                        if (slot == 0)
+                        {
+                            // find the next empty slot in the inventory
+                            // create a chest there to add maps
+                            NbtList inventory = (NbtList)file.RootTag["Inventory"];
+                            for (int i = 0; i < inventory.Count; i++)
+                            {
+                                if (inventory[i]["id"].ShortValue == 0)
+                                    chestslot = (NbtCompound)inventory[i];
+                            }
+                            short itemslot = chestslot["Slot"].ShortValue;
+                            chestslot.Clear();
+                            chestslot.Add(new NbtByte("Count", 1));
+                            chestslot.Add(new NbtShort("Damage", 0));
+                            chestslot.Add(new NbtShort("id", 54));
+                            chestslot.Add(new NbtShort("Slot", itemslot));
+                            items = new NbtList("Items", NbtTagType.Compound);
+                            chestslot.Add(new NbtCompound("tag") { items });
+                        }
+                        try { MapHelpers.SaveBedrockMapFile(new Bitmap(box.BedrockImage), mapid, bedrockdb); }
+                        catch (AccessViolationException) { MessageBox.Show("Something went horribly wrong and we can't export your maps.\n\nIt's usually a problem with the image itself, but that's all I know.","I hate this error!"); }
                         items.Add(new NbtCompound()
                         {
                             new NbtByte("Count", 1),
@@ -458,15 +182,18 @@ namespace Image_Map
                         });
                         mapid++;
                         slot++;
+                        // if the chest is full, make a new one
+                        if (slot >= 27)
+                            slot = 0;
                     }
                     bedrockdb.Put("~local_player", Encoding.Default.GetString(file.SaveToBuffer(NbtCompression.None)));
                     bedrockdb.Dispose();
                 }
-                else
+                else // java saving
                 {
-                    foreach (HoverablePicBox box in PicBoxes)
+                    foreach (MapPreviewBox box in PicBoxes)
                     {
-                        SaveJavaMapFile(new Bitmap(box.MainImage), mapid, Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + mapid.ToString() + ".dat"));
+                        MapHelpers.SaveJavaMapFile(new Bitmap(box.JavaImage), Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + mapid.ToString() + ".dat"));
                         mapid++;
                     }
                 }
@@ -475,6 +202,7 @@ namespace Image_Map
 
         private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            // save settings
             Properties.Settings.Default.LastExportPath = LastExportPath;
             Properties.Settings.Default.LastOpenPath = LastOpenPath;
             Properties.Settings.Default.InterpIndex = ImportDialog.InterpolationModeBox.SelectedIndex;
@@ -483,41 +211,12 @@ namespace Image_Map
             Properties.Settings.Default.Save();
         }
 
-        private void ImportProcessor_DoWork(object sender, DoWorkEventArgs e)
-        {
-            int prog = 0;
-            foreach (HoverablePicBox pic in (List<HoverablePicBox>)e.Argument)
-            {
-                pic.MainImage = Mapify(pic.HoverImage);
-                pic.Image = pic.MainImage;
-                pic.MouseDown += Pic_MouseDown;
-                prog++;
-                ImportProcessor.ReportProgress(prog * 100 / ((List<HoverablePicBox>)e.Argument).Count);
-            }
-            PicsToAdd = (List<HoverablePicBox>)e.Argument;
-        }
-
-        private void ImportProcessor_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            ImportBar.Value = Math.Min(100, e.ProgressPercentage);
-            ImportLabel.Text = "Mapifying... (" + e.ProgressPercentage.ToString() + "%)";
-        }
-
-        private void ImportProcessor_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            PictureZone.Controls.AddRange(PicsToAdd.ToArray());
-            PictureZone_Layout(null, null);
-            ImportBar.Visible = false;
-            ImportLabel.Visible = false;
-            OpenButton.Enabled = true;
-            ExportButton.Enabled = true;
-        }
-
+        // called when the form is resized so we can arrange the map previews
         private void PictureZone_Layout(object sender, LayoutEventArgs e)
         {
             int x = 10;
             int y = 10;
-            foreach (HoverablePicBox box in PicBoxes)
+            foreach (MapPreviewBox box in PicBoxes)
             {
                 if (x + box.Width > PictureZone.Width)
                 {
@@ -529,44 +228,10 @@ namespace Image_Map
                 x += box.Width + 10;
             }
         }
-    }
 
-    public class InterpPictureBox : PictureBox
-    {
-        private InterpolationMode InterpPrivate;
-        public InterpolationMode Interp
+        private void BedrockCheck_CheckedChanged(object sender, EventArgs e)
         {
-            get => InterpPrivate;
-            set { InterpPrivate = value; this.Refresh(); }
-        }
-        protected override void OnPaint(PaintEventArgs paintEventArgs)
-        {
-            paintEventArgs.Graphics.InterpolationMode = Interp;
-            base.OnPaint(paintEventArgs);
-        }
-    }
-
-    public class HoverablePicBox : InterpPictureBox
-    {
-        public Image MainImage;
-        public Image HoverImage;
-        public HoverablePicBox(Image main, Image hover)
-        {
-            MainImage = main;
-            HoverImage = hover;
-            Image = MainImage;
-            MouseEnter += BetterPicBox_MouseEnter;
-            MouseLeave += BetterPicBox_MouseLeave;
-        }
-
-        private void BetterPicBox_MouseLeave(object sender, EventArgs e)
-        {
-            Image = MainImage;
-        }
-
-        private void BetterPicBox_MouseEnter(object sender, EventArgs e)
-        {
-            Image = HoverImage;
+            UpdateBoxImages();
         }
     }
 }

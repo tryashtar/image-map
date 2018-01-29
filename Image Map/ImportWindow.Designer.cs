@@ -30,16 +30,17 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ImportWindow));
             this.CurrentIndexLabel = new System.Windows.Forms.Label();
-            this.PreviewBox = new Image_Map.InterpPictureBox();
             this.InterpolationModeBox = new System.Windows.Forms.ComboBox();
             this.WidthInput = new System.Windows.Forms.NumericUpDown();
             this.HeightInput = new System.Windows.Forms.NumericUpDown();
             this.ConfirmButton = new System.Windows.Forms.Button();
             this.CancellationButton = new System.Windows.Forms.Button();
             this.ApplyAllCheck = new System.Windows.Forms.CheckBox();
-            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).BeginInit();
+            this.RotateButton = new System.Windows.Forms.Button();
+            this.PreviewBox = new Image_Map.InterpPictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.WidthInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightInput)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).BeginInit();
             this.SuspendLayout();
             // 
             // CurrentIndexLabel
@@ -51,18 +52,6 @@
             this.CurrentIndexLabel.Size = new System.Drawing.Size(66, 31);
             this.CurrentIndexLabel.TabIndex = 0;
             this.CurrentIndexLabel.Text = "0 / 0";
-            // 
-            // PreviewBox
-            // 
-            this.PreviewBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.PreviewBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.PreviewBox.Location = new System.Drawing.Point(303, 12);
-            this.PreviewBox.Name = "PreviewBox";
-            this.PreviewBox.Size = new System.Drawing.Size(167, 164);
-            this.PreviewBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.PreviewBox.TabIndex = 1;
-            this.PreviewBox.TabStop = false;
-            this.PreviewBox.Paint += new System.Windows.Forms.PaintEventHandler(this.PreviewBox_Paint);
             // 
             // InterpolationModeBox
             // 
@@ -128,11 +117,11 @@
             this.ConfirmButton.UseVisualStyleBackColor = true;
             this.ConfirmButton.Click += new System.EventHandler(this.ConfirmButton_Click);
             // 
-            // CancelButton
+            // CancellationButton
             // 
             this.CancellationButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F);
             this.CancellationButton.Location = new System.Drawing.Point(228, 300);
-            this.CancellationButton.Name = "CancelButton";
+            this.CancellationButton.Name = "CancellationButton";
             this.CancellationButton.Size = new System.Drawing.Size(158, 59);
             this.CancellationButton.TabIndex = 6;
             this.CancellationButton.Text = "Cancel";
@@ -150,11 +139,36 @@
             this.ApplyAllCheck.Text = "Apply to All";
             this.ApplyAllCheck.UseVisualStyleBackColor = true;
             // 
+            // RotateButton
+            // 
+            this.RotateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F);
+            this.RotateButton.Location = new System.Drawing.Point(266, 201);
+            this.RotateButton.Name = "RotateButton";
+            this.RotateButton.Size = new System.Drawing.Size(49, 39);
+            this.RotateButton.TabIndex = 8;
+            this.RotateButton.Text = "↻";
+            this.RotateButton.UseVisualStyleBackColor = true;
+            this.RotateButton.Click += new System.EventHandler(this.RotateButton_Click);
+            // 
+            // PreviewBox
+            // 
+            this.PreviewBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.PreviewBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.PreviewBox.Interp = System.Drawing.Drawing2D.InterpolationMode.Default;
+            this.PreviewBox.Location = new System.Drawing.Point(303, 12);
+            this.PreviewBox.Name = "PreviewBox";
+            this.PreviewBox.Size = new System.Drawing.Size(167, 164);
+            this.PreviewBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.PreviewBox.TabIndex = 1;
+            this.PreviewBox.TabStop = false;
+            this.PreviewBox.Paint += new System.Windows.Forms.PaintEventHandler(this.PreviewBox_Paint);
+            // 
             // ImportWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(838, 402);
+            this.Controls.Add(this.RotateButton);
             this.Controls.Add(this.ApplyAllCheck);
             this.Controls.Add(this.CancellationButton);
             this.Controls.Add(this.ConfirmButton);
@@ -166,9 +180,9 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ImportWindow";
             this.Text = "Import";
-            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.WidthInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightInput)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -184,5 +198,6 @@
         private System.Windows.Forms.Button ConfirmButton;
         private System.Windows.Forms.Button CancellationButton;
         public System.Windows.Forms.CheckBox ApplyAllCheck;
+        private System.Windows.Forms.Button RotateButton;
     }
 }

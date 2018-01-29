@@ -16,7 +16,7 @@ namespace Image_Map
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new TheForm(args));
+            Application.Run(new Form1(args));
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Image_Map
 {
-    partial class TheForm
+    partial class Form1
     {
         /// <summary>
         /// Required designer variable.
@@ -28,13 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.OpenButton = new System.Windows.Forms.Button();
             this.ExportButton = new System.Windows.Forms.Button();
             this.PictureZone = new System.Windows.Forms.Panel();
             this.ImportBar = new System.Windows.Forms.ProgressBar();
             this.ImportLabel = new System.Windows.Forms.Label();
-            this.ImportProcessor = new System.ComponentModel.BackgroundWorker();
             this.BedrockCheck = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
@@ -73,7 +72,7 @@
             this.PictureZone.Location = new System.Drawing.Point(175, 10);
             this.PictureZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.PictureZone.Name = "PictureZone";
-            this.PictureZone.Size = new System.Drawing.Size(794, 444);
+            this.PictureZone.Size = new System.Drawing.Size(788, 444);
             this.PictureZone.TabIndex = 2;
             this.PictureZone.Layout += new System.Windows.Forms.LayoutEventHandler(this.PictureZone_Layout);
             // 
@@ -99,13 +98,6 @@
             this.ImportLabel.Text = "Mapifying...";
             this.ImportLabel.Visible = false;
             // 
-            // ImportProcessor
-            // 
-            this.ImportProcessor.WorkerReportsProgress = true;
-            this.ImportProcessor.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ImportProcessor_DoWork);
-            this.ImportProcessor.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.ImportProcessor_ProgressChanged);
-            this.ImportProcessor.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ImportProcessor_RunWorkerCompleted);
-            // 
             // BedrockCheck
             // 
             this.BedrockCheck.AutoSize = true;
@@ -116,6 +108,7 @@
             this.BedrockCheck.TabIndex = 9;
             this.BedrockCheck.Text = "Bedrock\r\nEdition";
             this.BedrockCheck.UseVisualStyleBackColor = true;
+            this.BedrockCheck.CheckedChanged += new System.EventHandler(this.BedrockCheck_CheckedChanged);
             // 
             // TheForm
             // 
@@ -130,6 +123,7 @@
             this.Controls.Add(this.OpenButton);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.MinimumSize = new System.Drawing.Size(400, 250);
             this.Name = "TheForm";
             this.Text = "Image Map";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
@@ -146,7 +140,6 @@
         private System.Windows.Forms.Panel PictureZone;
         private System.Windows.Forms.ProgressBar ImportBar;
         private System.Windows.Forms.Label ImportLabel;
-        private System.ComponentModel.BackgroundWorker ImportProcessor;
         private System.Windows.Forms.CheckBox BedrockCheck;
     }
 }

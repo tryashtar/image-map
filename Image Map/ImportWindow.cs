@@ -16,7 +16,8 @@ namespace Image_Map
     {
         int EditingIndex = 0;
         public List<Image> InputImages;
-        public List<HoverablePicBox> OutputBoxes = new List<HoverablePicBox>();
+        public List<MapPreviewBox> OutputBoxes = new List<MapPreviewBox>();
+        RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
         public ImportWindow()
         {
             InitializeComponent();
@@ -28,6 +29,7 @@ namespace Image_Map
             OutputBoxes.Clear();
             EditingIndex = 0;
             PreviewBox.Image = InputImages[0];
+            PreviewBox.Interp = GetInterpolationMode();
             CurrentIndexLabel.Text = $"1 / {InputImages.Count}";
             CurrentIndexLabel.Visible = (InputImages.Count > 1);
             ApplyAllCheck.Visible = (InputImages.Count > 1);
@@ -41,7 +43,10 @@ namespace Image_Map
                 Finish();
             else
             {
+                Rotation = RotateFlipType.RotateNoneFlipNone;
                 PreviewBox.Image = InputImages[EditingIndex];
+                PreviewBox.Interp = GetInterpolationMode();
+                InputImages[EditingIndex].RotateFlip(Rotation);
                 CurrentIndexLabel.Text = $"{EditingIndex + 1} / {InputImages.Count}";
             }
         }
@@ -76,30 +81,30 @@ namespace Image_Map
             }
         }
 
-        private InterpolationMode GetInterpolationMode(Image img)
+        private InterpolationMode GetInterpolationMode()
         {
             if (InterpolationModeBox.SelectedIndex == 1)
                 return InterpolationMode.NearestNeighbor;
             else if (InterpolationModeBox.SelectedIndex == 2)
                 return InterpolationMode.HighQualityBicubic;
             else // automatic
-                return (img.Height > 128 && img.Width > 128) ? InterpolationMode.HighQualityBicubic : InterpolationMode.NearestNeighbor;
+                return (InputImages[EditingIndex].Height > 128 && InputImages[EditingIndex].Width > 128) ? InterpolationMode.HighQualityBicubic : InterpolationMode.NearestNeighbor;
         }
 
         private void InterpolationModeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (PreviewBox.Image == null)
                 return;
-            PreviewBox.Interp = GetInterpolationMode(PreviewBox.Image);
+            PreviewBox.Interp = GetInterpolationMode();
         }
 
-        private static Image CropImage(Image img, Rectangle cropArea)
+        private static Bitmap CropImage(Image img, Rectangle cropArea)
         {
             Bitmap bmpImage = new Bitmap(img);
-            return (Image)bmpImage.Clone(cropArea, PixelFormat.DontCare);
+            return bmpImage.Clone(cropArea, PixelFormat.DontCare);
         }
 
-        private static Image ResizeImg(Image image, int width, int height, InterpolationMode mode)
+        private static Bitmap ResizeImg(Image image, int width, int height, InterpolationMode mode)
         {
             var destRect = new Rectangle(0, 0, width, height);
             var destImage = new Bitmap(width, height);
@@ -130,8 +135,10 @@ namespace Image_Map
             int final = ApplyAllCheck.Checked ? InputImages.Count - 1 : EditingIndex;
             for (int i = index; i <= final; i++)
             {
-                List<Image> slices = new List<Image>();
-                Image img = ResizeImg(InputImages[i], (int)(128 * WidthInput.Value), (int)(128 * HeightInput.Value), GetInterpolationMode(InputImages[i]));
+                if (i > index)
+                    InputImages[i].RotateFlip(Rotation);
+                List<Bitmap> slices = new List<Bitmap>();
+                Bitmap img = ResizeImg(InputImages[i], (int)(128 * WidthInput.Value), (int)(128 * HeightInput.Value), GetInterpolationMode());
                 for (int y = 0; y < HeightInput.Value; y++)
                 {
                     for (int x = 0; x < WidthInput.Value; x++)
@@ -143,16 +150,14 @@ namespace Image_Map
                             (int)(img.Height / HeightInput.Value))));
                     }
                 }
-                foreach (Image image in slices)
+                foreach (Bitmap image in slices)
                 {
-                    InterpolationMode interp = GetInterpolationMode(image);
-                    HoverablePicBox pic = new HoverablePicBox(null, image)
+                    MapPreviewBox pic = new MapPreviewBox(image)
                     {
                         Width = 128,
                         Height = 128,
                         SizeMode = PictureBoxSizeMode.Zoom,
-                        BorderStyle = BorderStyle.FixedSingle,
-                        Interp = interp
+                        BorderStyle = BorderStyle.FixedSingle
                     };
                     OutputBoxes.Add(pic);
                 }
@@ -167,6 +172,20 @@ namespace Image_Map
                 Finish();
             else
                 ProcessNextImage();
+        }
+
+        private void RotateButton_Click(object sender, EventArgs e)
+        {
+            if (Rotation == RotateFlipType.RotateNoneFlipNone)
+                Rotation = RotateFlipType.Rotate90FlipNone;
+            else if (Rotation == RotateFlipType.Rotate90FlipNone)
+                Rotation = RotateFlipType.Rotate180FlipNone;
+            else if (Rotation == RotateFlipType.Rotate180FlipNone)
+                Rotation = RotateFlipType.Rotate270FlipNone;
+            else if (Rotation == RotateFlipType.Rotate270FlipNone)
+                Rotation = RotateFlipType.RotateNoneFlipNone;
+            InputImages[EditingIndex].RotateFlip(RotateFlipType.Rotate90FlipNone);
+            PreviewBox.Refresh();
         }
     }
 }
