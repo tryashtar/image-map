@@ -10,7 +10,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Image_Map
 {
-    public partial class Form1 : Form
+    public partial class TheForm : Form
     {
         string LastOpenPath = "";
         string LastExportPath = "";
@@ -29,7 +29,7 @@ namespace Image_Map
         };
         ImportWindow ImportDialog = new ImportWindow();
         List<MapPreviewBox> PicBoxes = new List<MapPreviewBox>();
-        public Form1(string[] args)
+        public TheForm(string[] args)
         {
             InitializeComponent();
             OpenArgs = args;

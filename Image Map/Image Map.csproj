@@ -70,11 +70,11 @@
     <Compile Include="FixImageDialog.Designer.cs">
       <DependentUpon>FixImageDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="TheForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="TheForm.Designer.cs">
+      <DependentUpon>TheForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ImportWindow.cs">
       <SubType>Form</SubType>
@@ -94,8 +94,8 @@
     <EmbeddedResource Include="FixImageDialog.resx">
       <DependentUpon>FixImageDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="TheForm.resx">
+      <DependentUpon>TheForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ImportWindow.resx">
       <DependentUpon>ImportWindow.cs</DependentUpon>
