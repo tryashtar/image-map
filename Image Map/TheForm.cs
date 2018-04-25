@@ -7,6 +7,12 @@ using System.Windows.Forms;
 using fNbt;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
+using System.Linq;
+
+// TO DO:
+// returning picboxes is stupid, the import thing should accept and produce images
+
 
 namespace Image_Map
 {
@@ -56,34 +62,28 @@ namespace Image_Map
         // load up images from paths, let the user modify them, and send them to processing
         private void ImportImages(string[] paths)
         {
-            var images = new List<Image>();
-            foreach (string path in paths)
+            var images = paths.Select(x => Image.FromFile(x));
+            ImportDialog.StartImports(this, images.ToList());
+            Edition edition = GetCurrentEdition();
+            foreach (var image in ImportDialog.OutputImages)
             {
-                Image img = Image.FromFile(path);
-                images.Add(img);
-            }
-            ImportDialog.InputImages = images;
-            ImportDialog.StartImports(this);
-            var newboxes = ImportDialog.OutputBoxes;
-            if (newboxes.Count > 0)
-            {
-                PicBoxes.AddRange(newboxes);
-                PictureZone.Controls.AddRange(newboxes.ToArray());
-                UpdateBoxImages();
-                foreach (var box in newboxes)
+                MapPreviewBox pic = new MapPreviewBox(image, edition)
                 {
-                    box.MouseDown += Pic_MouseDown;
-                }
-                ExportButton.Enabled = PicBoxes.Count > 0;
+                    Width = 128,
+                    Height = 128,
+                    SizeMode = PictureBoxSizeMode.Zoom,
+                    BorderStyle = BorderStyle.FixedSingle
+                };
+                PicBoxes.Add(pic);
+                PictureZone.Controls.Add(pic);
+                pic.MouseDown += Pic_MouseDown;
             }
+            ExportButton.Enabled = PicBoxes.Count > 0;
         }
 
-        private void UpdateBoxImages()
+        private Edition GetCurrentEdition()
         {
-            foreach (var box in PicBoxes)
-            {
-                box.ViewingJava = !BedrockCheck.Checked;
-            }
+            return BedrockCheck.Checked ? Edition.Bedrock : Edition.Java;
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
@@ -115,7 +115,7 @@ namespace Image_Map
             // for bedrock, maps must be embedded in the world, and the worlds folder is permanent
             // therefore it is opened every time for convenience
             if (BedrockCheck.Checked)
-                ExportDialog.InitialDirectory = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
+                ExportDialog.InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
             else
                 ExportDialog.InitialDirectory = LastExportPath;
             ExportDialog.FileName = "map_0.dat";
@@ -135,20 +135,18 @@ namespace Image_Map
                         string db = Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "db");
                         if (!Directory.Exists(db))
                             throw new ApplicationException("no leveldb found");
-                        bedrockdb = new LevelDB.DB(new LevelDB.Options() { CreateIfMissing = false }, db);
+                        bedrockdb = new LevelDB.DB(new LevelDB.Options(), db);
                     }
                     catch (ApplicationException)
                     {
                         MessageBox.Show("Bedrock Edition maps must be embedded directly in the world.\n\nPlease save your map file directly inside a Bedrock world folder.", "Not a valid world!");
                         return;
                     }
-                    byte[] playerdata = Encoding.Default.GetBytes(bedrockdb.Get("~local_player"));
-                    NbtFile file = new NbtFile();
-                    file.BigEndian = false;
-                    file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
+                    var file = MapHelpers.GetBedrockNbtFile(bedrockdb, "~local_player");
                     NbtCompound chestslot = null;
                     NbtList items = null;
                     byte slot = 0;
+                    LevelDB.WriteBatch allmaps = new LevelDB.WriteBatch();
                     foreach (MapPreviewBox box in PicBoxes)
                     {
                         if (slot == 0)
@@ -170,8 +168,8 @@ namespace Image_Map
                             items = new NbtList("Items", NbtTagType.Compound);
                             chestslot.Add(new NbtCompound("tag") { items });
                         }
-                        try { MapHelpers.SaveBedrockMapFile(new Bitmap(box.BedrockImage), mapid, bedrockdb); }
-                        catch (AccessViolationException) { MessageBox.Show("Something went horribly wrong and we can't export your maps.\n\nIt's usually a problem with the image itself, but that's all I know.","I hate this error!"); }
+                        var map = MapHelpers.MakeBedrockMapFile(new Bitmap(box.BedrockImage), mapid);
+                        allmaps.Put(map.Key, map.Value);
                         items.Add(new NbtCompound()
                         {
                             new NbtByte("Count", 1),
@@ -186,14 +184,14 @@ namespace Image_Map
                         if (slot >= 27)
                             slot = 0;
                     }
-                    bedrockdb.Put("~local_player", Encoding.Default.GetString(file.SaveToBuffer(NbtCompression.None)));
+                    bedrockdb.Write(allmaps);
                     bedrockdb.Dispose();
                 }
                 else // java saving
                 {
                     foreach (MapPreviewBox box in PicBoxes)
                     {
-                        MapHelpers.SaveJavaMapFile(new Bitmap(box.JavaImage), Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + mapid.ToString() + ".dat"));
+                        MapHelpers.MakeJavaMapFile(new Bitmap(box.JavaImage)).SaveToFile(Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + mapid.ToString() + ".dat"), NbtCompression.GZip);
                         mapid++;
                     }
                 }
@@ -211,27 +209,13 @@ namespace Image_Map
             Properties.Settings.Default.Save();
         }
 
-        // called when the form is resized so we can arrange the map previews
-        private void PictureZone_Layout(object sender, LayoutEventArgs e)
-        {
-            int x = 10;
-            int y = 10;
-            foreach (MapPreviewBox box in PicBoxes)
-            {
-                if (x + box.Width > PictureZone.Width)
-                {
-                    x = 10;
-                    y += box.Height + 10;
-                }
-                box.Left = x;
-                box.Top = y - PictureZone.VerticalScroll.Value;
-                x += box.Width + 10;
-            }
-        }
-
         private void BedrockCheck_CheckedChanged(object sender, EventArgs e)
         {
-            UpdateBoxImages();
+            Edition edition = GetCurrentEdition();
+            foreach (var box in PicBoxes)
+            {
+                box.ViewEdition(edition);
+            }
         }
     }
 }

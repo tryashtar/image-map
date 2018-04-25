@@ -6,6 +6,12 @@ using System.Text;
 
 namespace Image_Map
 {
+    public enum Edition
+    {
+        Java,
+        Bedrock
+    }
+
     static class MapHelpers
     {
         static Dictionary<Color, byte> ColorMap;
@@ -275,16 +281,16 @@ namespace Image_Map
         // seems to work legitimately better and quicker than more sophisticated algorithms
         static double ColorDistance(Color e1, Color e2)
         {
-            long rmean = ((long)e1.R + (long)e2.R) / 2;
-            long r = (long)e1.R - (long)e2.R;
-            long g = (long)e1.G - (long)e2.G;
-            long b = (long)e1.B - (long)e2.B;
+            long rmean = ((long)e1.R + e2.R) / 2;
+            long r = (long)e1.R - e2.R;
+            long g = (long)e1.G - e2.G;
+            long b = (long)e1.B - e2.B;
             return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
         }
 
         // save a 128*128 image to a map.dat file for java
-        // ensure all the colors are in the palette beforehand (using mapify)
-        public static void SaveJavaMapFile(Bitmap bmp, string path)
+        // ensure all the colors are in the palette before calling this (using mapify)
+        public static NbtFile MakeJavaMapFile(Bitmap bmp)
         {
             byte[] mapbytes = new byte[128 * 128];
             for (int i = 0; i < 128; i++)
@@ -313,12 +319,11 @@ namespace Image_Map
                     new NbtByteArray("colors", mapbytes)
                 }
             };
-            NbtFile file = new NbtFile(map);
-            file.SaveToFile(path, NbtCompression.GZip);
+            return new NbtFile(map);
         }
 
-        // open a bedrock level and save a 128*128 image as a map
-        public static void SaveBedrockMapFile(Bitmap bmp, int number, LevelDB.DB bedrockdb)
+        // save a 128*128 image as a key/value pair ready to be added to a leveldb
+        public static KeyValuePair<string, string> MakeBedrockMapFile(Bitmap bmp, int number)
         {
             byte[] mapbytes = new byte[128 * 128 * 4];
             for (int i = 0; i < 128; i++)
@@ -326,12 +331,13 @@ namespace Image_Map
                 for (int j = 0; j < 128; j++)
                 {
                     Color pixel = bmp.GetPixel(j, i);
-                    mapbytes[(128 * 4 * i) + (4 * j)] = pixel.R;
-                    mapbytes[(128 * 4 * i) + (4 * j) + 1] = pixel.G;
-                    mapbytes[(128 * 4 * i) + (4 * j) + 2] = pixel.B;
+                    int byteindex = (128 * 4 * i) + (4 * j);
+                    mapbytes[byteindex] = pixel.R;
+                    mapbytes[byteindex + 1] = pixel.G;
+                    mapbytes[byteindex + 2] = pixel.B;
                     // saving the alpha works just fine, but bedrock renders each pixel fully solid or transparent
                     // it rounds (<128: invisible, >=128: solid)
-                    mapbytes[(128 * 4 * i) + (4 * j) + 3] = pixel.A;
+                    mapbytes[byteindex + 3] = pixel.A;
                 }
             }
             NbtCompound map = new NbtCompound("map")
@@ -352,7 +358,21 @@ namespace Image_Map
             NbtFile file = new NbtFile(map);
             file.BigEndian = false;
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            bedrockdb.Put("map_" + number, Encoding.Default.GetString(bytes));
+            return new KeyValuePair<string, string>("map_" + number, Encoding.Unicode.GetString(bytes));
+        }
+
+        public static NbtFile GetBedrockNbtFile(LevelDB.DB level, string name)
+        {
+            byte[] playerdata = Encoding.Unicode.GetBytes(level.Get("~local_player"));
+            NbtFile file = new NbtFile();
+            file.BigEndian = false;
+            file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
+            return file;
+        }
+
+        public static void SetBedrockNbtFile(LevelDB.DB level, NbtFile file, string name)
+        {
+            level.Put(name, Encoding.Unicode.GetString(file.SaveToBuffer(NbtCompression.None)));
         }
     }
 }

@@ -31,7 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForm));
             this.OpenButton = new System.Windows.Forms.Button();
             this.ExportButton = new System.Windows.Forms.Button();
-            this.PictureZone = new System.Windows.Forms.Panel();
+            this.PictureZone = new System.Windows.Forms.FlowLayoutPanel();
             this.ImportBar = new System.Windows.Forms.ProgressBar();
             this.ImportLabel = new System.Windows.Forms.Label();
             this.BedrockCheck = new System.Windows.Forms.CheckBox();
@@ -74,7 +74,6 @@
             this.PictureZone.Name = "PictureZone";
             this.PictureZone.Size = new System.Drawing.Size(788, 444);
             this.PictureZone.TabIndex = 2;
-            this.PictureZone.Layout += new System.Windows.Forms.LayoutEventHandler(this.PictureZone_Layout);
             // 
             // ImportBar
             // 
@@ -137,7 +136,7 @@
 
         private System.Windows.Forms.Button OpenButton;
         private System.Windows.Forms.Button ExportButton;
-        private System.Windows.Forms.Panel PictureZone;
+        private System.Windows.Forms.FlowLayoutPanel PictureZone;
         private System.Windows.Forms.ProgressBar ImportBar;
         private System.Windows.Forms.Label ImportLabel;
         private System.Windows.Forms.CheckBox BedrockCheck;

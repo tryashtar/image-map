@@ -15,8 +15,8 @@ namespace Image_Map
     public partial class ImportWindow : Form
     {
         int EditingIndex = 0;
-        public List<Image> InputImages;
-        public List<MapPreviewBox> OutputBoxes = new List<MapPreviewBox>();
+        private List<Image> InputImages;
+        public List<Bitmap> OutputImages = new List<Bitmap>();
         RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
         public ImportWindow()
         {
@@ -24,9 +24,10 @@ namespace Image_Map
             InterpolationModeBox.SelectedIndex = 0;
         }
 
-        public void StartImports(Form parent)
+        public void StartImports(Form parent, List<Image> images)
         {
-            OutputBoxes.Clear();
+            InputImages = images;
+            OutputImages.Clear();
             EditingIndex = 0;
             PreviewBox.Image = InputImages[0];
             PreviewBox.Interp = GetInterpolationMode();
@@ -137,29 +138,17 @@ namespace Image_Map
             {
                 if (i > index)
                     InputImages[i].RotateFlip(Rotation);
-                List<Bitmap> slices = new List<Bitmap>();
                 Bitmap img = ResizeImg(InputImages[i], (int)(128 * WidthInput.Value), (int)(128 * HeightInput.Value), GetInterpolationMode());
                 for (int y = 0; y < HeightInput.Value; y++)
                 {
                     for (int x = 0; x < WidthInput.Value; x++)
                     {
-                        slices.Add(CropImage(img, new Rectangle(
+                        OutputImages.Add(CropImage(img, new Rectangle(
                             (int)(x * img.Width / WidthInput.Value),
                             (int)(y * img.Height / HeightInput.Value),
                             (int)(img.Width / WidthInput.Value),
                             (int)(img.Height / HeightInput.Value))));
                     }
-                }
-                foreach (Bitmap image in slices)
-                {
-                    MapPreviewBox pic = new MapPreviewBox(image)
-                    {
-                        Width = 128,
-                        Height = 128,
-                        SizeMode = PictureBoxSizeMode.Zoom,
-                        BorderStyle = BorderStyle.FixedSingle
-                    };
-                    OutputBoxes.Add(pic);
                 }
             }
             EditingIndex = final;

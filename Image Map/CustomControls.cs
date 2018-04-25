@@ -29,20 +29,9 @@ namespace Image_Map
         public Bitmap JavaImage { get; private set; }
         public Bitmap BedrockImage { get; private set; }
         private BackgroundWorker ImageSetter = new BackgroundWorker();
-        private bool viewingjava;
-        public bool ViewingJava
-        {
-            get => viewingjava;
-            set
-            {
-                viewingjava = value;
-                if ((viewingjava && JavaImage == null) || (!viewingjava && BedrockImage == null))
-                    ImageSetter.RunWorkerAsync();
-                UpdateMainImage();
-            }
-        }
+        public Edition ViewingEdition { get; private set; }
 
-        public MapPreviewBox(Bitmap original)
+        public MapPreviewBox(Bitmap original, Edition start)
         {
             OriginalImage = original;
             Image = original;
@@ -50,6 +39,15 @@ namespace Image_Map
             MouseLeave += MapPreviewBox_MouseLeave;
             ImageSetter.DoWork += ImageSetter_DoWork;
             ImageSetter.RunWorkerCompleted += ImageSetter_RunWorkerCompleted;
+            ViewEdition(start);
+        }
+
+        public void ViewEdition(Edition view)
+        {
+            ViewingEdition = view;
+            if ((view == Edition.Java && JavaImage == null) || (view == Edition.Bedrock && BedrockImage == null))
+                ImageSetter.RunWorkerAsync();
+            UpdateMainImage();
         }
 
         private void UpdateMainImage()
@@ -67,17 +65,17 @@ namespace Image_Map
 
         private void ImageSetter_DoWork(object sender, DoWorkEventArgs e)
         {
-            if (viewingjava)
+            if (ViewingEdition == Edition.Java)
                 JavaImage = MapHelpers.JavaMapify(OriginalImage);
-            else
+            else if (ViewingEdition == Edition.Bedrock)
                 BedrockImage = MapHelpers.BedrockMapify(OriginalImage);
         }
 
         private void MapPreviewBox_MouseLeave(object sender, EventArgs e)
         {
-            if (viewingjava)
+            if (ViewingEdition == Edition.Java)
                 Image = JavaImage;
-            else
+            else if (ViewingEdition == Edition.Bedrock)
                 Image = BedrockImage;
         }
 
