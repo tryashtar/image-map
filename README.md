@@ -1,9 +1,9 @@
-## Image Map
-This is a program that lets you convert images to Minecraft maps using the latest colors. It works for Java Edition 1.12+ and Bedrock (inferior Windows 10 Edition).  
-Click here to download the latest version:  
-https://github.com/tryashtar/image-map/raw/master/Image%20Map/bin/Debug/Image%20Map.exe
+# <img src="https://i.imgur.com/E6BqiuN.png" width=48> Image Map
+### [Download link](https://github.com/tryashtar/image-map/releases)
 
-## How to use
+This is a simple Windows application that converts images to Minecraft maps using the latest colors. It works for Java Edition 1.12+ and Bedrock (inferior Windows 10 Edition).  
+
+### How to Use
 Click `Open`, then browse for any number of image files. For each image, you'll be able to change some import settings.
 * **Scaling Mode** (defaults to "Automatic"): You usually don't want to touch this, but if your images are looking blurry or pixelated, try changing it.
 * **Rotate Button**: Press this to rotate the image by 90 degrees clockwise.
@@ -16,11 +16,11 @@ Click `Export`, and browse somewhere to save all the images as map files. To put
 
 Enter your world and a chest should be in your inventory containing your maps!
 
-## Showcase
+### Showcase
 The following is a comparison of this program's map output compared to the most commonly used image-to-map program, [ImageToMapX](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-tools/1261738), which still uses pre-1.12 colors.
 
-### This program
+#### This program
 <img src="http://i.imgur.com/2hLXneF.png" width="480" height="270"/>
 
-### ImageToMapX
+#### ImageToMapX
 <img src="http://i.imgur.com/UBN7uGL.png" width="480" height="270"/>
