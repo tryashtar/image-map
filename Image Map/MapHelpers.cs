@@ -2,20 +2,66 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 
 namespace Image_Map
 {
-    public enum Edition
+    public abstract class Map
     {
-        Java,
-        Bedrock
+        public byte[] Colors { get; protected set; }
+        public Bitmap Image { get; protected set; }
+        public Map(Bitmap original)
+        {
+            if (original.Height != 128 || original.Width != 128)
+                throw new ArgumentException($"invalid image dimensions: {original.Size} is not {new Size(128, 128)}");
+        }
     }
 
-    static class MapHelpers
+    public class JavaMap : Map
     {
-        static Dictionary<Color, byte> ColorMap;
-        static MapHelpers()
+        public JavaMap(Bitmap original) : base(original)
+        {
+            #region java map algorithm
+            Image = (Bitmap)original.Clone();
+            Colors = new byte[128 * 128];
+
+            for (int i = 0; i < Image.Width; i++)
+            {
+                for (int j = 0; j < Image.Height; j++)
+                {
+                    Color realpixel = Image.GetPixel(i, j);
+                    Color nearest = Color.Empty;
+                    // partial transparency is not allowed
+                    if (realpixel.A < 128)
+                        nearest = Color.FromArgb(0, 0, 0, 0);
+                    else
+                    {
+                        double mindist = Double.PositiveInfinity;
+                        // find the color in the palette that is closest to this one
+                        foreach (Color mapcolor in ColorMap.Keys)
+                        {
+                            double distance = ColorDistance(realpixel, mapcolor);
+                            if (mindist > distance)
+                            {
+                                mindist = distance;
+                                nearest = mapcolor;
+                            }
+                        }
+                    }
+                    Image.SetPixel(i, j, nearest);
+                    if (nearest == Color.FromArgb(0, 0, 0, 0))
+                        Colors[128 * i + j] = 0x00;
+                    else
+                        Colors[128 * i + j] = ColorMap[nearest];
+                }
+            }
+            #endregion
+        }
+
+        #region map conversion helpers
+        private static Dictionary<Color, byte> ColorMap;
+        static JavaMap()
         {
             // java's color map: stores the bytes and the RGB color they correspond to on a map
             ColorMap = new Dictionary<Color, byte>()
@@ -229,57 +275,9 @@ namespace Image_Map
             };
         }
 
-        // alters an image such that it appears as bedrock will render it
-        // there's probably a faster way to do this
-        public static Bitmap BedrockMapify(Bitmap input)
-        {
-            Bitmap img = new Bitmap(input);
-            for (int i = 0; i < img.Width; i++)
-            {
-                for (int j = 0; j < img.Height; j++)
-                {
-                    Color pixelcolor = img.GetPixel(i, j);
-                    img.SetPixel(i, j, Color.FromArgb(pixelcolor.A < 128 ? 0 : 255, pixelcolor.R, pixelcolor.G, pixelcolor.B));
-                }
-            }
-            return img;
-        }
-
-        // alters an image such that all its colors are in the java color palette
-        public static Bitmap JavaMapify(Bitmap input)
-        {
-            Bitmap img = new Bitmap(input);
-            for (int i = 0; i < img.Width; i++)
-            {
-                for (int j = 0; j < img.Height; j++)
-                {
-                    Color pixelcolor = img.GetPixel(i, j);
-                    if (pixelcolor.A < 128)
-                    {
-                        img.SetPixel(i, j, Color.FromArgb(0, 0, 0, 0));
-                        continue;
-                    }
-                    double mindist = Double.PositiveInfinity;
-                    Color col = Color.Empty;
-                    // find the color in the palette that is closest to this one
-                    foreach (Color mapcolor in ColorMap.Keys)
-                    {
-                        double distance = ColorDistance(pixelcolor, mapcolor);
-                        if (mindist > distance)
-                        {
-                            mindist = distance;
-                            col = mapcolor;
-                        }
-                    }
-                    img.SetPixel(i, j, col);
-                }
-            }
-            return img;
-        }
-
         // color distance algorithm I stole from https://stackoverflow.com/a/33782458
         // seems to work legitimately better and quicker than more sophisticated algorithms
-        static double ColorDistance(Color e1, Color e2)
+        private static double ColorDistance(Color e1, Color e2)
         {
             long rmean = ((long)e1.R + e2.R) / 2;
             long r = (long)e1.R - e2.R;
@@ -287,24 +285,68 @@ namespace Image_Map
             long b = (long)e1.B - e2.B;
             return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
         }
+        #endregion
+    }
 
-        // save a 128*128 image to a map.dat file for java
-        // ensure all the colors are in the palette before calling this (using mapify)
-        public static NbtFile MakeJavaMapFile(Bitmap bmp)
+    public class BedrockMap : Map
+    {
+        public BedrockMap(Bitmap original) : base(original)
         {
-            byte[] mapbytes = new byte[128 * 128];
-            for (int i = 0; i < 128; i++)
+            #region bedrock map algorithm
+
+            Image = (Bitmap)original.Clone();
+            Colors = new byte[128 * 128 * 4];
+
+            for (int i = 0; i < Image.Width; i++)
             {
-                for (int j = 0; j < 128; j++)
+                for (int j = 0; j < Image.Height; j++)
                 {
-                    Color pixel = bmp.GetPixel(j, i);
-                    if (pixel == Color.FromArgb(0, 0, 0, 0))
-                        mapbytes[128 * i + j] = 0x00;
-                    else
-                        mapbytes[128 * i + j] = ColorMap[pixel];
+                    Color realpixel = Image.GetPixel(i, j);
+                    Color nearest = Color.FromArgb(realpixel.A < 128 ? 0 : 255, realpixel.R, realpixel.G, realpixel.B);
+                    Image.SetPixel(i, j, nearest);
+                    int byteindex = (128 * 4 * i) + (4 * j);
+                    Colors[byteindex] = nearest.R;
+                    Colors[byteindex + 1] = nearest.G;
+                    Colors[byteindex + 2] = nearest.B;
+                    // saving the alpha works just fine, but bedrock renders each pixel fully solid or transparent
+                    // it rounds (<128: invisible, >=128: solid)
+                    Colors[byteindex + 3] = nearest.A;
                 }
             }
-            NbtCompound map = new NbtCompound("map")
+            #endregion
+        }
+    }
+
+    public class DualEditionMap
+    {
+        public Bitmap OriginalImage { get; private set; }
+        private JavaMap JavaMap;
+        private BedrockMap BedrockMap;
+        public DualEditionMap(Bitmap image)
+        {
+            OriginalImage = image;
+        }
+
+        public JavaMap GetJavaMap()
+        {
+            if (JavaMap == null)
+                JavaMap = new JavaMap(OriginalImage);
+            return JavaMap;
+        }
+
+        public BedrockMap GetBedrockMap()
+        {
+            if (BedrockMap == null)
+                BedrockMap = new BedrockMap(OriginalImage);
+            return BedrockMap;
+        }
+    }
+
+    public static class MapFileSaver
+    {
+        public static void SaveJavaMapFile(JavaMap map, string path)
+        {
+            NbtCompound mapfile = new NbtCompound("map")
             {
                 new NbtCompound("data")
                 {
@@ -316,31 +358,15 @@ namespace Image_Map
                     new NbtByte("unlimitedTracking", 0),
                     new NbtInt("xCenter", Int32.MaxValue),
                     new NbtInt("zCenter", Int32.MaxValue),
-                    new NbtByteArray("colors", mapbytes)
+                    new NbtByteArray("colors", map.Colors)
                 }
             };
-            return new NbtFile(map);
+            new NbtFile(mapfile).SaveToFile(path, NbtCompression.GZip);
         }
 
-        // save a 128*128 image as a key/value pair ready to be added to a leveldb
-        public static KeyValuePair<string, string> MakeBedrockMapFile(Bitmap bmp, int number)
+        public static void SaveBedrockMapFile(BedrockMap map, LevelDB.DB db, int number)
         {
-            byte[] mapbytes = new byte[128 * 128 * 4];
-            for (int i = 0; i < 128; i++)
-            {
-                for (int j = 0; j < 128; j++)
-                {
-                    Color pixel = bmp.GetPixel(j, i);
-                    int byteindex = (128 * 4 * i) + (4 * j);
-                    mapbytes[byteindex] = pixel.R;
-                    mapbytes[byteindex + 1] = pixel.G;
-                    mapbytes[byteindex + 2] = pixel.B;
-                    // saving the alpha works just fine, but bedrock renders each pixel fully solid or transparent
-                    // it rounds (<128: invisible, >=128: solid)
-                    mapbytes[byteindex + 3] = pixel.A;
-                }
-            }
-            NbtCompound map = new NbtCompound("map")
+            NbtCompound mapfile = new NbtCompound("map")
             {
                 new NbtLong("mapId", number),
                 new NbtLong("parentMapId", -1),
@@ -353,26 +379,13 @@ namespace Image_Map
                 new NbtByte("unlimitedTracking", 0),
                 new NbtInt("xCenter", Int32.MaxValue),
                 new NbtInt("zCenter", Int32.MaxValue),
-                new NbtByteArray("colors", mapbytes)
+                new NbtByteArray("colors", map.Colors)
             };
-            NbtFile file = new NbtFile(map);
+            NbtFile file = new NbtFile(mapfile);
             file.BigEndian = false;
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            return new KeyValuePair<string, string>("map_" + number, Encoding.Unicode.GetString(bytes));
-        }
-
-        public static NbtFile GetBedrockNbtFile(LevelDB.DB level, string name)
-        {
-            byte[] playerdata = Encoding.Unicode.GetBytes(level.Get("~local_player"));
-            NbtFile file = new NbtFile();
-            file.BigEndian = false;
-            file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
-            return file;
-        }
-
-        public static void SetBedrockNbtFile(LevelDB.DB level, NbtFile file, string name)
-        {
-            level.Put(name, Encoding.Unicode.GetString(file.SaveToBuffer(NbtCompression.None)));
+            string encoded = Encoding.UTF8.GetString(bytes);
+            db.Put("map_" + number, encoded);
         }
     }
 }

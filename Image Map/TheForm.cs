@@ -11,7 +11,9 @@ using System.Runtime.InteropServices;
 using System.Linq;
 
 // TO DO:
-// returning picboxes is stupid, the import thing should accept and produce images
+// catch the "editing a store map" error and yell at the user instead
+// build DLLs with EXE
+// move ALL leveldb interfacing to maphelpers, these functions should be simple & clean
 
 
 namespace Image_Map
@@ -109,7 +111,6 @@ namespace Image_Map
             }
         }
 
-        [HandleProcessCorruptedStateExceptions]
         private void ExportButton_Click(object sender, EventArgs e)
         {
             // for bedrock, maps must be embedded in the world, and the worlds folder is permanent
@@ -129,69 +130,21 @@ namespace Image_Map
                 // bedrock saving
                 if (BedrockCheck.Checked)
                 {
-                    LevelDB.DB bedrockdb;
-                    try
+                    using (LevelDB.DB bedrockdb = new LevelDB.DB(new LevelDB.Options(), Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "db")))
                     {
-                        string db = Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "db");
-                        if (!Directory.Exists(db))
-                            throw new ApplicationException("no leveldb found");
-                        bedrockdb = new LevelDB.DB(new LevelDB.Options(), db);
-                    }
-                    catch (ApplicationException)
-                    {
-                        MessageBox.Show("Bedrock Edition maps must be embedded directly in the world.\n\nPlease save your map file directly inside a Bedrock world folder.", "Not a valid world!");
-                        return;
-                    }
-                    var file = MapHelpers.GetBedrockNbtFile(bedrockdb, "~local_player");
-                    NbtCompound chestslot = null;
-                    NbtList items = null;
-                    byte slot = 0;
-                    LevelDB.WriteBatch allmaps = new LevelDB.WriteBatch();
-                    foreach (MapPreviewBox box in PicBoxes)
-                    {
-                        if (slot == 0)
+                        foreach (MapPreviewBox box in PicBoxes)
                         {
-                            // find the next empty slot in the inventory
-                            // create a chest there to add maps
-                            NbtList inventory = (NbtList)file.RootTag["Inventory"];
-                            for (int i = 0; i < inventory.Count; i++)
-                            {
-                                if (inventory[i]["id"].ShortValue == 0)
-                                    chestslot = (NbtCompound)inventory[i];
-                            }
-                            short itemslot = chestslot["Slot"].ShortValue;
-                            chestslot.Clear();
-                            chestslot.Add(new NbtByte("Count", 1));
-                            chestslot.Add(new NbtShort("Damage", 0));
-                            chestslot.Add(new NbtShort("id", 54));
-                            chestslot.Add(new NbtShort("Slot", itemslot));
-                            items = new NbtList("Items", NbtTagType.Compound);
-                            chestslot.Add(new NbtCompound("tag") { items });
+                            MapFileSaver.SaveBedrockMapFile(box.Maps.GetBedrockMap(), bedrockdb, mapid);
+                            mapid++;
                         }
-                        var map = MapHelpers.MakeBedrockMapFile(new Bitmap(box.BedrockImage), mapid);
-                        allmaps.Put(map.Key, map.Value);
-                        items.Add(new NbtCompound()
-                        {
-                            new NbtByte("Count", 1),
-                            new NbtShort("Damage", 0),
-                            new NbtShort("id", 358),
-                            new NbtByte("Slot", slot),
-                            new NbtCompound("tag") { new NbtLong("map_uuid", mapid) }
-                        });
-                        mapid++;
-                        slot++;
-                        // if the chest is full, make a new one
-                        if (slot >= 27)
-                            slot = 0;
                     }
-                    bedrockdb.Write(allmaps);
-                    bedrockdb.Dispose();
                 }
                 else // java saving
                 {
                     foreach (MapPreviewBox box in PicBoxes)
                     {
-                        MapHelpers.MakeJavaMapFile(new Bitmap(box.JavaImage)).SaveToFile(Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "map_" + mapid.ToString() + ".dat"), NbtCompression.GZip);
+                        string path = Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), $"map_{mapid}.dat");
+                        MapFileSaver.SaveJavaMapFile(box.Maps.GetJavaMap(), path);
                         mapid++;
                     }
                 }
@@ -217,5 +170,11 @@ namespace Image_Map
                 box.ViewEdition(edition);
             }
         }
+    }
+
+    public enum Edition
+    {
+        Java,
+        Bedrock
     }
 }

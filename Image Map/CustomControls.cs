@@ -25,63 +25,45 @@ namespace Image_Map
 
     public class MapPreviewBox : PictureBox
     {
-        public Bitmap OriginalImage;
-        public Bitmap JavaImage { get; private set; }
-        public Bitmap BedrockImage { get; private set; }
-        private BackgroundWorker ImageSetter = new BackgroundWorker();
+        public DualEditionMap Maps { get; private set; }
         public Edition ViewingEdition { get; private set; }
 
         public MapPreviewBox(Bitmap original, Edition start)
         {
-            OriginalImage = original;
+            Maps = new DualEditionMap(original);
             Image = original;
             MouseEnter += MapPreviewBox_MouseEnter;
             MouseLeave += MapPreviewBox_MouseLeave;
-            ImageSetter.DoWork += ImageSetter_DoWork;
-            ImageSetter.RunWorkerCompleted += ImageSetter_RunWorkerCompleted;
             ViewEdition(start);
         }
 
         public void ViewEdition(Edition view)
         {
             ViewingEdition = view;
-            if ((view == Edition.Java && JavaImage == null) || (view == Edition.Bedrock && BedrockImage == null))
-                ImageSetter.RunWorkerAsync();
-            UpdateMainImage();
+            UpdateImage();
         }
 
-        private void UpdateMainImage()
+        private void UpdateImage()
         {
             if (ClientRectangle.Contains(PointToClient(Control.MousePosition)))
-                MapPreviewBox_MouseEnter(null, null);
+                Image = Maps.OriginalImage;
             else
-                MapPreviewBox_MouseLeave(null, null);
-        }
-
-        private void ImageSetter_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            UpdateMainImage();
-        }
-
-        private void ImageSetter_DoWork(object sender, DoWorkEventArgs e)
-        {
-            if (ViewingEdition == Edition.Java)
-                JavaImage = MapHelpers.JavaMapify(OriginalImage);
-            else if (ViewingEdition == Edition.Bedrock)
-                BedrockImage = MapHelpers.BedrockMapify(OriginalImage);
+            {
+                if (ViewingEdition == Edition.Java)
+                    Image = Maps.GetJavaMap().Image;
+                else if (ViewingEdition == Edition.Bedrock)
+                    Image = Maps.GetBedrockMap().Image;
+            }
         }
 
         private void MapPreviewBox_MouseLeave(object sender, EventArgs e)
         {
-            if (ViewingEdition == Edition.Java)
-                Image = JavaImage;
-            else if (ViewingEdition == Edition.Bedrock)
-                Image = BedrockImage;
+            UpdateImage();
         }
 
         private void MapPreviewBox_MouseEnter(object sender, EventArgs e)
         {
-            Image = OriginalImage;
+            UpdateImage();
         }
     }
 }

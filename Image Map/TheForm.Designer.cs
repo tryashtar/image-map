@@ -32,8 +32,6 @@
             this.OpenButton = new System.Windows.Forms.Button();
             this.ExportButton = new System.Windows.Forms.Button();
             this.PictureZone = new System.Windows.Forms.FlowLayoutPanel();
-            this.ImportBar = new System.Windows.Forms.ProgressBar();
-            this.ImportLabel = new System.Windows.Forms.Label();
             this.BedrockCheck = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
@@ -75,28 +73,6 @@
             this.PictureZone.Size = new System.Drawing.Size(788, 444);
             this.PictureZone.TabIndex = 2;
             // 
-            // ImportBar
-            // 
-            this.ImportBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ImportBar.Location = new System.Drawing.Point(11, 438);
-            this.ImportBar.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.ImportBar.Name = "ImportBar";
-            this.ImportBar.Size = new System.Drawing.Size(158, 15);
-            this.ImportBar.TabIndex = 7;
-            this.ImportBar.Visible = false;
-            // 
-            // ImportLabel
-            // 
-            this.ImportLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ImportLabel.AutoSize = true;
-            this.ImportLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ImportLabel.Location = new System.Drawing.Point(11, 415);
-            this.ImportLabel.Name = "ImportLabel";
-            this.ImportLabel.Size = new System.Drawing.Size(92, 20);
-            this.ImportLabel.TabIndex = 8;
-            this.ImportLabel.Text = "Mapifying...";
-            this.ImportLabel.Visible = false;
-            // 
             // BedrockCheck
             // 
             this.BedrockCheck.AutoSize = true;
@@ -115,8 +91,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(975, 464);
             this.Controls.Add(this.BedrockCheck);
-            this.Controls.Add(this.ImportLabel);
-            this.Controls.Add(this.ImportBar);
             this.Controls.Add(this.PictureZone);
             this.Controls.Add(this.ExportButton);
             this.Controls.Add(this.OpenButton);
@@ -137,8 +111,6 @@
         private System.Windows.Forms.Button OpenButton;
         private System.Windows.Forms.Button ExportButton;
         private System.Windows.Forms.FlowLayoutPanel PictureZone;
-        private System.Windows.Forms.ProgressBar ImportBar;
-        private System.Windows.Forms.Label ImportLabel;
         private System.Windows.Forms.CheckBox BedrockCheck;
     }
 }
