@@ -51,9 +51,9 @@ namespace Image_Map
                     }
                     Image.SetPixel(i, j, nearest);
                     if (nearest == Color.FromArgb(0, 0, 0, 0))
-                        Colors[128 * i + j] = 0x00;
+                        Colors[128 * j + i] = 0x00;
                     else
-                        Colors[128 * i + j] = ColorMap[nearest];
+                        Colors[128 * j + i] = ColorMap[nearest];
                 }
             }
             #endregion
@@ -304,7 +304,7 @@ namespace Image_Map
                     Color realpixel = Image.GetPixel(i, j);
                     Color nearest = Color.FromArgb(realpixel.A < 128 ? 0 : 255, realpixel.R, realpixel.G, realpixel.B);
                     Image.SetPixel(i, j, nearest);
-                    int byteindex = (128 * 4 * i) + (4 * j);
+                    int byteindex = (128 * 4 * j) + (4 * i);
                     Colors[byteindex] = nearest.R;
                     Colors[byteindex + 1] = nearest.G;
                     Colors[byteindex + 2] = nearest.B;
@@ -384,8 +384,39 @@ namespace Image_Map
             NbtFile file = new NbtFile(mapfile);
             file.BigEndian = false;
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            string encoded = Encoding.UTF8.GetString(bytes);
-            db.Put("map_" + number, encoded);
+            db.Put(Encoding.Default.GetBytes($"map_{number}"), bytes);
+        }
+
+        public static void AddBedrockChest(LevelDB.DB db, int firstmapid, int mapcount)
+        {
+            byte[] playerdata = db.Get(Encoding.Default.GetBytes("~local_player"));
+            NbtFile file = new NbtFile();
+            file.BigEndian = false;
+            file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
+            NbtCompound available = (NbtCompound)((NbtList)file.RootTag["Inventory"]).First(x => x["id"].ShortValue == 0);
+            ((NbtShort)available["id"]).Value = 54;
+            ((NbtByte)available["Count"]).Value = 1;
+            NbtList chestcontents = new NbtList("Items");
+            byte slot = 0;
+            for (int i = firstmapid; i < firstmapid + mapcount; i++)
+            {
+                chestcontents.Add(new NbtCompound
+                {
+                    new NbtShort("id", 358),
+                    new NbtByte("Count", 1),
+                    new NbtByte("Slot", slot),
+                    new NbtCompound("tag") {new NbtLong("map_uuid", i)}
+                });
+                slot++;
+            }
+            available.Add(new NbtCompound("tag") { chestcontents });
+            byte[] bytes = file.SaveToBuffer(NbtCompression.None);
+            db.Put(Encoding.Default.GetBytes($"~local_player"), bytes);
+        }
+
+        public static void AddJavaChest(string path, int firstmapid, int mapcount)
+        {
+
         }
     }
 }

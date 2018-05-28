@@ -13,7 +13,6 @@ using System.Linq;
 // TO DO:
 // catch the "editing a store map" error and yell at the user instead
 // build DLLs with EXE
-// move ALL leveldb interfacing to maphelpers, these functions should be simple & clean
 
 
 namespace Image_Map
@@ -137,6 +136,7 @@ namespace Image_Map
                             MapFileSaver.SaveBedrockMapFile(box.Maps.GetBedrockMap(), bedrockdb, mapid);
                             mapid++;
                         }
+                        MapFileSaver.AddBedrockChest(bedrockdb, firstmapid, PicBoxes.Count);
                     }
                 }
                 else // java saving
@@ -147,6 +147,7 @@ namespace Image_Map
                         MapFileSaver.SaveJavaMapFile(box.Maps.GetJavaMap(), path);
                         mapid++;
                     }
+                    MapFileSaver.AddJavaChest(ExportDialog.FileName, firstmapid, PicBoxes.Count);
                 }
             }
         }
