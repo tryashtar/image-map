@@ -15,7 +15,7 @@ namespace Image_Map
         public Map(Bitmap original)
         {
             if (original.Height != 128 || original.Width != 128)
-                throw new ArgumentException($"invalid image dimensions: {original.Size} is not {new Size(128, 128)}");
+                throw new ArgumentException($"Invalid image dimensions: {original.Size} is not {new Size(128, 128)}");
         }
     }
 

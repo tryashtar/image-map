@@ -126,16 +126,11 @@ namespace Image_Map
                 ExportDialog.InitialDirectory = LastExportPath;
             if (ExportDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                int startid = (int)MapIDNum.Value;
                 LevelDB.DB bedrockdb = null;
-                List<int> conflicts;
                 if (BedrockCheck.Checked)
-                {
                     bedrockdb = new LevelDB.DB(new LevelDB.Options(), Path.Combine(ExportDialog.FileName, "db"));
-                    conflicts = MapFileSaver.CheckBedrockConflicts(bedrockdb, startid, PicBoxes.Count);
-                }
-                else
-                    conflicts = MapFileSaver.CheckJavaConflicts(ExportDialog.FileName, startid, PicBoxes.Count);
+                int startid = (int)MapIDNum.Value;
+                List<int> conflicts = BedrockCheck.Checked ? MapFileSaver.CheckBedrockConflicts(bedrockdb, startid, PicBoxes.Count) : MapFileSaver.CheckJavaConflicts(ExportDialog.FileName, startid, PicBoxes.Count);
                 if (conflicts.Any() && MessageBox.Show($"Saving now will overwrite the following existing maps: {String.Join(", ", conflicts.ToArray())}\n\nWould you like to export anyway and overwrite these maps?", "Some maps will be overwritten!", MessageBoxButtons.YesNo) == DialogResult.No)
                     return;
                 if (BedrockCheck.Checked)
