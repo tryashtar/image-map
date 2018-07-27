@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using fNbt;
 using System.IO;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Linq;
+using System.Collections.ObjectModel;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 // TO DO:
 // catch the "editing a store map" error and yell at the user instead
@@ -23,10 +20,10 @@ namespace Image_Map
         string LastExportPath = "";
         string[] OpenArgs;
         List<MapPreviewBox> PicsToAdd = new List<MapPreviewBox>();
-        SaveFileDialog ExportDialog = new SaveFileDialog()
+        CommonOpenFileDialog ExportDialog = new CommonOpenFileDialog()
         {
             Title = "Export your maps somewhere",
-            Filter = "Map Files|*.dat|All Files|*.*",
+            IsFolderPicker = true,
         };
         OpenFileDialog OpenDialog = new OpenFileDialog()
         {
@@ -35,7 +32,7 @@ namespace Image_Map
             Multiselect = true,
         };
         ImportWindow ImportDialog = new ImportWindow();
-        List<MapPreviewBox> PicBoxes = new List<MapPreviewBox>();
+        ObservableCollection<MapPreviewBox> PicBoxes = new ObservableCollection<MapPreviewBox>();
         public TheForm(string[] args)
         {
             InitializeComponent();
@@ -50,6 +47,10 @@ namespace Image_Map
             ImportDialog.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
             ImportDialog.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
             BedrockCheck.Checked = Properties.Settings.Default.BedrockMode;
+            AutoIDCheck.Checked = Properties.Settings.Default.AutoID;
+
+            PicBoxes.CollectionChanged += PicBoxes_CollectionChanged;
+
             List<string> images = new List<string>();
             foreach (string arg in OpenArgs)
             {
@@ -58,6 +59,11 @@ namespace Image_Map
             }
             if (images.Count > 0)
                 ImportImages(images.ToArray());
+        }
+
+        private void PicBoxes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            MapIDNum_ValueChanged(null, null);
         }
 
         // load up images from paths, let the user modify them, and send them to processing
@@ -118,36 +124,33 @@ namespace Image_Map
                 ExportDialog.InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
             else
                 ExportDialog.InitialDirectory = LastExportPath;
-            ExportDialog.FileName = "map_0.dat";
-            if (ExportDialog.ShowDialog() == DialogResult.OK)
+            if (ExportDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                if (!BedrockCheck.Checked)
-                    LastExportPath = Path.GetDirectoryName(ExportDialog.FileName);
-                // parse the number out of a filename like "map_53.dat" -> 53
-                int.TryParse(System.Text.RegularExpressions.Regex.Match(Path.GetFileName(ExportDialog.FileName), @"\d+").Value, out int firstmapid);
-                int mapid = firstmapid;
-                // bedrock saving
+                int startid = (int)MapIDNum.Value;
+                LevelDB.DB bedrockdb = null;
+                List<int> conflicts;
                 if (BedrockCheck.Checked)
                 {
-                    using (LevelDB.DB bedrockdb = new LevelDB.DB(new LevelDB.Options(), Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), "db")))
+                    bedrockdb = new LevelDB.DB(new LevelDB.Options(), Path.Combine(ExportDialog.FileName, "db"));
+                    conflicts = MapFileSaver.CheckBedrockConflicts(bedrockdb, startid, PicBoxes.Count);
+                }
+                else
+                    conflicts = MapFileSaver.CheckJavaConflicts(ExportDialog.FileName, startid, PicBoxes.Count);
+                if (conflicts.Any() && MessageBox.Show($"Saving now will overwrite the following existing maps: {String.Join(", ", conflicts.ToArray())}\n\nWould you like to export anyway and overwrite these maps?", "Some maps will be overwritten!", MessageBoxButtons.YesNo) == DialogResult.No)
+                    return;
+                if (BedrockCheck.Checked)
+                {
+                    using (bedrockdb)
                     {
-                        foreach (MapPreviewBox box in PicBoxes)
-                        {
-                            MapFileSaver.SaveBedrockMapFile(box.Maps.GetBedrockMap(), bedrockdb, mapid);
-                            mapid++;
-                        }
-                        MapFileSaver.AddBedrockChest(bedrockdb, firstmapid, PicBoxes.Count);
+                        MapFileSaver.SaveBedrockMaps(PicBoxes.Select(x => x.Maps.GetBedrockMap()), bedrockdb, startid);
+                        MapFileSaver.AddBedrockChests(bedrockdb, startid, PicBoxes.Count);
                     }
                 }
-                else // java saving
+                else
                 {
-                    foreach (MapPreviewBox box in PicBoxes)
-                    {
-                        string path = Path.Combine(Path.GetDirectoryName(ExportDialog.FileName), $"map_{mapid}.dat");
-                        MapFileSaver.SaveJavaMapFile(box.Maps.GetJavaMap(), path);
-                        mapid++;
-                    }
-                    MapFileSaver.AddJavaChest(ExportDialog.FileName, firstmapid, PicBoxes.Count);
+                    LastExportPath = Path.GetDirectoryName(ExportDialog.FileName);
+                    MapFileSaver.SaveJavaMaps(PicBoxes.Select(x => x.Maps.GetJavaMap()), ExportDialog.FileName, startid);
+                    MapFileSaver.AddJavaChests(ExportDialog.FileName, startid, PicBoxes.Count);
                 }
             }
         }
@@ -160,6 +163,7 @@ namespace Image_Map
             Properties.Settings.Default.InterpIndex = ImportDialog.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = ImportDialog.ApplyAllCheck.Checked;
             Properties.Settings.Default.BedrockMode = BedrockCheck.Checked;
+            Properties.Settings.Default.AutoID = AutoIDCheck.Checked;
             Properties.Settings.Default.Save();
         }
 
@@ -170,6 +174,17 @@ namespace Image_Map
             {
                 box.ViewEdition(edition);
             }
+        }
+
+        private void AutoIDCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            ManualIDPanel.Visible = !AutoIDCheck.Checked;
+            MapIDNum_ValueChanged(sender, e);
+        }
+
+        private void MapIDNum_ValueChanged(object sender, EventArgs e)
+        {
+            LastIDLabel.Text = $"map_{MapIDNum.Value + Math.Max(0, PicBoxes.Count - 1)}";
         }
     }
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace Image_Map
 {
@@ -344,77 +345,129 @@ namespace Image_Map
 
     public static class MapFileSaver
     {
-        public static void SaveJavaMapFile(JavaMap map, string path)
+        public static void SaveJavaMaps(IEnumerable<JavaMap> maps, string folder, int startid)
         {
-            NbtCompound mapfile = new NbtCompound("map")
+            int id = startid;
+            foreach (var map in maps)
             {
-                new NbtCompound("data")
+                NbtCompound mapfile = new NbtCompound("map")
                 {
-                    new NbtByte("scale", 0),
+                    new NbtCompound("data")
+                    {
+                        new NbtByte("scale", 0),
+                        new NbtByte("dimension", 0),
+                        new NbtShort("height", 128),
+                        new NbtShort("width", 128),
+                        new NbtByte("trackingPosition", 0),
+                        new NbtByte("unlimitedTracking", 0),
+                        new NbtInt("xCenter", Int32.MaxValue),
+                        new NbtInt("zCenter", Int32.MaxValue),
+                        new NbtByteArray("colors", map.Colors)
+                    }
+                };
+                new NbtFile(mapfile).SaveToFile(Path.Combine(folder, $"map_{id}"), NbtCompression.GZip);
+                id++;
+            }
+        }
+
+        public static List<int> CheckJavaConflicts(string folder, int startid, int count)
+        {
+            List<int> conflicts = new List<int>();
+            for (int i = startid; i < startid + count; i++)
+            {
+                if (File.Exists(Path.Combine(folder, $"map_{i}.dat")))
+                    conflicts.Add(i);
+            }
+            return conflicts;
+        }
+
+        public static void SaveBedrockMaps(IEnumerable<BedrockMap> maps, LevelDB.DB db, int startid)
+        {
+            var batch = new LevelDB.WriteBatch();
+            int id = startid;
+            foreach (var map in maps)
+            {
+                NbtCompound mapfile = new NbtCompound("map")
+                {
+                    new NbtLong("mapId", id),
+                    new NbtLong("parentMapId", -1),
+                    new NbtList("decorations", NbtTagType.Compound),
+                    new NbtByte("fullyExplored", 1),
+                    new NbtByte("scale", 4),
                     new NbtByte("dimension", 0),
                     new NbtShort("height", 128),
                     new NbtShort("width", 128),
-                    new NbtByte("trackingPosition", 0),
                     new NbtByte("unlimitedTracking", 0),
                     new NbtInt("xCenter", Int32.MaxValue),
                     new NbtInt("zCenter", Int32.MaxValue),
                     new NbtByteArray("colors", map.Colors)
-                }
-            };
-            new NbtFile(mapfile).SaveToFile(path, NbtCompression.GZip);
+                };
+                NbtFile file = new NbtFile(mapfile);
+                file.BigEndian = false;
+                byte[] bytes = file.SaveToBuffer(NbtCompression.None);
+                batch.Put(Encoding.Default.GetBytes($"map_{id}"), bytes);
+                id++;
+            }
+            db.Write(batch);
         }
 
-        public static void SaveBedrockMapFile(BedrockMap map, LevelDB.DB db, int number)
+        public static List<int> CheckBedrockConflicts(LevelDB.DB db, int startid, int count)
         {
-            NbtCompound mapfile = new NbtCompound("map")
+            List<int> conflicts = new List<int>();
+            for (int i = startid; i < startid + count; i++)
             {
-                new NbtLong("mapId", number),
-                new NbtLong("parentMapId", -1),
-                new NbtList("decorations", NbtTagType.Compound),
-                new NbtByte("fullyExplored", 1),
-                new NbtByte("scale", 4),
-                new NbtByte("dimension", 0),
-                new NbtShort("height", 128),
-                new NbtShort("width", 128),
-                new NbtByte("unlimitedTracking", 0),
-                new NbtInt("xCenter", Int32.MaxValue),
-                new NbtInt("zCenter", Int32.MaxValue),
-                new NbtByteArray("colors", map.Colors)
-            };
-            NbtFile file = new NbtFile(mapfile);
-            file.BigEndian = false;
-            byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            db.Put(Encoding.Default.GetBytes($"map_{number}"), bytes);
+                byte[] keybytes = Encoding.Default.GetBytes($"map_{i}");
+                bool exists = true;
+                try
+                {
+                    db.Get(keybytes);
+                }
+                catch (Exception)
+                {
+                    exists = false;
+                }
+                if (exists)
+                    conflicts.Add(i);
+            }
+            return conflicts;
         }
 
-        public static void AddBedrockChest(LevelDB.DB db, int firstmapid, int mapcount)
+        public static void AddBedrockChests(LevelDB.DB db, int firstmapid, int mapcount)
         {
-            byte[] playerdata = db.Get(Encoding.Default.GetBytes("~local_player"));
+            byte[] playerdata = db.Get(Encoding.Default.GetBytes("~local_player")).ToArray();
             NbtFile file = new NbtFile();
             file.BigEndian = false;
             file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
-            NbtCompound available = (NbtCompound)((NbtList)file.RootTag["Inventory"]).First(x => x["id"].ShortValue == 0);
-            ((NbtShort)available["id"]).Value = 54;
-            ((NbtByte)available["Count"]).Value = 1;
-            NbtList chestcontents = new NbtList("Items");
-            byte slot = 0;
-            for (int i = firstmapid; i < firstmapid + mapcount; i++)
+            NbtCompound[] emptyslots = ((NbtList)file.RootTag["Inventory"]).Where(x => x["Count"].ByteValue == 0).Cast<NbtCompound>().ToArray();
+            int currentslot = 0;
+
+            while (currentslot < emptyslots.Length)
             {
-                chestcontents.Add(new NbtCompound
+                ((NbtString)emptyslots[currentslot]["Name"]).Value = "minecraft:tile.chest";
+                ((NbtByte)emptyslots[currentslot]["Count"]).Value = 1;
+                NbtList chestcontents = new NbtList("Items");
+                emptyslots[currentslot].Add(new NbtCompound("tag") { chestcontents });
+                for (int i = 0; i < 27; i++)
                 {
-                    new NbtShort("id", 358),
-                    new NbtByte("Count", 1),
-                    new NbtByte("Slot", slot),
-                    new NbtCompound("tag") {new NbtLong("map_uuid", i)}
-                });
-                slot++;
+                    int mapid = firstmapid + (currentslot * 27) + i;
+                    chestcontents.Add(new NbtCompound
+                    {
+                        new NbtString("Name", "minecraft:map"),
+                        new NbtByte("Count", 1),
+                        new NbtByte("Slot", (byte)i),
+                        new NbtCompound("tag") { new NbtLong("map_uuid", mapid) }
+                    });
+                    if (mapid >= firstmapid + mapcount - 1)
+                        goto done;
+                }
+                currentslot++;
             }
-            available.Add(new NbtCompound("tag") { chestcontents });
+            done:
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
             db.Put(Encoding.Default.GetBytes($"~local_player"), bytes);
         }
 
-        public static void AddJavaChest(string path, int firstmapid, int mapcount)
+        public static void AddJavaChests(string path, int firstmapid, int mapcount)
         {
 
         }

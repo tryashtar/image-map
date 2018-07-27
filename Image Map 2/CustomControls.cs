@@ -32,6 +32,7 @@ namespace Image_Map
         {
             Maps = new DualEditionMap(original);
             Image = original;
+            BackgroundImage = Properties.Resources.item_frame;
             MouseEnter += MapPreviewBox_MouseEnter;
             MouseLeave += MapPreviewBox_MouseLeave;
             ViewEdition(start);

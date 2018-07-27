@@ -33,6 +33,14 @@
             this.ExportButton = new System.Windows.Forms.Button();
             this.PictureZone = new System.Windows.Forms.FlowLayoutPanel();
             this.BedrockCheck = new System.Windows.Forms.CheckBox();
+            this.FirstIDLabel = new System.Windows.Forms.Label();
+            this.MapIDNum = new System.Windows.Forms.NumericUpDown();
+            this.LastIDLabel = new System.Windows.Forms.Label();
+            this.ToLabel = new System.Windows.Forms.Label();
+            this.AutoIDCheck = new System.Windows.Forms.CheckBox();
+            this.ManualIDPanel = new System.Windows.Forms.Panel();
+            ((System.ComponentModel.ISupportInitialize)(this.MapIDNum)).BeginInit();
+            this.ManualIDPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // OpenButton
@@ -85,11 +93,88 @@
             this.BedrockCheck.UseVisualStyleBackColor = true;
             this.BedrockCheck.CheckedChanged += new System.EventHandler(this.BedrockCheck_CheckedChanged);
             // 
+            // FirstIDLabel
+            // 
+            this.FirstIDLabel.AutoSize = true;
+            this.FirstIDLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.FirstIDLabel.Location = new System.Drawing.Point(3, 2);
+            this.FirstIDLabel.Name = "FirstIDLabel";
+            this.FirstIDLabel.Size = new System.Drawing.Size(61, 25);
+            this.FirstIDLabel.TabIndex = 10;
+            this.FirstIDLabel.Text = "map_";
+            // 
+            // MapIDNum
+            // 
+            this.MapIDNum.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.MapIDNum.Location = new System.Drawing.Point(70, 3);
+            this.MapIDNum.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.MapIDNum.Minimum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            -2147483648});
+            this.MapIDNum.Name = "MapIDNum";
+            this.MapIDNum.Size = new System.Drawing.Size(83, 30);
+            this.MapIDNum.TabIndex = 11;
+            this.MapIDNum.ValueChanged += new System.EventHandler(this.MapIDNum_ValueChanged);
+            // 
+            // LastIDLabel
+            // 
+            this.LastIDLabel.AutoSize = true;
+            this.LastIDLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.LastIDLabel.Location = new System.Drawing.Point(3, 62);
+            this.LastIDLabel.Name = "LastIDLabel";
+            this.LastIDLabel.Size = new System.Drawing.Size(61, 25);
+            this.LastIDLabel.TabIndex = 12;
+            this.LastIDLabel.Text = "map_";
+            // 
+            // ToLabel
+            // 
+            this.ToLabel.AutoSize = true;
+            this.ToLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ToLabel.Location = new System.Drawing.Point(14, 35);
+            this.ToLabel.Name = "ToLabel";
+            this.ToLabel.Size = new System.Drawing.Size(23, 20);
+            this.ToLabel.TabIndex = 13;
+            this.ToLabel.Text = "to";
+            // 
+            // AutoIDCheck
+            // 
+            this.AutoIDCheck.AutoSize = true;
+            this.AutoIDCheck.Checked = true;
+            this.AutoIDCheck.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.AutoIDCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.AutoIDCheck.Location = new System.Drawing.Point(11, 202);
+            this.AutoIDCheck.Name = "AutoIDCheck";
+            this.AutoIDCheck.Size = new System.Drawing.Size(123, 54);
+            this.AutoIDCheck.TabIndex = 14;
+            this.AutoIDCheck.Text = "Save to\r\nFree Slots";
+            this.AutoIDCheck.UseVisualStyleBackColor = true;
+            this.AutoIDCheck.CheckedChanged += new System.EventHandler(this.AutoIDCheck_CheckedChanged);
+            // 
+            // ManualIDPanel
+            // 
+            this.ManualIDPanel.Controls.Add(this.FirstIDLabel);
+            this.ManualIDPanel.Controls.Add(this.MapIDNum);
+            this.ManualIDPanel.Controls.Add(this.ToLabel);
+            this.ManualIDPanel.Controls.Add(this.LastIDLabel);
+            this.ManualIDPanel.Location = new System.Drawing.Point(1, 262);
+            this.ManualIDPanel.Name = "ManualIDPanel";
+            this.ManualIDPanel.Size = new System.Drawing.Size(168, 100);
+            this.ManualIDPanel.TabIndex = 15;
+            this.ManualIDPanel.Visible = false;
+            // 
             // TheForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(975, 464);
+            this.Controls.Add(this.ManualIDPanel);
+            this.Controls.Add(this.AutoIDCheck);
             this.Controls.Add(this.BedrockCheck);
             this.Controls.Add(this.PictureZone);
             this.Controls.Add(this.ExportButton);
@@ -101,6 +186,9 @@
             this.Text = "Image Map";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.Load += new System.EventHandler(this.TheForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.MapIDNum)).EndInit();
+            this.ManualIDPanel.ResumeLayout(false);
+            this.ManualIDPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -112,6 +200,12 @@
         private System.Windows.Forms.Button ExportButton;
         private System.Windows.Forms.FlowLayoutPanel PictureZone;
         private System.Windows.Forms.CheckBox BedrockCheck;
+        private System.Windows.Forms.Label FirstIDLabel;
+        private System.Windows.Forms.NumericUpDown MapIDNum;
+        private System.Windows.Forms.Label LastIDLabel;
+        private System.Windows.Forms.Label ToLabel;
+        private System.Windows.Forms.CheckBox AutoIDCheck;
+        private System.Windows.Forms.Panel ManualIDPanel;
     }
 }
 
