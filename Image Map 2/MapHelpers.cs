@@ -5,17 +5,25 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Image_Map
 {
     public abstract class Map
     {
+        public const int MAP_WIDTH = 128;
+        public const int MAP_HEIGHT = 128;
         public byte[] Colors { get; protected set; }
         public Bitmap Image { get; protected set; }
         public Map(Bitmap original)
         {
-            if (original.Height != 128 || original.Width != 128)
-                throw new ArgumentException($"Invalid image dimensions: {original.Size} is not {new Size(128, 128)}");
+            if (original.Height != MAP_HEIGHT || original.Width != MAP_WIDTH)
+                throw new ArgumentException($"Invalid image dimensions: {original.Size} is not {new Size(MAP_WIDTH, MAP_HEIGHT)}");
+            Image = (Bitmap)original.Clone();
+        }
+        public Map(byte[] colors)
+        {
+            Colors = colors;
         }
     }
 
@@ -24,12 +32,11 @@ namespace Image_Map
         public JavaMap(Bitmap original) : base(original)
         {
             #region java map algorithm
-            Image = (Bitmap)original.Clone();
-            Colors = new byte[128 * 128];
+            Colors = new byte[MAP_WIDTH * MAP_HEIGHT];
 
-            for (int i = 0; i < Image.Width; i++)
+            for (int i = 0; i < MAP_WIDTH; i++)
             {
-                for (int j = 0; j < Image.Height; j++)
+                for (int j = 0; j < MAP_HEIGHT; j++)
                 {
                     Color realpixel = Image.GetPixel(i, j);
                     Color nearest = Color.Empty;
@@ -40,7 +47,7 @@ namespace Image_Map
                     {
                         double mindist = Double.PositiveInfinity;
                         // find the color in the palette that is closest to this one
-                        foreach (Color mapcolor in ColorMap.Keys)
+                        foreach (Color mapcolor in ColorToByte.Keys)
                         {
                             double distance = ColorDistance(realpixel, mapcolor);
                             if (mindist > distance)
@@ -52,20 +59,35 @@ namespace Image_Map
                     }
                     Image.SetPixel(i, j, nearest);
                     if (nearest == Color.FromArgb(0, 0, 0, 0))
-                        Colors[128 * j + i] = 0x00;
+                        Colors[MAP_WIDTH * j + i] = 0x00;
                     else
-                        Colors[128 * j + i] = ColorMap[nearest];
+                        Colors[MAP_WIDTH * j + i] = ColorToByte[nearest];
                 }
             }
             #endregion
         }
 
+        public JavaMap(byte[] colors) : base(colors)
+        {
+            if (colors.Length != MAP_WIDTH * MAP_HEIGHT)
+                throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}");
+            Image = new Bitmap(MAP_WIDTH, MAP_HEIGHT);
+            for (int i = 0; i < MAP_WIDTH; i++)
+            {
+                for (int j = 0; j < MAP_HEIGHT; j++)
+                {
+                    Image.SetPixel(i, j, ByteToColor[colors[(MAP_WIDTH * i) + j]]);
+                }
+            }
+        }
+
         #region map conversion helpers
-        private static Dictionary<Color, byte> ColorMap;
+        private static Dictionary<Color, byte> ColorToByte;
+        private static Dictionary<byte, Color> ByteToColor;
         static JavaMap()
         {
             // java's color map: stores the bytes and the RGB color they correspond to on a map
-            ColorMap = new Dictionary<Color, byte>()
+            ColorToByte = new Dictionary<Color, byte>()
             {
                 #region color definitions
                 { Color.FromArgb(88,124,39), 0x04 },
@@ -274,6 +296,7 @@ namespace Image_Map
                 { Color.FromArgb(19,11,8), 0xcf },
                 #endregion
             };
+            ByteToColor = ColorToByte.ToDictionary(x => x.Value, x => x.Key);
         }
 
         // color distance algorithm I stole from https://stackoverflow.com/a/33782458
@@ -294,18 +317,16 @@ namespace Image_Map
         public BedrockMap(Bitmap original) : base(original)
         {
             #region bedrock map algorithm
+            Colors = new byte[MAP_WIDTH * MAP_HEIGHT * 4];
 
-            Image = (Bitmap)original.Clone();
-            Colors = new byte[128 * 128 * 4];
-
-            for (int i = 0; i < Image.Width; i++)
+            for (int i = 0; i < MAP_WIDTH; i++)
             {
-                for (int j = 0; j < Image.Height; j++)
+                for (int j = 0; j < MAP_HEIGHT; j++)
                 {
                     Color realpixel = Image.GetPixel(i, j);
                     Color nearest = Color.FromArgb(realpixel.A < 128 ? 0 : 255, realpixel.R, realpixel.G, realpixel.B);
                     Image.SetPixel(i, j, nearest);
-                    int byteindex = (128 * 4 * j) + (4 * i);
+                    int byteindex = (MAP_WIDTH * 4 * j) + (4 * i);
                     Colors[byteindex] = nearest.R;
                     Colors[byteindex + 1] = nearest.G;
                     Colors[byteindex + 2] = nearest.B;
@@ -316,35 +337,50 @@ namespace Image_Map
             }
             #endregion
         }
-    }
 
-    public class DualEditionMap
-    {
-        public Bitmap OriginalImage { get; private set; }
-        private JavaMap JavaMap;
-        private BedrockMap BedrockMap;
-        public DualEditionMap(Bitmap image)
+        public BedrockMap(byte[] colors) : base(colors)
         {
-            OriginalImage = image;
-        }
-
-        public JavaMap GetJavaMap()
-        {
-            if (JavaMap == null)
-                JavaMap = new JavaMap(OriginalImage);
-            return JavaMap;
-        }
-
-        public BedrockMap GetBedrockMap()
-        {
-            if (BedrockMap == null)
-                BedrockMap = new BedrockMap(OriginalImage);
-            return BedrockMap;
+            if (colors.Length != MAP_WIDTH * MAP_HEIGHT)
+                throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}");
+            Image = new Bitmap(MAP_WIDTH, MAP_HEIGHT);
+            for (int i = 0; i < MAP_WIDTH; i++)
+            {
+                for (int j = 0; j < MAP_HEIGHT; j++)
+                {
+                    int byteindex = (MAP_WIDTH * 4 * j) + (4 * i);
+                    Image.SetPixel(i, j, Color.FromArgb(colors[byteindex + 3], colors[byteindex], colors[byteindex + 1], colors[byteindex + 2]));
+                }
+            }
         }
     }
 
     public static class MapFileSaver
     {
+        public static List<JavaMap> GetJavaMaps(string folder)
+        {
+            List<JavaMap> maps = new List<JavaMap>();
+            foreach (string file in Directory.GetFiles(folder, "*.dat"))
+            {
+                if (Regex.Match(Path.GetFileNameWithoutExtension(file), @"^map_-?\d+$").Success)
+                {
+                    NbtFile nbtfile = new NbtFile(file);
+                    maps.Add(new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue));
+                }
+            }
+            return maps;
+        }
+
+        public static List<BedrockMap> GetBedrockMaps(LevelDB.DB bedrockdb)
+        {
+            List<BedrockMap> maps = new List<BedrockMap>();
+            foreach (var pair in bedrockdb)
+            {
+                // TO DO: this
+                System.Windows.Forms.MessageBox.Show(Encoding.Default.GetString(pair.Key));
+            }
+            return maps;
+        }
+
         public static void SaveJavaMaps(IEnumerable<JavaMap> maps, string folder, int startid)
         {
             int id = startid;
@@ -356,8 +392,8 @@ namespace Image_Map
                     {
                         new NbtByte("scale", 0),
                         new NbtByte("dimension", 0),
-                        new NbtShort("height", 128),
-                        new NbtShort("width", 128),
+                        new NbtShort("height", Map.MAP_HEIGHT),
+                        new NbtShort("width", Map.MAP_WIDTH),
                         new NbtByte("trackingPosition", 0),
                         new NbtByte("unlimitedTracking", 0),
                         new NbtInt("xCenter", Int32.MaxValue),
@@ -395,8 +431,8 @@ namespace Image_Map
                     new NbtByte("fullyExplored", 1),
                     new NbtByte("scale", 4),
                     new NbtByte("dimension", 0),
-                    new NbtShort("height", 128),
-                    new NbtShort("width", 128),
+                    new NbtShort("height", Map.MAP_HEIGHT),
+                    new NbtShort("width", Map.MAP_WIDTH),
                     new NbtByte("unlimitedTracking", 0),
                     new NbtInt("xCenter", Int32.MaxValue),
                     new NbtInt("zCenter", Int32.MaxValue),

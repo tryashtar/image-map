@@ -25,46 +25,30 @@ namespace Image_Map
 
     public class MapPreviewBox : PictureBox
     {
-        public DualEditionMap Maps { get; private set; }
-        public Edition ViewingEdition { get; private set; }
+        public Map Map { get; private set; }
+        private Image OriginalImage;
 
-        public MapPreviewBox(Bitmap original, Edition start)
+        public MapPreviewBox(Bitmap original, Edition edition)
         {
-            Maps = new DualEditionMap(original);
-            Image = original;
+            if (edition == Edition.Java)
+                Map = new JavaMap(original);
+            else if (edition == Edition.Bedrock)
+                Map = new BedrockMap(original);
+            OriginalImage = original;
+            Image = Map.Image;
             BackgroundImage = Properties.Resources.item_frame;
             MouseEnter += MapPreviewBox_MouseEnter;
             MouseLeave += MapPreviewBox_MouseLeave;
-            ViewEdition(start);
-        }
-
-        public void ViewEdition(Edition view)
-        {
-            ViewingEdition = view;
-            UpdateImage();
-        }
-
-        private void UpdateImage()
-        {
-            if (ClientRectangle.Contains(PointToClient(Control.MousePosition)))
-                Image = Maps.OriginalImage;
-            else
-            {
-                if (ViewingEdition == Edition.Java)
-                    Image = Maps.GetJavaMap().Image;
-                else if (ViewingEdition == Edition.Bedrock)
-                    Image = Maps.GetBedrockMap().Image;
-            }
         }
 
         private void MapPreviewBox_MouseLeave(object sender, EventArgs e)
         {
-            UpdateImage();
+            Image = OriginalImage;
         }
 
         private void MapPreviewBox_MouseEnter(object sender, EventArgs e)
         {
-            UpdateImage();
+            Image = Map.Image;
         }
     }
 }

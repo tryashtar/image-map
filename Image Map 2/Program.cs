@@ -12,11 +12,11 @@ namespace Image_Map
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new TheForm(args));
+            Application.Run(new TheForm());
         }
     }
 }

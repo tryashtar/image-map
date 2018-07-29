@@ -29,75 +29,69 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForm));
-            this.OpenButton = new System.Windows.Forms.Button();
-            this.ExportButton = new System.Windows.Forms.Button();
-            this.PictureZone = new System.Windows.Forms.FlowLayoutPanel();
+            this.SelectWorldButton = new System.Windows.Forms.Button();
+            this.ExistingZone = new System.Windows.Forms.FlowLayoutPanel();
             this.BedrockCheck = new System.Windows.Forms.CheckBox();
             this.FirstIDLabel = new System.Windows.Forms.Label();
             this.MapIDNum = new System.Windows.Forms.NumericUpDown();
             this.LastIDLabel = new System.Windows.Forms.Label();
             this.ToLabel = new System.Windows.Forms.Label();
-            this.AutoIDCheck = new System.Windows.Forms.CheckBox();
-            this.ManualIDPanel = new System.Windows.Forms.Panel();
+            this.MapView = new System.Windows.Forms.TabControl();
+            this.ExistingTab = new System.Windows.Forms.TabPage();
+            this.ImportTab = new System.Windows.Forms.TabPage();
+            this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
+            this.ImportControls = new System.Windows.Forms.Panel();
+            this.OpenButton = new System.Windows.Forms.Button();
+            this.ImportButton = new System.Windows.Forms.Button();
+            this.SelectWorldLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.MapIDNum)).BeginInit();
-            this.ManualIDPanel.SuspendLayout();
+            this.MapView.SuspendLayout();
+            this.ExistingTab.SuspendLayout();
+            this.ImportTab.SuspendLayout();
+            this.ImportControls.SuspendLayout();
             this.SuspendLayout();
             // 
-            // OpenButton
+            // SelectWorldButton
             // 
-            this.OpenButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
-            this.OpenButton.Location = new System.Drawing.Point(11, 10);
-            this.OpenButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.OpenButton.Name = "OpenButton";
-            this.OpenButton.Size = new System.Drawing.Size(158, 58);
-            this.OpenButton.TabIndex = 0;
-            this.OpenButton.Text = "Open";
-            this.OpenButton.UseVisualStyleBackColor = true;
-            this.OpenButton.Click += new System.EventHandler(this.OpenButton_Click);
+            this.SelectWorldButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
+            this.SelectWorldButton.Location = new System.Drawing.Point(11, 10);
+            this.SelectWorldButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SelectWorldButton.Name = "SelectWorldButton";
+            this.SelectWorldButton.Size = new System.Drawing.Size(158, 92);
+            this.SelectWorldButton.TabIndex = 0;
+            this.SelectWorldButton.Text = "Select World";
+            this.SelectWorldButton.UseVisualStyleBackColor = true;
+            this.SelectWorldButton.Click += new System.EventHandler(this.OpenButton_Click);
             // 
-            // ExportButton
+            // ExistingZone
             // 
-            this.ExportButton.Enabled = false;
-            this.ExportButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
-            this.ExportButton.Location = new System.Drawing.Point(11, 73);
-            this.ExportButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.ExportButton.Name = "ExportButton";
-            this.ExportButton.Size = new System.Drawing.Size(158, 64);
-            this.ExportButton.TabIndex = 1;
-            this.ExportButton.Text = "Export";
-            this.ExportButton.UseVisualStyleBackColor = true;
-            this.ExportButton.Click += new System.EventHandler(this.ExportButton_Click);
-            // 
-            // PictureZone
-            // 
-            this.PictureZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.ExistingZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.PictureZone.AutoScroll = true;
-            this.PictureZone.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.PictureZone.Location = new System.Drawing.Point(175, 10);
-            this.PictureZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.PictureZone.Name = "PictureZone";
-            this.PictureZone.Size = new System.Drawing.Size(788, 444);
-            this.PictureZone.TabIndex = 2;
+            this.ExistingZone.AutoScroll = true;
+            this.ExistingZone.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.ExistingZone.Location = new System.Drawing.Point(6, 5);
+            this.ExistingZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ExistingZone.Name = "ExistingZone";
+            this.ExistingZone.Size = new System.Drawing.Size(778, 400);
+            this.ExistingZone.TabIndex = 2;
             // 
             // BedrockCheck
             // 
             this.BedrockCheck.AutoSize = true;
             this.BedrockCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.BedrockCheck.Location = new System.Drawing.Point(12, 142);
+            this.BedrockCheck.Location = new System.Drawing.Point(12, 107);
             this.BedrockCheck.Name = "BedrockCheck";
             this.BedrockCheck.Size = new System.Drawing.Size(106, 54);
             this.BedrockCheck.TabIndex = 9;
             this.BedrockCheck.Text = "Bedrock\r\nEdition";
             this.BedrockCheck.UseVisualStyleBackColor = true;
-            this.BedrockCheck.CheckedChanged += new System.EventHandler(this.BedrockCheck_CheckedChanged);
             // 
             // FirstIDLabel
             // 
             this.FirstIDLabel.AutoSize = true;
             this.FirstIDLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.FirstIDLabel.Location = new System.Drawing.Point(3, 2);
+            this.FirstIDLabel.Location = new System.Drawing.Point(356, 18);
             this.FirstIDLabel.Name = "FirstIDLabel";
             this.FirstIDLabel.Size = new System.Drawing.Size(61, 25);
             this.FirstIDLabel.TabIndex = 10;
@@ -106,7 +100,7 @@
             // MapIDNum
             // 
             this.MapIDNum.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.MapIDNum.Location = new System.Drawing.Point(70, 3);
+            this.MapIDNum.Location = new System.Drawing.Point(421, 14);
             this.MapIDNum.Maximum = new decimal(new int[] {
             99999,
             0,
@@ -126,59 +120,130 @@
             // 
             this.LastIDLabel.AutoSize = true;
             this.LastIDLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.LastIDLabel.Location = new System.Drawing.Point(3, 62);
+            this.LastIDLabel.Location = new System.Drawing.Point(532, 19);
             this.LastIDLabel.Name = "LastIDLabel";
-            this.LastIDLabel.Size = new System.Drawing.Size(61, 25);
+            this.LastIDLabel.Size = new System.Drawing.Size(72, 25);
             this.LastIDLabel.TabIndex = 12;
-            this.LastIDLabel.Text = "map_";
+            this.LastIDLabel.Text = "map_0";
             // 
             // ToLabel
             // 
             this.ToLabel.AutoSize = true;
             this.ToLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ToLabel.Location = new System.Drawing.Point(14, 35);
+            this.ToLabel.Location = new System.Drawing.Point(510, 21);
             this.ToLabel.Name = "ToLabel";
             this.ToLabel.Size = new System.Drawing.Size(23, 20);
             this.ToLabel.TabIndex = 13;
             this.ToLabel.Text = "to";
             // 
-            // AutoIDCheck
+            // MapView
             // 
-            this.AutoIDCheck.AutoSize = true;
-            this.AutoIDCheck.Checked = true;
-            this.AutoIDCheck.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AutoIDCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.AutoIDCheck.Location = new System.Drawing.Point(11, 202);
-            this.AutoIDCheck.Name = "AutoIDCheck";
-            this.AutoIDCheck.Size = new System.Drawing.Size(123, 54);
-            this.AutoIDCheck.TabIndex = 14;
-            this.AutoIDCheck.Text = "Save to\r\nFree Slots";
-            this.AutoIDCheck.UseVisualStyleBackColor = true;
-            this.AutoIDCheck.CheckedChanged += new System.EventHandler(this.AutoIDCheck_CheckedChanged);
+            this.MapView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MapView.Controls.Add(this.ImportTab);
+            this.MapView.Controls.Add(this.ExistingTab);
+            this.MapView.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.MapView.Location = new System.Drawing.Point(175, 12);
+            this.MapView.Name = "MapView";
+            this.MapView.SelectedIndex = 0;
+            this.MapView.Size = new System.Drawing.Size(800, 452);
+            this.MapView.TabIndex = 16;
+            this.MapView.Visible = false;
             // 
-            // ManualIDPanel
+            // ExistingTab
             // 
-            this.ManualIDPanel.Controls.Add(this.FirstIDLabel);
-            this.ManualIDPanel.Controls.Add(this.MapIDNum);
-            this.ManualIDPanel.Controls.Add(this.ToLabel);
-            this.ManualIDPanel.Controls.Add(this.LastIDLabel);
-            this.ManualIDPanel.Location = new System.Drawing.Point(1, 262);
-            this.ManualIDPanel.Name = "ManualIDPanel";
-            this.ManualIDPanel.Size = new System.Drawing.Size(168, 100);
-            this.ManualIDPanel.TabIndex = 15;
-            this.ManualIDPanel.Visible = false;
+            this.ExistingTab.Controls.Add(this.ExistingZone);
+            this.ExistingTab.Location = new System.Drawing.Point(4, 38);
+            this.ExistingTab.Name = "ExistingTab";
+            this.ExistingTab.Padding = new System.Windows.Forms.Padding(3);
+            this.ExistingTab.Size = new System.Drawing.Size(792, 410);
+            this.ExistingTab.TabIndex = 0;
+            this.ExistingTab.Text = "Existing Maps";
+            this.ExistingTab.UseVisualStyleBackColor = true;
+            // 
+            // ImportTab
+            // 
+            this.ImportTab.Controls.Add(this.ImportControls);
+            this.ImportTab.Controls.Add(this.ImportZone);
+            this.ImportTab.Location = new System.Drawing.Point(4, 38);
+            this.ImportTab.Name = "ImportTab";
+            this.ImportTab.Padding = new System.Windows.Forms.Padding(3);
+            this.ImportTab.Size = new System.Drawing.Size(792, 410);
+            this.ImportTab.TabIndex = 1;
+            this.ImportTab.Text = "Import Maps";
+            this.ImportTab.UseVisualStyleBackColor = true;
+            // 
+            // ImportZone
+            // 
+            this.ImportZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ImportZone.AutoScroll = true;
+            this.ImportZone.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.ImportZone.Location = new System.Drawing.Point(7, 5);
+            this.ImportZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ImportZone.Name = "ImportZone";
+            this.ImportZone.Size = new System.Drawing.Size(778, 333);
+            this.ImportZone.TabIndex = 3;
+            // 
+            // ImportControls
+            // 
+            this.ImportControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ImportControls.Controls.Add(this.LastIDLabel);
+            this.ImportControls.Controls.Add(this.ToLabel);
+            this.ImportControls.Controls.Add(this.FirstIDLabel);
+            this.ImportControls.Controls.Add(this.MapIDNum);
+            this.ImportControls.Controls.Add(this.ImportButton);
+            this.ImportControls.Controls.Add(this.OpenButton);
+            this.ImportControls.Location = new System.Drawing.Point(7, 343);
+            this.ImportControls.Name = "ImportControls";
+            this.ImportControls.Size = new System.Drawing.Size(777, 61);
+            this.ImportControls.TabIndex = 4;
+            // 
+            // OpenButton
+            // 
+            this.OpenButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.OpenButton.Location = new System.Drawing.Point(3, 3);
+            this.OpenButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.OpenButton.Name = "OpenButton";
+            this.OpenButton.Size = new System.Drawing.Size(129, 53);
+            this.OpenButton.TabIndex = 17;
+            this.OpenButton.Text = "Open";
+            this.OpenButton.UseVisualStyleBackColor = true;
+            // 
+            // ImportButton
+            // 
+            this.ImportButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.ImportButton.Location = new System.Drawing.Point(138, 3);
+            this.ImportButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ImportButton.Name = "ImportButton";
+            this.ImportButton.Size = new System.Drawing.Size(212, 53);
+            this.ImportButton.TabIndex = 18;
+            this.ImportButton.Text = "Add All to World";
+            this.ImportButton.UseVisualStyleBackColor = true;
+            // 
+            // SelectWorldLabel
+            // 
+            this.SelectWorldLabel.AutoSize = true;
+            this.SelectWorldLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
+            this.SelectWorldLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
+            this.SelectWorldLabel.Location = new System.Drawing.Point(305, 36);
+            this.SelectWorldLabel.Name = "SelectWorldLabel";
+            this.SelectWorldLabel.Size = new System.Drawing.Size(458, 156);
+            this.SelectWorldLabel.TabIndex = 17;
+            this.SelectWorldLabel.Text = "← Click Here!\r\n\r\nMaps will show up in this\r\narea once you select a world.";
             // 
             // TheForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(975, 464);
-            this.Controls.Add(this.ManualIDPanel);
-            this.Controls.Add(this.AutoIDCheck);
+            this.Controls.Add(this.MapView);
             this.Controls.Add(this.BedrockCheck);
-            this.Controls.Add(this.PictureZone);
-            this.Controls.Add(this.ExportButton);
-            this.Controls.Add(this.OpenButton);
+            this.Controls.Add(this.SelectWorldButton);
+            this.Controls.Add(this.SelectWorldLabel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MinimumSize = new System.Drawing.Size(400, 250);
@@ -187,8 +252,11 @@
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.Load += new System.EventHandler(this.TheForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.MapIDNum)).EndInit();
-            this.ManualIDPanel.ResumeLayout(false);
-            this.ManualIDPanel.PerformLayout();
+            this.MapView.ResumeLayout(false);
+            this.ExistingTab.ResumeLayout(false);
+            this.ImportTab.ResumeLayout(false);
+            this.ImportControls.ResumeLayout(false);
+            this.ImportControls.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -196,16 +264,21 @@
 
         #endregion
 
-        private System.Windows.Forms.Button OpenButton;
-        private System.Windows.Forms.Button ExportButton;
-        private System.Windows.Forms.FlowLayoutPanel PictureZone;
+        private System.Windows.Forms.Button SelectWorldButton;
+        private System.Windows.Forms.FlowLayoutPanel ExistingZone;
         private System.Windows.Forms.CheckBox BedrockCheck;
         private System.Windows.Forms.Label FirstIDLabel;
         private System.Windows.Forms.NumericUpDown MapIDNum;
         private System.Windows.Forms.Label LastIDLabel;
         private System.Windows.Forms.Label ToLabel;
-        private System.Windows.Forms.CheckBox AutoIDCheck;
-        private System.Windows.Forms.Panel ManualIDPanel;
+        private System.Windows.Forms.TabControl MapView;
+        private System.Windows.Forms.TabPage ExistingTab;
+        private System.Windows.Forms.TabPage ImportTab;
+        private System.Windows.Forms.FlowLayoutPanel ImportZone;
+        private System.Windows.Forms.Panel ImportControls;
+        private System.Windows.Forms.Button ImportButton;
+        private System.Windows.Forms.Button OpenButton;
+        private System.Windows.Forms.Label SelectWorldLabel;
     }
 }
 
