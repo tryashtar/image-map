@@ -76,7 +76,7 @@ namespace Image_Map
             {
                 for (int j = 0; j < MAP_HEIGHT; j++)
                 {
-                    Image.SetPixel(i, j, ByteToColor[colors[(MAP_WIDTH * i) + j]]);
+                    Image.SetPixel(i, j, ByteToColor[colors[(MAP_WIDTH * j) + i]]);
                 }
             }
         }
@@ -90,6 +90,7 @@ namespace Image_Map
             ColorToByte = new Dictionary<Color, byte>()
             {
                 #region color definitions
+                { Color.FromArgb(0,0,0,0), 0x00 },
                 { Color.FromArgb(88,124,39), 0x04 },
                 { Color.FromArgb(108,151,47), 0x05 },
                 { Color.FromArgb(126,176,55), 0x06 },
@@ -340,8 +341,8 @@ namespace Image_Map
 
         public BedrockMap(byte[] colors) : base(colors)
         {
-            if (colors.Length != MAP_WIDTH * MAP_HEIGHT)
-                throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}");
+            if (colors.Length != MAP_WIDTH * MAP_HEIGHT * 4)
+                throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}*4");
             Image = new Bitmap(MAP_WIDTH, MAP_HEIGHT);
             for (int i = 0; i < MAP_WIDTH; i++)
             {
@@ -354,36 +355,42 @@ namespace Image_Map
         }
     }
 
-    public static class MapFileSaver
+    public abstract class MinecraftWorld
     {
-        public static List<JavaMap> GetJavaMaps(string folder)
+        protected Dictionary<long, Map> Maps;
+        public IReadOnlyDictionary<long, Map> WorldMaps => Maps;
+        public string Folder { get; protected set; }
+        public string Name { get; protected set; }
+        public MinecraftWorld(string folder)
         {
-            List<JavaMap> maps = new List<JavaMap>();
-            foreach (string file in Directory.GetFiles(folder, "*.dat"))
+            Folder = folder;
+            Maps = new Dictionary<long, Map>();
+        }
+        public abstract void AddMaps(Dictionary<long, Map> maps);
+        public abstract void RemoveMap(long mapid);
+        public abstract void AddChests(IEnumerable<long> mapids);
+    }
+
+    public class JavaWorld : MinecraftWorld
+    {
+        public JavaWorld(string folder) : base(folder)
+        {
+            foreach (string file in Directory.GetFiles(Path.Combine(folder, "data"), "*.dat"))
             {
-                if (Regex.Match(Path.GetFileNameWithoutExtension(file), @"^map_-?\d+$").Success)
+                string name = Path.GetFileNameWithoutExtension(file);
+                if (Regex.Match(name, @"^map_-?\d+$").Success)
                 {
+                    long number = Int64.Parse(Regex.Match(name, @"-?\d+").Value);
                     NbtFile nbtfile = new NbtFile(file);
-                    maps.Add(new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue));
+                    Maps.Add(number, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue));
                 }
             }
-            return maps;
+            NbtFile leveldat = new NbtFile(Path.Combine(folder, "level.dat"));
+            Name = leveldat.RootTag["Data"]["LevelName"].StringValue;
         }
 
-        public static List<BedrockMap> GetBedrockMaps(LevelDB.DB bedrockdb)
+        public override void AddMaps(Dictionary<long, Map> maps)
         {
-            List<BedrockMap> maps = new List<BedrockMap>();
-            foreach (var pair in bedrockdb)
-            {
-                // TO DO: this
-                System.Windows.Forms.MessageBox.Show(Encoding.Default.GetString(pair.Key));
-            }
-            return maps;
-        }
-
-        public static void SaveJavaMaps(IEnumerable<JavaMap> maps, string folder, int startid)
-        {
-            int id = startid;
             foreach (var map in maps)
             {
                 NbtCompound mapfile = new NbtCompound("map")
@@ -398,34 +405,87 @@ namespace Image_Map
                         new NbtByte("unlimitedTracking", 0),
                         new NbtInt("xCenter", Int32.MaxValue),
                         new NbtInt("zCenter", Int32.MaxValue),
-                        new NbtByteArray("colors", map.Colors)
+                        new NbtByteArray("colors", map.Value.Colors)
                     }
                 };
-                new NbtFile(mapfile).SaveToFile(Path.Combine(folder, $"map_{id}"), NbtCompression.GZip);
-                id++;
+                new NbtFile(mapfile).SaveToFile(Path.Combine(Folder, "data", $"map_{map.Key}.dat"), NbtCompression.GZip);
             }
         }
 
-        public static List<int> CheckJavaConflicts(string folder, int startid, int count)
+        public override void RemoveMap(long mapid)
         {
-            List<int> conflicts = new List<int>();
-            for (int i = startid; i < startid + count; i++)
-            {
-                if (File.Exists(Path.Combine(folder, $"map_{i}.dat")))
-                    conflicts.Add(i);
-            }
-            return conflicts;
+            File.Delete(Path.Combine(Folder, "data", $"map_{mapid}.dat"));
         }
 
-        public static void SaveBedrockMaps(IEnumerable<BedrockMap> maps, LevelDB.DB db, int startid)
+        public override void AddChests(IEnumerable<long> mapids)
+        {
+            NbtFile leveldat = new NbtFile(Path.Combine(Folder, "level.dat"));
+            List<int> emptyslots = Enumerable.Range(0, 35).ToList();
+            NbtList inventory = (NbtList)leveldat.RootTag["Data"]["Player"]["Inventory"];
+            foreach (NbtCompound slot in inventory)
+            {
+                emptyslots.Remove(slot["Slot"].ByteValue);
+            }
+            int invslot = -1;
+            int chestslot = 1000;
+            NbtList chestcontents = null;
+            foreach (int id in mapids)
+            {
+                chestslot++;
+                if (chestslot >= 27)
+                {
+                    chestslot = 0;
+                    invslot++;
+                    chestcontents = new NbtList("Items");
+                    inventory.Add(new NbtCompound
+                    {
+                        new NbtString("id", "minecraft:chest"),
+                        new NbtByte("Count", 1),
+                        new NbtByte("Slot", (byte)emptyslots[invslot]),
+                        new NbtCompound("tag") { new NbtCompound("BlockEntityTag") { chestcontents} }
+                    });
+                }
+                chestcontents.Add(new NbtCompound
+                {
+                    new NbtString("id", "minecraft:filled_map"),
+                    new NbtByte("Count", 1),
+                    new NbtByte("Slot", (byte)chestslot),
+                    new NbtCompound("tag") { new NbtInt("map", id) }
+                });
+            }
+            leveldat.SaveToFile(leveldat.FileName, NbtCompression.GZip);
+        }
+    }
+
+    public class BedrockWorld : MinecraftWorld, IDisposable
+    {
+        protected LevelDB.DB BedrockDB;
+        public BedrockWorld(string folder) : base(folder)
+        {
+            BedrockDB = new LevelDB.DB(new LevelDB.Options(), Path.Combine(folder, "db"));
+            foreach (var pair in BedrockDB)
+            {
+                string name = Encoding.Default.GetString(pair.Key);
+                if (Regex.Match(name, @"^map_-?\d+$").Success)
+                {
+                    long number = Int64.Parse(Regex.Match(name, @"-?\d+").Value);
+                    NbtFile nbtfile = new NbtFile();
+                    nbtfile.BigEndian = false;
+                    nbtfile.LoadFromBuffer(pair.Value, 0, pair.Value.Length, NbtCompression.AutoDetect);
+                    Maps.Add(number, new BedrockMap(nbtfile.RootTag["colors"].ByteArrayValue));
+                }
+            }
+            Name = File.ReadAllText(Path.Combine(Folder, "levelname.txt"));
+        }
+
+        public override void AddMaps(Dictionary<long, Map> maps)
         {
             var batch = new LevelDB.WriteBatch();
-            int id = startid;
             foreach (var map in maps)
             {
                 NbtCompound mapfile = new NbtCompound("map")
                 {
-                    new NbtLong("mapId", id),
+                    new NbtLong("mapId", map.Key),
                     new NbtLong("parentMapId", -1),
                     new NbtList("decorations", NbtTagType.Compound),
                     new NbtByte("fullyExplored", 1),
@@ -436,76 +496,60 @@ namespace Image_Map
                     new NbtByte("unlimitedTracking", 0),
                     new NbtInt("xCenter", Int32.MaxValue),
                     new NbtInt("zCenter", Int32.MaxValue),
-                    new NbtByteArray("colors", map.Colors)
+                    new NbtByteArray("colors", map.Value.Colors)
                 };
                 NbtFile file = new NbtFile(mapfile);
                 file.BigEndian = false;
                 byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-                batch.Put(Encoding.Default.GetBytes($"map_{id}"), bytes);
-                id++;
+                batch.Put(Encoding.Default.GetBytes($"map_{map.Key}"), bytes);
             }
-            db.Write(batch);
+            BedrockDB.Write(batch);
         }
 
-        public static List<int> CheckBedrockConflicts(LevelDB.DB db, int startid, int count)
+        public override void RemoveMap(long mapid)
         {
-            List<int> conflicts = new List<int>();
-            for (int i = startid; i < startid + count; i++)
-            {
-                byte[] keybytes = Encoding.Default.GetBytes($"map_{i}");
-                bool exists = true;
-                try
-                {
-                    db.Get(keybytes);
-                }
-                catch (Exception)
-                {
-                    exists = false;
-                }
-                if (exists)
-                    conflicts.Add(i);
-            }
-            return conflicts;
+            BedrockDB.Delete(Encoding.Default.GetBytes($"map_{mapid}"));
         }
 
-        public static void AddBedrockChests(LevelDB.DB db, int firstmapid, int mapcount)
+        public override void AddChests(IEnumerable<long> mapids)
         {
-            byte[] playerdata = db.Get(Encoding.Default.GetBytes("~local_player")).ToArray();
+            byte[] playerdata = BedrockDB.Get(Encoding.Default.GetBytes("~local_player")).ToArray();
             NbtFile file = new NbtFile();
             file.BigEndian = false;
             file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
             NbtCompound[] emptyslots = ((NbtList)file.RootTag["Inventory"]).Where(x => x["Count"].ByteValue == 0).Cast<NbtCompound>().ToArray();
-            int currentslot = 0;
 
-            while (currentslot < emptyslots.Length)
+            int invslot = -1;
+            int chestslot = 1000;
+            NbtList chestcontents = null;
+            foreach (int id in mapids)
             {
-                ((NbtString)emptyslots[currentslot]["Name"]).Value = "minecraft:tile.chest";
-                ((NbtByte)emptyslots[currentslot]["Count"]).Value = 1;
-                NbtList chestcontents = new NbtList("Items");
-                emptyslots[currentslot].Add(new NbtCompound("tag") { chestcontents });
-                for (int i = 0; i < 27; i++)
+                chestslot++;
+                if (chestslot >= 27)
                 {
-                    int mapid = firstmapid + (currentslot * 27) + i;
-                    chestcontents.Add(new NbtCompound
-                    {
-                        new NbtString("Name", "minecraft:map"),
-                        new NbtByte("Count", 1),
-                        new NbtByte("Slot", (byte)i),
-                        new NbtCompound("tag") { new NbtLong("map_uuid", mapid) }
-                    });
-                    if (mapid >= firstmapid + mapcount - 1)
-                        goto done;
+                    chestslot = 0;
+                    invslot++;
+                    ((NbtString)emptyslots[invslot]["Name"]).Value = "minecraft:tile.chest";
+                    ((NbtByte)emptyslots[invslot]["Count"]).Value = 1;
+                    chestcontents = new NbtList("Items");
+                    emptyslots[invslot].Add(new NbtCompound("tag") { chestcontents });
                 }
-                currentslot++;
+                chestcontents.Add(new NbtCompound
+                {
+                    new NbtString("Name", "minecraft:map"),
+                    new NbtByte("Count", 1),
+                    new NbtByte("Slot", (byte)chestslot),
+                    new NbtCompound("tag") { new NbtLong("map_uuid", id) }
+                });
             }
-            done:
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            db.Put(Encoding.Default.GetBytes($"~local_player"), bytes);
+            BedrockDB.Put(Encoding.Default.GetBytes($"~local_player"), bytes);
         }
 
-        public static void AddJavaChests(string path, int firstmapid, int mapcount)
+        public void Dispose()
         {
-
+            BedrockDB?.Close();
+            BedrockDB?.Dispose();
         }
     }
 }

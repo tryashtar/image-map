@@ -6,19 +6,12 @@ using System.IO;
 using System.Linq;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
-// TO DO:
-// catch the "editing a store map" error and yell at the user instead
-// hide "to map_3" label when there's less than 2 maps
-// make auto-id finding work (unfortunately there seems to be no HasKey for leveldb)
-
 
 namespace Image_Map
 {
     public partial class TheForm : Form
     {
-        string OpenJavaFolder;
-        LevelDB.DB OpenBedrockWorld;
-        Edition OpenEdition = Edition.None;
+        MinecraftWorld SelectedWorld;
 
         string LastOpenPath = "";
         string LastExportPath = "";
@@ -39,7 +32,8 @@ namespace Image_Map
             Multiselect = true,
         };
         ImportWindow ImportDialog = new ImportWindow();
-        List<MapPreviewBox> PicBoxes = new List<MapPreviewBox>();
+        List<MapIDControl> ImportingMaps = new List<MapIDControl>();
+        List<MapIDControl> ExistingMaps = new List<MapIDControl>();
         public TheForm()
         {
             InitializeComponent();
@@ -52,91 +46,107 @@ namespace Image_Map
             LastExportPath = Properties.Settings.Default.LastExportPath;
             ImportDialog.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
             ImportDialog.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
-            BedrockCheck.Checked = Properties.Settings.Default.BedrockMode;
+            AddChestCheck.Checked = Properties.Settings.Default.AddChest;
         }
 
-        // load up images from paths, let the user modify them, and send them to processing
-        private void ImportImages(string[] paths)
+        private void OpenWorld(string folder)
         {
-            var images = paths.Select(x => Image.FromFile(x));
-            ImportDialog.StartImports(this, images.ToList());
-            foreach (var image in ImportDialog.OutputImages)
+            try
             {
-                MapPreviewBox pic = new MapPreviewBox(image, Edition.None)
-                {
-                    Width = 128,
-                    Height = 128,
-                    SizeMode = PictureBoxSizeMode.Zoom,
-                    BorderStyle = BorderStyle.FixedSingle
-                };
-                PicBoxes.Add(pic);
-                ExistingZone.Controls.Add(pic);
-                pic.MouseDown += Pic_MouseDown;
+                SelectedWorld = new JavaWorld(folder);
             }
+            catch (Exception ex1)
+            {
+                try
+                {
+                    SelectedWorld = new BedrockWorld(folder);
+                }
+                catch (Exception ex2)
+                {
+                    MessageBox.Show($"Encountered the following errors while loading this world:\n\n{ex1.Message}\n{ex2.Message}", "Ouchie ouch");
+                    return;
+                }
+            }
+            MapView.Visible = true;
+            ImportingMaps.Clear();
+            ImportZone.Controls.Clear();
+            ExistingMaps.Clear();
+            ExistingZone.Controls.Clear();
+            foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
+            {
+                MapIDControl mapbox = new MapIDControl(map.Key, map.Value);
+                mapbox.MouseDown += ExistingBox_MouseDown;
+                ExistingMaps.Add(mapbox);
+                ExistingZone.Controls.Add(mapbox);
+            }
+            WorldNameLabel.Text = SelectedWorld.Name;
         }
 
-        private void OpenWorld(string folder, Edition edition)
+        private void SelectWorldButton_Click(object sender, EventArgs e)
         {
-            OpenEdition = edition;
-            OpenBedrockWorld?.Dispose();
-            if (edition == Edition.Java)
-                OpenJavaFolder = folder;
-            else if (edition==Edition.Bedrock)
-                OpenBedrockWorld = new LevelDB.DB(new LevelDB.Options(), Path.Combine(folder, "db"));
-            ImportZone.Controls.Clear();
-            ExistingZone.Controls.Clear();
-
-            MapFileSaver.GetBedrockMaps(OpenBedrockWorld);
+            SelectWorldDialog.InitialDirectory = LastExportPath;
+            if (SelectWorldDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                if (!ImportingMaps.Any() || MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    LastExportPath = SelectWorldDialog.FileName;
+                    OpenWorld(SelectWorldDialog.FileName);
+                }
+            }
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
         {
-            if (BedrockCheck.Checked)
-                SelectWorldDialog.InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
-            else
-                SelectWorldDialog.InitialDirectory = LastExportPath;
-            if (SelectWorldDialog.ShowDialog() == CommonFileDialogResult.Ok)
-                OpenWorld(SelectWorldDialog.FileName, BedrockCheck.Checked ? Edition.Bedrock : Edition.Java);
-        }
-
-        // right-click maps to remove them
-        private void Pic_MouseDown(object sender, MouseEventArgs e)
-        {
-            MapPreviewBox b = sender as MapPreviewBox;
-            if (e.Button == MouseButtons.Right)
+            OpenDialog.InitialDirectory = LastOpenPath;
+            if (OpenDialog.ShowDialog() == DialogResult.OK)
             {
-                PicBoxes.Remove(b);
-                ExistingZone.Controls.Remove(b);
+                LastOpenPath = Path.GetDirectoryName(OpenDialog.FileName);
+                var images = OpenDialog.FileNames.Select(x => Image.FromFile(x));
+                ImportDialog.StartImports(this, images.ToList());
+                var taken = ImportingMaps.Select(x => x.ID).Concat(ExistingMaps.Select(x => x.ID)).ToList();
+                taken.Add(-1);
+                long id = taken.Max() + 1;
+                foreach (var image in ImportDialog.OutputImages)
+                {
+                    MapIDControl mapbox = new MapIDControl(id, SelectedWorld is JavaWorld ? (Map)new JavaMap(image) : new BedrockMap(image));
+                    ImportingMaps.Add(mapbox);
+                    ImportZone.Controls.Add(mapbox);
+                    mapbox.MouseDown += ImportingBox_MouseDown;
+                    id++;
+                }
             }
         }
 
-        private void ExportButton_Click(object sender, EventArgs e)
+        private void SendButton_Click(object sender, EventArgs e)
         {
-            // for bedrock, maps must be embedded in the world, and the worlds folder is permanent
-            // therefore it is opened every time for convenience
-            if (ExportDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            SelectedWorld.AddMaps(ImportingMaps.ToDictionary(x => x.ID, x => x.Map));
+            if (AddChestCheck.Checked)
+                SelectedWorld.AddChests(ImportingMaps.Select(x => x.ID));
+            ExistingMaps.AddRange(ImportingMaps);
+            ExistingZone.Controls.AddRange(ImportingMaps.ToArray());
+            ImportingMaps.Clear();
+            ImportZone.Controls.Clear();
+        }
+
+        // right-click maps to remove them
+        private void ImportingBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            MapIDControl box = sender as MapIDControl;
+            if (e.Button == MouseButtons.Right)
             {
-                LevelDB.DB bedrockdb = null;
-                if (BedrockCheck.Checked)
-                    bedrockdb = new LevelDB.DB(new LevelDB.Options(), Path.Combine(ExportDialog.FileName, "db"));
-                int startid = (int)MapIDNum.Value;
-                List<int> conflicts = BedrockCheck.Checked ? MapFileSaver.CheckBedrockConflicts(bedrockdb, startid, PicBoxes.Count) : MapFileSaver.CheckJavaConflicts(ExportDialog.FileName, startid, PicBoxes.Count);
-                if (conflicts.Any() && MessageBox.Show($"Saving now will overwrite the following existing maps: {String.Join(", ", conflicts.ToArray())}\n\nWould you like to export anyway and overwrite these maps?", "Some maps will be overwritten!", MessageBoxButtons.YesNo) == DialogResult.No)
-                    return;
-                if (BedrockCheck.Checked)
-                {
-                    using (bedrockdb)
-                    {
-                        //MapFileSaver.SaveBedrockMaps(PicBoxes.Select(x => x.Maps.GetBedrockMap()), bedrockdb, startid);
-                        MapFileSaver.AddBedrockChests(bedrockdb, startid, PicBoxes.Count);
-                    }
-                }
-                else
-                {
-                    LastExportPath = Path.GetDirectoryName(ExportDialog.FileName);
-                    //MapFileSaver.SaveJavaMaps(PicBoxes.Select(x => x.Maps.GetJavaMap()), ExportDialog.FileName, startid);
-                    MapFileSaver.AddJavaChests(ExportDialog.FileName, startid, PicBoxes.Count);
-                }
+                ImportingMaps.Remove(box);
+                ImportZone.Controls.Remove(box);
+            }
+        }
+
+        private void ExistingBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            MapIDControl box = sender as MapIDControl;
+            if (e.Button == MouseButtons.Right && MessageBox.Show("Deleting this map will remove all copies of it from the world permanently.\n\nWould you like to delete this map?", "Delete this map?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                ExistingMaps.Remove(box);
+                ExistingZone.Controls.Remove(box);
+                SelectedWorld.RemoveMap(box.ID);
             }
         }
 
@@ -147,20 +157,14 @@ namespace Image_Map
             Properties.Settings.Default.LastOpenPath = LastOpenPath;
             Properties.Settings.Default.InterpIndex = ImportDialog.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = ImportDialog.ApplyAllCheck.Checked;
-            Properties.Settings.Default.BedrockMode = BedrockCheck.Checked;
+            Properties.Settings.Default.AddChest = AddChestCheck.Checked;
             Properties.Settings.Default.Save();
-        }
-
-        private void MapIDNum_ValueChanged(object sender, EventArgs e)
-        {
-            LastIDLabel.Text = $"map_{MapIDNum.Value + Math.Max(0, PicBoxes.Count - 1)}";
         }
     }
 
     public enum Edition
     {
         Java,
-        Bedrock,
-        None
+        Bedrock
     }
 }

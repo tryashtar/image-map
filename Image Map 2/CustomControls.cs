@@ -35,6 +35,21 @@ namespace Image_Map
             else if (edition == Edition.Bedrock)
                 Map = new BedrockMap(original);
             OriginalImage = original;
+            Constructor();
+        }
+
+        public MapPreviewBox(Map map)
+        {
+            Map = map;
+            OriginalImage = map.Image;
+            Constructor();
+        }
+
+        private void Constructor()
+        {
+            Width = 128;
+            Height = 128;
+            SizeMode = PictureBoxSizeMode.StretchImage;
             Image = Map.Image;
             BackgroundImage = Properties.Resources.item_frame;
             MouseEnter += MapPreviewBox_MouseEnter;

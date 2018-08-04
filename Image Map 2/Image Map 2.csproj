@@ -39,6 +39,9 @@
   <PropertyGroup>
     <ApplicationIcon>image-map-icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Costura, Version=3.1.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.3.1.0\lib\net46\Costura.dll</HintPath>
@@ -87,6 +90,12 @@
       <DependentUpon>ImportWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="MapHelpers.cs" />
+    <Compile Include="MapIDControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MapIDControl.Designer.cs">
+      <DependentUpon>MapIDControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="TheForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -97,6 +106,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="ImportWindow.resx">
       <DependentUpon>ImportWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MapIDControl.resx">
+      <DependentUpon>MapIDControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TheForm.resx">
       <DependentUpon>TheForm.cs</DependentUpon>
@@ -111,6 +123,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -126,10 +139,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\item_frame.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="image-map-icon.ico" />
+    <None Include="Resources\item_frame.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

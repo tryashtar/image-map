@@ -94,5 +94,17 @@ namespace Image_Map.Properties {
                 this["LastOpenPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AddChest {
+            get {
+                return ((bool)(this["AddChest"]));
+            }
+            set {
+                this["AddChest"] = value;
+            }
+        }
     }
 }
