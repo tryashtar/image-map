@@ -2,7 +2,7 @@
 # <img src="https://i.imgur.com/E6BqiuN.png" width=48> Image Map
 ### [Download link](https://github.com/tryashtar/image-map/releases)
 
-This is a simple Windows application that converts images to Minecraft maps using the latest colors. It works for Java Edition 1.12/1.13+ and Bedrock 1.6+ (inferior Windows 10 Edition).  
+This is a simple Windows application that converts images to Minecraft maps using the latest colors. It works for Java Edition 1.12/1.13+ and Bedrock 1.5/1.6+ (inferior Windows 10 Edition).  
 
 ## How to Use
 Click `Select World`, then browse for your world folder. These are located in a different place for each edition:

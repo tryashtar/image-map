@@ -49,7 +49,7 @@ namespace Image_Map
         {
             Width = 128;
             Height = 128;
-            SizeMode = PictureBoxSizeMode.StretchImage;
+            SizeMode = PictureBoxSizeMode.Zoom;
             Image = Map.Image;
             BackgroundImage = Properties.Resources.item_frame;
             MouseEnter += MapPreviewBox_MouseEnter;

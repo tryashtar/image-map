@@ -47,7 +47,7 @@ namespace Image_Map
                     {
                         double mindist = Double.PositiveInfinity;
                         // find the color in the palette that is closest to this one
-                        foreach (Color mapcolor in ColorToByte.Keys)
+                        foreach (Color mapcolor in ColorToByte.Keys.Where(x => x.A == 255))
                         {
                             double distance = ColorDistance(realpixel, mapcolor);
                             if (mindist > distance)
@@ -529,7 +529,10 @@ namespace Image_Map
                 {
                     chestslot = 0;
                     invslot++;
-                    ((NbtString)emptyslots[invslot]["Name"]).Value = "minecraft:tile.chest";
+                    if (emptyslots[invslot].Remove("Name"))
+                        emptyslots[invslot].Add(new NbtString("Name", "minecraft:tile.chest"));
+                    if (emptyslots[invslot].Remove("id"))
+                        emptyslots[invslot].Add(new NbtShort("id", 54));
                     ((NbtByte)emptyslots[invslot]["Count"]).Value = 1;
                     chestcontents = new NbtList("Items");
                     emptyslots[invslot].Add(new NbtCompound("tag") { chestcontents });
@@ -537,6 +540,7 @@ namespace Image_Map
                 chestcontents.Add(new NbtCompound
                 {
                     new NbtString("Name", "minecraft:map"),
+                    new NbtShort("id", 358),
                     new NbtByte("Count", 1),
                     new NbtByte("Slot", (byte)chestslot),
                     new NbtCompound("tag") { new NbtLong("map_uuid", id) }
