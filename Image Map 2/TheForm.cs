@@ -14,16 +14,17 @@ namespace Image_Map
         MinecraftWorld SelectedWorld;
 
         string LastOpenPath = "";
-        string LastExportPath = "";
+        string LastWorldPath = "";
+        string LastImgExportPath = "";
         CommonOpenFileDialog SelectWorldDialog = new CommonOpenFileDialog()
         {
             Title = "Select a Minecraft world folder",
             IsFolderPicker = true,
         };
-        CommonOpenFileDialog ExportDialog = new CommonOpenFileDialog()
+        SaveFileDialog ExportDialog = new SaveFileDialog()
         {
-            Title = "Export your maps somewhere",
-            IsFolderPicker = true,
+            Title = "Export this map as a PNG",
+            Filter = "Image Files|*.png|All Files|*.*"
         };
         OpenFileDialog OpenDialog = new OpenFileDialog()
         {
@@ -43,7 +44,8 @@ namespace Image_Map
         {
             // load up saved settings
             LastOpenPath = Properties.Settings.Default.LastOpenPath;
-            LastExportPath = Properties.Settings.Default.LastExportPath;
+            LastWorldPath = Properties.Settings.Default.LastWorldPath;
+            LastImgExportPath = Properties.Settings.Default.LastImgExportPath;
             ImportDialog.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
             ImportDialog.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
             AddChestCheck.Checked = Properties.Settings.Default.AddChest;
@@ -75,7 +77,6 @@ namespace Image_Map
             foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
             {
                 MapIDControl mapbox = new MapIDControl(map.Key, map.Value);
-                mapbox.MouseDown += ExistingBox_MouseDown;
                 ExistingMaps.Add(mapbox);
                 ExistingZone.Controls.Add(mapbox);
             }
@@ -84,12 +85,12 @@ namespace Image_Map
 
         private void SelectWorldButton_Click(object sender, EventArgs e)
         {
-            SelectWorldDialog.InitialDirectory = LastExportPath;
+            SelectWorldDialog.InitialDirectory = LastWorldPath;
             if (SelectWorldDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 if (!ImportingMaps.Any() || MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    LastExportPath = SelectWorldDialog.FileName;
+                    LastWorldPath = SelectWorldDialog.FileName;
                     OpenWorld(SelectWorldDialog.FileName);
                 }
             }
@@ -139,26 +140,80 @@ namespace Image_Map
             }
         }
 
-        private void ExistingBox_MouseDown(object sender, MouseEventArgs e)
-        {
-            MapIDControl box = sender as MapIDControl;
-            if (e.Button == MouseButtons.Right && MessageBox.Show("Deleting this map will remove all copies of it from the world permanently.\n\nWould you like to delete this map?", "Delete this map?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                ExistingMaps.Remove(box);
-                ExistingZone.Controls.Remove(box);
-                SelectedWorld.RemoveMap(box.ID);
-            }
-        }
-
         private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             // save settings
-            Properties.Settings.Default.LastExportPath = LastExportPath;
+            Properties.Settings.Default.LastWorldPath = LastWorldPath;
             Properties.Settings.Default.LastOpenPath = LastOpenPath;
+            Properties.Settings.Default.LastImgExportPath = LastImgExportPath;
             Properties.Settings.Default.InterpIndex = ImportDialog.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = ImportDialog.ApplyAllCheck.Checked;
             Properties.Settings.Default.AddChest = AddChestCheck.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        private void ExportImageButton_Click(object sender, EventArgs e)
+        {
+            List<MapIDControl> selected = new List<MapIDControl>();
+            foreach (var box in ExistingMaps)
+            {
+                if (box.Selected)
+                    selected.Add(box);
+            }
+            if (selected.Count > 0)
+            {
+                ExportDialog.InitialDirectory = LastImgExportPath;
+                if (selected.Count == 1)
+                    ExportDialog.FileName = selected[0].GetMapName() + ".png";
+                else
+                    ExportDialog.FileName = "";
+                if (ExportDialog.ShowDialog() == DialogResult.OK)
+                {
+                    LastImgExportPath = Path.GetDirectoryName(ExportDialog.FileName);
+                    if (selected.Count == 1)
+                        selected[0].Map.Image.Save(ExportDialog.FileName);
+                    else
+                    {
+                        string folder = Path.ChangeExtension(ExportDialog.FileName, "");
+                        Directory.CreateDirectory(folder);
+                        foreach (var box in selected)
+                        {
+                            box.Map.Image.Save(Path.Combine(folder, box.GetMapName() + ".png"));
+                        }
+                    }
+                }
+            }
+        }
+
+        private void AddInventoryButton_Click(object sender, EventArgs e)
+        {
+            List<long> selected = new List<long>();
+            foreach (var box in ExistingMaps)
+            {
+                if (box.Selected)
+                    selected.Add(box.ID);
+            }
+            if (selected.Count > 0)
+                SelectedWorld.AddChests(selected);
+        }
+
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            List<MapIDControl> selected = new List<MapIDControl>();
+            foreach (var box in ExistingMaps)
+            {
+                if (box.Selected)
+                    selected.Add(box);
+            }
+            if (selected.Count > 0 && MessageBox.Show("Deleting these maps will remove all copies from the world permanently.\n\nWould you like to delete these maps?", $"Delete {selected.Count} maps?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                foreach (var box in selected)
+                {
+                    ExistingMaps.Remove(box);
+                    ExistingZone.Controls.Remove(box);
+                    SelectedWorld.RemoveMap(box.ID);
+                }
+            }
         }
     }
 

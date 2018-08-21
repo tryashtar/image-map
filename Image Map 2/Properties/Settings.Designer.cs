@@ -74,12 +74,12 @@ namespace Image_Map.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastExportPath {
+        public string LastWorldPath {
             get {
-                return ((string)(this["LastExportPath"]));
+                return ((string)(this["LastWorldPath"]));
             }
             set {
-                this["LastExportPath"] = value;
+                this["LastWorldPath"] = value;
             }
         }
         
@@ -104,6 +104,18 @@ namespace Image_Map.Properties {
             }
             set {
                 this["AddChest"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastImgExportPath {
+            get {
+                return ((string)(this["LastImgExportPath"]));
+            }
+            set {
+                this["LastImgExportPath"] = value;
             }
         }
     }

@@ -34,17 +34,22 @@
             this.MapView = new System.Windows.Forms.TabControl();
             this.ImportTab = new System.Windows.Forms.TabPage();
             this.ImportControls = new System.Windows.Forms.Panel();
+            this.AddChestCheck = new System.Windows.Forms.CheckBox();
             this.SendButton = new System.Windows.Forms.Button();
             this.OpenButton = new System.Windows.Forms.Button();
             this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
             this.ExistingTab = new System.Windows.Forms.TabPage();
             this.SelectWorldLabel = new System.Windows.Forms.Label();
-            this.AddChestCheck = new System.Windows.Forms.CheckBox();
             this.WorldNameLabel = new System.Windows.Forms.Label();
+            this.ExistingControls = new System.Windows.Forms.Panel();
+            this.ExportImageButton = new System.Windows.Forms.Button();
+            this.AddInventoryButton = new System.Windows.Forms.Button();
+            this.DeleteButton = new System.Windows.Forms.Button();
             this.MapView.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportControls.SuspendLayout();
             this.ExistingTab.SuspendLayout();
+            this.ExistingControls.SuspendLayout();
             this.SuspendLayout();
             // 
             // SelectWorldButton
@@ -69,7 +74,7 @@
             this.ExistingZone.Location = new System.Drawing.Point(6, 5);
             this.ExistingZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.ExistingZone.Name = "ExistingZone";
-            this.ExistingZone.Size = new System.Drawing.Size(778, 400);
+            this.ExistingZone.Size = new System.Drawing.Size(778, 333);
             this.ExistingZone.TabIndex = 2;
             // 
             // MapView
@@ -111,6 +116,19 @@
             this.ImportControls.Size = new System.Drawing.Size(777, 61);
             this.ImportControls.TabIndex = 4;
             // 
+            // AddChestCheck
+            // 
+            this.AddChestCheck.AutoSize = true;
+            this.AddChestCheck.Checked = true;
+            this.AddChestCheck.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.AddChestCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.AddChestCheck.Location = new System.Drawing.Point(356, 17);
+            this.AddChestCheck.Name = "AddChestCheck";
+            this.AddChestCheck.Size = new System.Drawing.Size(269, 29);
+            this.AddChestCheck.TabIndex = 19;
+            this.AddChestCheck.Text = "Add new maps to inventory";
+            this.AddChestCheck.UseVisualStyleBackColor = true;
+            // 
             // SendButton
             // 
             this.SendButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
@@ -150,6 +168,7 @@
             // 
             // ExistingTab
             // 
+            this.ExistingTab.Controls.Add(this.ExistingControls);
             this.ExistingTab.Controls.Add(this.ExistingZone);
             this.ExistingTab.Location = new System.Drawing.Point(4, 38);
             this.ExistingTab.Name = "ExistingTab";
@@ -170,19 +189,6 @@
             this.SelectWorldLabel.TabIndex = 17;
             this.SelectWorldLabel.Text = "← Click Here!\r\n\r\nMaps will show up in this\r\narea once you select a world.";
             // 
-            // AddChestCheck
-            // 
-            this.AddChestCheck.AutoSize = true;
-            this.AddChestCheck.Checked = true;
-            this.AddChestCheck.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AddChestCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.AddChestCheck.Location = new System.Drawing.Point(356, 17);
-            this.AddChestCheck.Name = "AddChestCheck";
-            this.AddChestCheck.Size = new System.Drawing.Size(269, 29);
-            this.AddChestCheck.TabIndex = 19;
-            this.AddChestCheck.Text = "Add new maps to inventory";
-            this.AddChestCheck.UseVisualStyleBackColor = true;
-            // 
             // WorldNameLabel
             // 
             this.WorldNameLabel.AutoSize = true;
@@ -191,6 +197,54 @@
             this.WorldNameLabel.Name = "WorldNameLabel";
             this.WorldNameLabel.Size = new System.Drawing.Size(0, 17);
             this.WorldNameLabel.TabIndex = 20;
+            // 
+            // ExistingControls
+            // 
+            this.ExistingControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ExistingControls.Controls.Add(this.DeleteButton);
+            this.ExistingControls.Controls.Add(this.AddInventoryButton);
+            this.ExistingControls.Controls.Add(this.ExportImageButton);
+            this.ExistingControls.Location = new System.Drawing.Point(7, 343);
+            this.ExistingControls.Name = "ExistingControls";
+            this.ExistingControls.Size = new System.Drawing.Size(777, 61);
+            this.ExistingControls.TabIndex = 5;
+            // 
+            // ExportImageButton
+            // 
+            this.ExportImageButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.ExportImageButton.Location = new System.Drawing.Point(3, 3);
+            this.ExportImageButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ExportImageButton.Name = "ExportImageButton";
+            this.ExportImageButton.Size = new System.Drawing.Size(190, 53);
+            this.ExportImageButton.TabIndex = 17;
+            this.ExportImageButton.Text = "Export Image";
+            this.ExportImageButton.UseVisualStyleBackColor = true;
+            this.ExportImageButton.Click += new System.EventHandler(this.ExportImageButton_Click);
+            // 
+            // AddInventoryButton
+            // 
+            this.AddInventoryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.AddInventoryButton.Location = new System.Drawing.Point(199, 3);
+            this.AddInventoryButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.AddInventoryButton.Name = "AddInventoryButton";
+            this.AddInventoryButton.Size = new System.Drawing.Size(208, 53);
+            this.AddInventoryButton.TabIndex = 18;
+            this.AddInventoryButton.Text = "Add to Inventory";
+            this.AddInventoryButton.UseVisualStyleBackColor = true;
+            this.AddInventoryButton.Click += new System.EventHandler(this.AddInventoryButton_Click);
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.DeleteButton.Location = new System.Drawing.Point(645, 3);
+            this.DeleteButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(119, 53);
+            this.DeleteButton.TabIndex = 19;
+            this.DeleteButton.Text = "Delete";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
             // TheForm
             // 
@@ -213,6 +267,7 @@
             this.ImportControls.ResumeLayout(false);
             this.ImportControls.PerformLayout();
             this.ExistingTab.ResumeLayout(false);
+            this.ExistingControls.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -232,6 +287,10 @@
         private System.Windows.Forms.Label SelectWorldLabel;
         private System.Windows.Forms.CheckBox AddChestCheck;
         private System.Windows.Forms.Label WorldNameLabel;
+        private System.Windows.Forms.Panel ExistingControls;
+        private System.Windows.Forms.Button DeleteButton;
+        private System.Windows.Forms.Button AddInventoryButton;
+        private System.Windows.Forms.Button ExportImageButton;
     }
 }
 
