@@ -450,6 +450,7 @@ namespace Image_Map
                     new NbtString("id", "minecraft:filled_map"),
                     new NbtByte("Count", 1),
                     new NbtByte("Slot", (byte)chestslot),
+                    new NbtShort("Damage", (short)id), // java 1.12 support
                     new NbtCompound("tag") { new NbtInt("map", id) }
                 });
             }
@@ -540,7 +541,7 @@ namespace Image_Map
                 chestcontents.Add(new NbtCompound
                 {
                     new NbtString("Name", "minecraft:map"),
-                    new NbtShort("id", 358),
+                    new NbtShort("id", 358), // bedrock 1.5 support
                     new NbtByte("Count", 1),
                     new NbtByte("Slot", (byte)chestslot),
                     new NbtCompound("tag") { new NbtLong("map_uuid", id) }
