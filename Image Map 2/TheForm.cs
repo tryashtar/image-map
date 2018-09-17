@@ -16,6 +16,7 @@ namespace Image_Map
         string LastOpenPath = "";
         string LastWorldPath = "";
         string LastImgExportPath = "";
+        string BedrockSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
         CommonOpenFileDialog SelectWorldDialog = new CommonOpenFileDialog()
         {
             Title = "Select a Minecraft world folder",
@@ -33,6 +34,7 @@ namespace Image_Map
             Multiselect = true,
         };
         ImportWindow ImportDialog = new ImportWindow();
+        BedrockWorldWindow WorldDialog = new BedrockWorldWindow();
         List<MapIDControl> ImportingMaps = new List<MapIDControl>();
         List<MapIDControl> ExistingMaps = new List<MapIDControl>();
         public TheForm()
@@ -51,24 +53,8 @@ namespace Image_Map
             AddChestCheck.Checked = Properties.Settings.Default.AddChest;
         }
 
-        private void OpenWorld(string folder)
+        private void NewWorldOpened()
         {
-            try
-            {
-                SelectedWorld = new JavaWorld(folder);
-            }
-            catch (Exception ex1)
-            {
-                try
-                {
-                    SelectedWorld = new BedrockWorld(folder);
-                }
-                catch (Exception ex2)
-                {
-                    MessageBox.Show($"Encountered the following errors while loading this world:\n\n{ex1.Message}\n{ex2.Message}", "Ouchie ouch");
-                    return;
-                }
-            }
             MapView.Visible = true;
             ImportingMaps.Clear();
             ImportZone.Controls.Clear();
@@ -83,7 +69,7 @@ namespace Image_Map
             WorldNameLabel.Text = SelectedWorld.Name;
         }
 
-        private void SelectWorldButton_Click(object sender, EventArgs e)
+        private void JavaWorldButton_Click(object sender, EventArgs e)
         {
             SelectWorldDialog.InitialDirectory = LastWorldPath;
             if (SelectWorldDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -91,7 +77,33 @@ namespace Image_Map
                 if (!ImportingMaps.Any() || MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
                     LastWorldPath = SelectWorldDialog.FileName;
-                    OpenWorld(SelectWorldDialog.FileName);
+                    try
+                    {
+                        SelectedWorld = new JavaWorld(SelectWorldDialog.FileName);
+                        NewWorldOpened();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Encountered the following error while loading this world:\n\n{ex.Message}", "Ouchie ouch");
+                    }
+                }
+            }
+        }
+
+
+        private void BedrockWorldButton_Click(object sender, EventArgs e)
+        {
+            WorldDialog.ShowWorlds(this, BedrockSavesFolder);
+            if (WorldDialog.Confirmed)
+            {
+                try
+                {
+                    SelectedWorld = new BedrockWorld(WorldDialog.SelectedWorldFolder);
+                    NewWorldOpened();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Encountered the following error while loading this world:\n\n{ex.Message}", "Ouchie ouch");
                 }
             }
         }

@@ -80,6 +80,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BedrockWorldControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="BedrockWorldControl.Designer.cs">
+      <DependentUpon>BedrockWorldControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BedrockWorldWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BedrockWorldWindow.Designer.cs">
+      <DependentUpon>BedrockWorldWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="CustomControls.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -104,6 +116,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BedrockWorldControl.resx">
+      <DependentUpon>BedrockWorldControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BedrockWorldWindow.resx">
+      <DependentUpon>BedrockWorldWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ImportWindow.resx">
       <DependentUpon>ImportWindow.cs</DependentUpon>
     </EmbeddedResource>

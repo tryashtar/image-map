@@ -457,12 +457,12 @@ namespace Image_Map
         }
     }
 
-    public class BedrockWorld : MinecraftWorld, IDisposable
+    public class BedrockWorld : MinecraftWorld
     {
         protected LevelDB.DB BedrockDB;
         public BedrockWorld(string folder) : base(folder)
         {
-            BedrockDB = new LevelDB.DB(new LevelDB.Options(), Path.Combine(folder, "db"));
+            BedrockDB = new LevelDB.DB(new LevelDB.Options() { CreateIfMissing = false }, Path.Combine(folder, "db"));
             foreach (var pair in BedrockDB)
             {
                 string name = Encoding.Default.GetString(pair.Key);

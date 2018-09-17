@@ -29,40 +29,133 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForm));
-            this.SelectWorldButton = new System.Windows.Forms.Button();
+            this.JavaWorldButton = new System.Windows.Forms.Button();
+            this.SelectWorldLabel = new System.Windows.Forms.Label();
+            this.WorldNameLabel = new System.Windows.Forms.Label();
+            this.BedrockWorldButton = new System.Windows.Forms.Button();
+            this.ExistingTab = new System.Windows.Forms.TabPage();
+            this.ExistingControls = new System.Windows.Forms.Panel();
+            this.DeleteButton = new System.Windows.Forms.Button();
+            this.AddInventoryButton = new System.Windows.Forms.Button();
+            this.ExportImageButton = new System.Windows.Forms.Button();
             this.ExistingZone = new System.Windows.Forms.FlowLayoutPanel();
-            this.MapView = new System.Windows.Forms.TabControl();
             this.ImportTab = new System.Windows.Forms.TabPage();
             this.ImportControls = new System.Windows.Forms.Panel();
             this.AddChestCheck = new System.Windows.Forms.CheckBox();
             this.SendButton = new System.Windows.Forms.Button();
             this.OpenButton = new System.Windows.Forms.Button();
             this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
-            this.ExistingTab = new System.Windows.Forms.TabPage();
-            this.SelectWorldLabel = new System.Windows.Forms.Label();
-            this.WorldNameLabel = new System.Windows.Forms.Label();
-            this.ExistingControls = new System.Windows.Forms.Panel();
-            this.ExportImageButton = new System.Windows.Forms.Button();
-            this.AddInventoryButton = new System.Windows.Forms.Button();
-            this.DeleteButton = new System.Windows.Forms.Button();
-            this.MapView.SuspendLayout();
-            this.ImportTab.SuspendLayout();
-            this.ImportControls.SuspendLayout();
+            this.MapView = new System.Windows.Forms.TabControl();
             this.ExistingTab.SuspendLayout();
             this.ExistingControls.SuspendLayout();
+            this.ImportTab.SuspendLayout();
+            this.ImportControls.SuspendLayout();
+            this.MapView.SuspendLayout();
             this.SuspendLayout();
             // 
-            // SelectWorldButton
+            // JavaWorldButton
             // 
-            this.SelectWorldButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
-            this.SelectWorldButton.Location = new System.Drawing.Point(11, 10);
-            this.SelectWorldButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.SelectWorldButton.Name = "SelectWorldButton";
-            this.SelectWorldButton.Size = new System.Drawing.Size(158, 92);
-            this.SelectWorldButton.TabIndex = 0;
-            this.SelectWorldButton.Text = "Select World";
-            this.SelectWorldButton.UseVisualStyleBackColor = true;
-            this.SelectWorldButton.Click += new System.EventHandler(this.SelectWorldButton_Click);
+            this.JavaWorldButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
+            this.JavaWorldButton.Location = new System.Drawing.Point(11, 10);
+            this.JavaWorldButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.JavaWorldButton.Name = "JavaWorldButton";
+            this.JavaWorldButton.Size = new System.Drawing.Size(158, 92);
+            this.JavaWorldButton.TabIndex = 0;
+            this.JavaWorldButton.Text = "Java World";
+            this.JavaWorldButton.UseVisualStyleBackColor = true;
+            this.JavaWorldButton.Click += new System.EventHandler(this.JavaWorldButton_Click);
+            // 
+            // SelectWorldLabel
+            // 
+            this.SelectWorldLabel.AutoSize = true;
+            this.SelectWorldLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
+            this.SelectWorldLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
+            this.SelectWorldLabel.Location = new System.Drawing.Point(305, 36);
+            this.SelectWorldLabel.Name = "SelectWorldLabel";
+            this.SelectWorldLabel.Size = new System.Drawing.Size(458, 156);
+            this.SelectWorldLabel.TabIndex = 17;
+            this.SelectWorldLabel.Text = "← Click Here!\r\n\r\nMaps will show up in this\r\narea once you select a world.";
+            // 
+            // WorldNameLabel
+            // 
+            this.WorldNameLabel.AutoSize = true;
+            this.WorldNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+            this.WorldNameLabel.Location = new System.Drawing.Point(12, 217);
+            this.WorldNameLabel.Name = "WorldNameLabel";
+            this.WorldNameLabel.Size = new System.Drawing.Size(0, 17);
+            this.WorldNameLabel.TabIndex = 20;
+            // 
+            // BedrockWorldButton
+            // 
+            this.BedrockWorldButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
+            this.BedrockWorldButton.Location = new System.Drawing.Point(11, 114);
+            this.BedrockWorldButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.BedrockWorldButton.Name = "BedrockWorldButton";
+            this.BedrockWorldButton.Size = new System.Drawing.Size(158, 92);
+            this.BedrockWorldButton.TabIndex = 21;
+            this.BedrockWorldButton.Text = "Bedrock World";
+            this.BedrockWorldButton.UseVisualStyleBackColor = true;
+            this.BedrockWorldButton.Click += new System.EventHandler(this.BedrockWorldButton_Click);
+            // 
+            // ExistingTab
+            // 
+            this.ExistingTab.Controls.Add(this.ExistingControls);
+            this.ExistingTab.Controls.Add(this.ExistingZone);
+            this.ExistingTab.Location = new System.Drawing.Point(4, 38);
+            this.ExistingTab.Name = "ExistingTab";
+            this.ExistingTab.Padding = new System.Windows.Forms.Padding(3);
+            this.ExistingTab.Size = new System.Drawing.Size(792, 410);
+            this.ExistingTab.TabIndex = 0;
+            this.ExistingTab.Text = "Existing Maps";
+            this.ExistingTab.UseVisualStyleBackColor = true;
+            // 
+            // ExistingControls
+            // 
+            this.ExistingControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ExistingControls.Controls.Add(this.DeleteButton);
+            this.ExistingControls.Controls.Add(this.AddInventoryButton);
+            this.ExistingControls.Controls.Add(this.ExportImageButton);
+            this.ExistingControls.Location = new System.Drawing.Point(7, 343);
+            this.ExistingControls.Name = "ExistingControls";
+            this.ExistingControls.Size = new System.Drawing.Size(777, 61);
+            this.ExistingControls.TabIndex = 5;
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.DeleteButton.Location = new System.Drawing.Point(645, 3);
+            this.DeleteButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(119, 53);
+            this.DeleteButton.TabIndex = 19;
+            this.DeleteButton.Text = "Delete";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
+            // AddInventoryButton
+            // 
+            this.AddInventoryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.AddInventoryButton.Location = new System.Drawing.Point(199, 3);
+            this.AddInventoryButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.AddInventoryButton.Name = "AddInventoryButton";
+            this.AddInventoryButton.Size = new System.Drawing.Size(208, 53);
+            this.AddInventoryButton.TabIndex = 18;
+            this.AddInventoryButton.Text = "Add to Inventory";
+            this.AddInventoryButton.UseVisualStyleBackColor = true;
+            this.AddInventoryButton.Click += new System.EventHandler(this.AddInventoryButton_Click);
+            // 
+            // ExportImageButton
+            // 
+            this.ExportImageButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.ExportImageButton.Location = new System.Drawing.Point(3, 3);
+            this.ExportImageButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ExportImageButton.Name = "ExportImageButton";
+            this.ExportImageButton.Size = new System.Drawing.Size(190, 53);
+            this.ExportImageButton.TabIndex = 17;
+            this.ExportImageButton.Text = "Export Image";
+            this.ExportImageButton.UseVisualStyleBackColor = true;
+            this.ExportImageButton.Click += new System.EventHandler(this.ExportImageButton_Click);
             // 
             // ExistingZone
             // 
@@ -76,21 +169,6 @@
             this.ExistingZone.Name = "ExistingZone";
             this.ExistingZone.Size = new System.Drawing.Size(778, 333);
             this.ExistingZone.TabIndex = 2;
-            // 
-            // MapView
-            // 
-            this.MapView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.MapView.Controls.Add(this.ImportTab);
-            this.MapView.Controls.Add(this.ExistingTab);
-            this.MapView.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.MapView.Location = new System.Drawing.Point(175, 12);
-            this.MapView.Name = "MapView";
-            this.MapView.SelectedIndex = 0;
-            this.MapView.Size = new System.Drawing.Size(800, 452);
-            this.MapView.TabIndex = 16;
-            this.MapView.Visible = false;
             // 
             // ImportTab
             // 
@@ -166,94 +244,30 @@
             this.ImportZone.Size = new System.Drawing.Size(778, 333);
             this.ImportZone.TabIndex = 3;
             // 
-            // ExistingTab
+            // MapView
             // 
-            this.ExistingTab.Controls.Add(this.ExistingControls);
-            this.ExistingTab.Controls.Add(this.ExistingZone);
-            this.ExistingTab.Location = new System.Drawing.Point(4, 38);
-            this.ExistingTab.Name = "ExistingTab";
-            this.ExistingTab.Padding = new System.Windows.Forms.Padding(3);
-            this.ExistingTab.Size = new System.Drawing.Size(792, 410);
-            this.ExistingTab.TabIndex = 0;
-            this.ExistingTab.Text = "Existing Maps";
-            this.ExistingTab.UseVisualStyleBackColor = true;
-            // 
-            // SelectWorldLabel
-            // 
-            this.SelectWorldLabel.AutoSize = true;
-            this.SelectWorldLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
-            this.SelectWorldLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
-            this.SelectWorldLabel.Location = new System.Drawing.Point(305, 36);
-            this.SelectWorldLabel.Name = "SelectWorldLabel";
-            this.SelectWorldLabel.Size = new System.Drawing.Size(458, 156);
-            this.SelectWorldLabel.TabIndex = 17;
-            this.SelectWorldLabel.Text = "← Click Here!\r\n\r\nMaps will show up in this\r\narea once you select a world.";
-            // 
-            // WorldNameLabel
-            // 
-            this.WorldNameLabel.AutoSize = true;
-            this.WorldNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
-            this.WorldNameLabel.Location = new System.Drawing.Point(12, 104);
-            this.WorldNameLabel.Name = "WorldNameLabel";
-            this.WorldNameLabel.Size = new System.Drawing.Size(0, 17);
-            this.WorldNameLabel.TabIndex = 20;
-            // 
-            // ExistingControls
-            // 
-            this.ExistingControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.MapView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExistingControls.Controls.Add(this.DeleteButton);
-            this.ExistingControls.Controls.Add(this.AddInventoryButton);
-            this.ExistingControls.Controls.Add(this.ExportImageButton);
-            this.ExistingControls.Location = new System.Drawing.Point(7, 343);
-            this.ExistingControls.Name = "ExistingControls";
-            this.ExistingControls.Size = new System.Drawing.Size(777, 61);
-            this.ExistingControls.TabIndex = 5;
-            // 
-            // ExportImageButton
-            // 
-            this.ExportImageButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.ExportImageButton.Location = new System.Drawing.Point(3, 3);
-            this.ExportImageButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.ExportImageButton.Name = "ExportImageButton";
-            this.ExportImageButton.Size = new System.Drawing.Size(190, 53);
-            this.ExportImageButton.TabIndex = 17;
-            this.ExportImageButton.Text = "Export Image";
-            this.ExportImageButton.UseVisualStyleBackColor = true;
-            this.ExportImageButton.Click += new System.EventHandler(this.ExportImageButton_Click);
-            // 
-            // AddInventoryButton
-            // 
-            this.AddInventoryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.AddInventoryButton.Location = new System.Drawing.Point(199, 3);
-            this.AddInventoryButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.AddInventoryButton.Name = "AddInventoryButton";
-            this.AddInventoryButton.Size = new System.Drawing.Size(208, 53);
-            this.AddInventoryButton.TabIndex = 18;
-            this.AddInventoryButton.Text = "Add to Inventory";
-            this.AddInventoryButton.UseVisualStyleBackColor = true;
-            this.AddInventoryButton.Click += new System.EventHandler(this.AddInventoryButton_Click);
-            // 
-            // DeleteButton
-            // 
-            this.DeleteButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.DeleteButton.Location = new System.Drawing.Point(645, 3);
-            this.DeleteButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.DeleteButton.Name = "DeleteButton";
-            this.DeleteButton.Size = new System.Drawing.Size(119, 53);
-            this.DeleteButton.TabIndex = 19;
-            this.DeleteButton.Text = "Delete";
-            this.DeleteButton.UseVisualStyleBackColor = true;
-            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            this.MapView.Controls.Add(this.ImportTab);
+            this.MapView.Controls.Add(this.ExistingTab);
+            this.MapView.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.MapView.Location = new System.Drawing.Point(175, 12);
+            this.MapView.Name = "MapView";
+            this.MapView.SelectedIndex = 0;
+            this.MapView.Size = new System.Drawing.Size(800, 452);
+            this.MapView.TabIndex = 16;
+            this.MapView.Visible = false;
             // 
             // TheForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(975, 464);
+            this.Controls.Add(this.BedrockWorldButton);
             this.Controls.Add(this.WorldNameLabel);
             this.Controls.Add(this.MapView);
-            this.Controls.Add(this.SelectWorldButton);
+            this.Controls.Add(this.JavaWorldButton);
             this.Controls.Add(this.SelectWorldLabel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -262,12 +276,12 @@
             this.Text = "Image Map";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.Load += new System.EventHandler(this.TheForm_Load);
-            this.MapView.ResumeLayout(false);
+            this.ExistingTab.ResumeLayout(false);
+            this.ExistingControls.ResumeLayout(false);
             this.ImportTab.ResumeLayout(false);
             this.ImportControls.ResumeLayout(false);
             this.ImportControls.PerformLayout();
-            this.ExistingTab.ResumeLayout(false);
-            this.ExistingControls.ResumeLayout(false);
+            this.MapView.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -275,22 +289,23 @@
 
         #endregion
 
-        private System.Windows.Forms.Button SelectWorldButton;
-        private System.Windows.Forms.FlowLayoutPanel ExistingZone;
-        private System.Windows.Forms.TabControl MapView;
-        private System.Windows.Forms.TabPage ExistingTab;
-        private System.Windows.Forms.TabPage ImportTab;
-        private System.Windows.Forms.FlowLayoutPanel ImportZone;
-        private System.Windows.Forms.Panel ImportControls;
-        private System.Windows.Forms.Button SendButton;
-        private System.Windows.Forms.Button OpenButton;
+        private System.Windows.Forms.Button JavaWorldButton;
         private System.Windows.Forms.Label SelectWorldLabel;
-        private System.Windows.Forms.CheckBox AddChestCheck;
         private System.Windows.Forms.Label WorldNameLabel;
+        private System.Windows.Forms.Button BedrockWorldButton;
+        private System.Windows.Forms.TabPage ExistingTab;
         private System.Windows.Forms.Panel ExistingControls;
         private System.Windows.Forms.Button DeleteButton;
         private System.Windows.Forms.Button AddInventoryButton;
         private System.Windows.Forms.Button ExportImageButton;
+        private System.Windows.Forms.FlowLayoutPanel ExistingZone;
+        private System.Windows.Forms.TabPage ImportTab;
+        private System.Windows.Forms.Panel ImportControls;
+        private System.Windows.Forms.CheckBox AddChestCheck;
+        private System.Windows.Forms.Button SendButton;
+        private System.Windows.Forms.Button OpenButton;
+        private System.Windows.Forms.FlowLayoutPanel ImportZone;
+        private System.Windows.Forms.TabControl MapView;
     }
 }
 
