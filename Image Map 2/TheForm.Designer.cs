@@ -274,6 +274,7 @@
             this.MinimumSize = new System.Drawing.Size(400, 250);
             this.Name = "TheForm";
             this.Text = "Image Map";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TheForm_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.Load += new System.EventHandler(this.TheForm_Load);
             this.ExistingTab.ResumeLayout(false);

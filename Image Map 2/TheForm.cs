@@ -71,7 +71,9 @@ namespace Image_Map
 
         private void JavaWorldButton_Click(object sender, EventArgs e)
         {
-            SelectWorldDialog.InitialDirectory = LastWorldPath;
+            if (ImportingMaps.Any() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you open a new world, these maps will disappear.\n\nWould you like to close this world anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
+                return;
+                SelectWorldDialog.InitialDirectory = LastWorldPath;
             if (SelectWorldDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 if (!ImportingMaps.Any() || MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
@@ -93,6 +95,8 @@ namespace Image_Map
 
         private void BedrockWorldButton_Click(object sender, EventArgs e)
         {
+            if (ImportingMaps.Any() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you open a new world, these maps will disappear.\n\nWould you like to close this world anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
+                return;
             WorldDialog.ShowWorlds(this, BedrockSavesFolder);
             if (WorldDialog.Confirmed)
             {
@@ -226,6 +230,12 @@ namespace Image_Map
                     SelectedWorld.RemoveMap(box.ID);
                 }
             }
+        }
+
+        private void TheForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (ImportingMaps.Any() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you exit now, these maps will disappear.\n\nWould you like to exit anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
+                e.Cancel = true;
         }
     }
 
