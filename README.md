@@ -1,4 +1,5 @@
 
+
 # <img src="https://i.imgur.com/E6BqiuN.png" width=48> Image Map
 ### [Download link](https://github.com/tryashtar/image-map/releases)
 
@@ -21,7 +22,10 @@ Once your images are imported, they'll appear as they will in-game as maps. Hove
 If the "Add new maps to inventory" checkbox is checked, a chest will be added to your inventory containing all the maps you just imported.
 
 ### Existing Maps
-This tab shows maps that are currently in your world. You can right-click any of them to delete all copies.
+This tab shows maps that are currently in your world. You can click a map to select it, then click again to deselect. The three buttons at the bottom apply to all selected maps.
+* **Export Image**: Saves the map image itself as a 128x128 PNG image file. If you have one map selected, it will be saved directly. If you have multiple selected, they will all be saved in a folder.
+* **Add to Inventory**: Adds a chest to your inventory containing all the selected maps.
+* **Delete**: Removes the maps from the world entirely. All copies will be made blank.
 
 ## Java Color Showcase
 The following is a comparison of this program's map output compared to the most commonly used image-to-map program, [ImageToMapX](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-tools/1261738), which still uses pre-1.12 colors.
