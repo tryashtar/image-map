@@ -27,10 +27,14 @@ namespace Image_Map
             WorldZone.Controls.Clear();
             foreach (string world in Directory.GetDirectories(folder))
             {
-                var control = new BedrockWorldControl(world);
-                WorldZone.Controls.Add(control);
-                control.Click += World_Click;
-                control.DoubleClick += World_DoubleClick;
+                try
+                {
+                    var control = new BedrockWorldControl(world);
+                    WorldZone.Controls.Add(control);
+                    control.Click += World_Click;
+                    control.DoubleClick += World_DoubleClick;
+                }
+                catch (IOException) { } // if it couldn't get the world files it needed 
             }
             ShowDialog(parent);
         }

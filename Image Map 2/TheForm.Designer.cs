@@ -123,6 +123,7 @@
             // 
             // DeleteButton
             // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DeleteButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
             this.DeleteButton.Location = new System.Drawing.Point(645, 3);
             this.DeleteButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
