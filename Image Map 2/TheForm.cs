@@ -12,7 +12,6 @@ namespace Image_Map
     public partial class TheForm : Form
     {
         MinecraftWorld SelectedWorld;
-
         string LastOpenPath = "";
         string LastWorldPath = "";
         string LastImgExportPath = "";
@@ -95,6 +94,11 @@ namespace Image_Map
 
         private void BedrockWorldButton_Click(object sender, EventArgs e)
         {
+            if (!Directory.Exists(BedrockSavesFolder))
+            {
+                MessageBox.Show("You seemingly don't have Bedrock Edition installed.", "Hmm...");
+                return;
+            }
             if (ImportingMaps.Any() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you open a new world, these maps will disappear.\n\nWould you like to close this world anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
                 return;
             WorldDialog.ShowWorlds(this, BedrockSavesFolder);
@@ -138,7 +142,7 @@ namespace Image_Map
         {
             SelectedWorld.AddMaps(ImportingMaps.ToDictionary(x => x.ID, x => x.Map));
             if (AddChestCheck.Checked)
-                SelectedWorld.AddChests(ImportingMaps.Select(x => x.ID));
+                SelectedWorld.AddChestsLocalPlayer(ImportingMaps.Select(x => x.ID));
             ExistingMaps.AddRange(ImportingMaps);
             ExistingZone.Controls.AddRange(ImportingMaps.ToArray());
             ImportingMaps.Clear();
@@ -210,7 +214,7 @@ namespace Image_Map
                     selected.Add(box.ID);
             }
             if (selected.Count > 0)
-                SelectedWorld.AddChests(selected);
+                SelectedWorld.AddChestsLocalPlayer(selected);
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)
