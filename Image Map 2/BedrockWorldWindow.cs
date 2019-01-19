@@ -24,6 +24,8 @@ namespace Image_Map
 
         public void ShowWorlds(Form parent, string folder)
         {
+            Confirmed = false;
+            SelectedWorldFolder = null;
             WorldZone.Controls.Clear();
             foreach (string world in Directory.GetDirectories(folder))
             {

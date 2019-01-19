@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,10 @@ namespace Image_Map
 {
     public partial class ImportWindow : Form
     {
-        int EditingIndex = 0;
-        private List<Image> InputImages;
+        private bool Finished = false;
+        private int EditingIndex = 0;
+        private string[] InputPaths;
+        private Image CurrentImage;
         public List<Bitmap> OutputImages = new List<Bitmap>();
         RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
         public ImportWindow()
@@ -24,38 +27,50 @@ namespace Image_Map
             InterpolationModeBox.SelectedIndex = 0;
         }
 
-        public void StartImports(Form parent, List<Image> images)
+        public void StartImports(Form parent, string[] inputpaths)
         {
-            InputImages = images;
+            InputPaths = inputpaths;
             OutputImages.Clear();
-            EditingIndex = 0;
-            PreviewBox.Image = InputImages[0];
-            PreviewBox.Interp = GetInterpolationMode();
-            CurrentIndexLabel.Text = $"1 / {InputImages.Count}";
-            CurrentIndexLabel.Visible = (InputImages.Count > 1);
-            ApplyAllCheck.Visible = (InputImages.Count > 1);
-            ShowDialog(parent);
+            CurrentIndexLabel.Visible = (InputPaths.Length > 1);
+            ApplyAllCheck.Visible = (InputPaths.Length > 1);
+            EditingIndex = -1;
+            ProcessNextImage();
+            if (!Finished) // don't try to show if all loaded images were skipped
+                ShowDialog(parent);
         }
 
         private void ProcessNextImage()
         {
             EditingIndex++;
-            if (EditingIndex >= InputImages.Count)
+            if (EditingIndex >= InputPaths.Length)
                 Finish();
             else
             {
+                string filename = Path.GetFileName(InputPaths[EditingIndex]);
+                try
+                {
+                    CurrentImage = Image.FromFile(InputPaths[EditingIndex]);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"The image {filename} could not be loaded (probably not an image file)","Bad image!");
+                    ProcessNextImage();
+                    return;
+                }
                 Rotation = RotateFlipType.RotateNoneFlipNone;
-                PreviewBox.Image = InputImages[EditingIndex];
+                PreviewBox.Image = CurrentImage;
+                this.Text = "Import – " + filename;
                 PreviewBox.Interp = GetInterpolationMode();
-                InputImages[EditingIndex].RotateFlip(Rotation);
-                CurrentIndexLabel.Text = $"{EditingIndex + 1} / {InputImages.Count}";
+                CurrentImage.RotateFlip(Rotation);
+                CurrentIndexLabel.Text = $"{EditingIndex + 1} / {InputPaths.Length}";
             }
         }
 
         private void Finish()
         {
+            Finished = true;
+            InputPaths = null;
             this.Close();
-            InputImages = null;
         }
 
         private void DimensionsInput_ValueChanged(object sender, EventArgs e)
@@ -89,7 +104,7 @@ namespace Image_Map
             else if (InterpolationModeBox.SelectedIndex == 2)
                 return InterpolationMode.HighQualityBicubic;
             else // automatic
-                return (InputImages[EditingIndex].Height > 128 && InputImages[EditingIndex].Width > 128) ? InterpolationMode.HighQualityBicubic : InterpolationMode.NearestNeighbor;
+                return (CurrentImage.Height > 128 && CurrentImage.Width > 128) ? InterpolationMode.HighQualityBicubic : InterpolationMode.NearestNeighbor;
         }
 
         private void InterpolationModeBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -133,12 +148,15 @@ namespace Image_Map
         private void ConfirmButton_Click(object sender, EventArgs e)
         {
             int index = EditingIndex;
-            int final = ApplyAllCheck.Checked ? InputImages.Count - 1 : EditingIndex;
+            int final = ApplyAllCheck.Checked ? InputPaths.Length - 1 : EditingIndex;
             for (int i = index; i <= final; i++)
             {
                 if (i > index)
-                    InputImages[i].RotateFlip(Rotation);
-                Bitmap img = ResizeImg(InputImages[i], (int)(128 * WidthInput.Value), (int)(128 * HeightInput.Value), GetInterpolationMode());
+                {
+                    CurrentImage = Image.FromFile(InputPaths[i]);
+                    CurrentImage.RotateFlip(Rotation);
+                }
+                Bitmap img = ResizeImg(CurrentImage, (int)(128 * WidthInput.Value), (int)(128 * HeightInput.Value), GetInterpolationMode());
                 for (int y = 0; y < HeightInput.Value; y++)
                 {
                     for (int x = 0; x < WidthInput.Value; x++)
@@ -173,7 +191,7 @@ namespace Image_Map
                 Rotation = RotateFlipType.Rotate270FlipNone;
             else if (Rotation == RotateFlipType.Rotate270FlipNone)
                 Rotation = RotateFlipType.RotateNoneFlipNone;
-            InputImages[EditingIndex].RotateFlip(RotateFlipType.Rotate90FlipNone);
+            CurrentImage.RotateFlip(RotateFlipType.Rotate90FlipNone);
             PreviewBox.Refresh();
         }
     }

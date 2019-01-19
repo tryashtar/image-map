@@ -373,9 +373,9 @@ namespace Image_Map
         }
         public abstract void AddMaps(Dictionary<long, Map> maps);
         public abstract void RemoveMap(long mapid);
-        public void AddChestsLocalPlayer(IEnumerable<long> mapids)
+        public bool AddChestsLocalPlayer(IEnumerable<long> mapids)
         {
-            AddChests(mapids, LOCAL_IDENTIFIER);
+            return AddChests(mapids, LOCAL_IDENTIFIER);
         }
 
         // returns whether there was enough room to fit the chests
@@ -398,7 +398,15 @@ namespace Image_Map
                 var chestcontents = mapids.Skip(current).Take(27);
                 var chest = CreateChest(chestcontents);
                 chest.Add(new NbtByte("Slot", slot));
-                invtag.Add(chest);
+                // bedrock-specific lines, replace existing item in this slot which should only be air
+                var existingitem = invtag.Where(x => x["Slot"].ByteValue == slot).FirstOrDefault();
+                if (existingitem != null)
+                {
+                    invtag.Insert(invtag.IndexOf(existingitem), chest);
+                    invtag.Remove(existingitem);
+                }
+                else
+                    invtag.Add(chest);
                 current += 27;
                 if (current >= total)
                     return true;
@@ -459,7 +467,6 @@ namespace Image_Map
 
         public override IEnumerable<string> GetPlayerIDs()
         {
-            yield return LOCAL_IDENTIFIER;
             foreach (var file in Directory.EnumerateDirectories(Path.Combine(Folder, "playerdata"), "*.dat"))
             {
                 yield return Path.GetFileNameWithoutExtension(file);
@@ -509,9 +516,9 @@ namespace Image_Map
         protected override IEnumerable<byte> GetFreeSlots(NbtList invtag)
         {
             List<byte> emptyslots = new List<byte>(35);
-            for (int i = 0; i < emptyslots.Count; i++)
+            for (byte i = 0; i < 35; i++)
             {
-                emptyslots[i] = (byte)i;
+                emptyslots.Add(i);
             }
             foreach (NbtCompound slot in invtag)
             {
@@ -607,7 +614,7 @@ namespace Image_Map
                 playeridbytes = Encoding.Default.GetBytes("~local_player");
             else
                 playeridbytes = Encoding.Default.GetBytes(playerid);
-            byte[] playerdata = BedrockDB.Get(Encoding.Default.GetBytes(playerid)).ToArray();
+            byte[] playerdata = BedrockDB.Get(playeridbytes.ToArray());
             var file = new NbtFile();
             file.BigEndian = false;
             file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
@@ -646,7 +653,6 @@ namespace Image_Map
 
         public override IEnumerable<string> GetPlayerIDs()
         {
-            yield return "~local_player";
             foreach (var pair in BedrockDB)
             {
                 string name = Encoding.Default.GetString(pair.Key);
@@ -664,17 +670,16 @@ namespace Image_Map
         protected override IEnumerable<byte> GetFreeSlots(NbtList invtag)
         {
             List<byte> emptyslots = new List<byte>(35);
-            for (int i = 0; i < emptyslots.Count; i++)
+            for (byte i = 0; i < 35; i++)
             {
-                emptyslots[i] = (byte)i;
+                emptyslots.Add(i);
             }
             foreach (NbtCompound slot in invtag)
             {
-                if (slot["Count"].ByteValue == 0)
+                if (slot["Count"].ByteValue > 0)
                     emptyslots.Remove(slot["Slot"].ByteValue);
             }
             return emptyslots;
-
         }
 
         protected override NbtCompound CreateChest(IEnumerable<long> mapids)

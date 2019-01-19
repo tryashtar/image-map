@@ -98,12 +98,12 @@ namespace Image_Map.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool AddChest {
+        public bool GiveChest {
             get {
-                return ((bool)(this["AddChest"]));
+                return ((bool)(this["GiveChest"]));
             }
             set {
-                this["AddChest"] = value;
+                this["GiveChest"] = value;
             }
         }
         
@@ -116,6 +116,18 @@ namespace Image_Map.Properties {
             }
             set {
                 this["LastImgExportPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AddNewMaps {
+            get {
+                return ((bool)(this["AddNewMaps"]));
+            }
+            set {
+                this["AddNewMaps"] = value;
             }
         }
     }

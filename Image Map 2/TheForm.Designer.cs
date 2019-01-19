@@ -31,10 +31,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForm));
             this.JavaWorldButton = new System.Windows.Forms.Button();
             this.SelectWorldLabel = new System.Windows.Forms.Label();
-            this.WorldNameLabel = new System.Windows.Forms.Label();
             this.BedrockWorldButton = new System.Windows.Forms.Button();
             this.ExistingTab = new System.Windows.Forms.TabPage();
             this.ExistingControls = new System.Windows.Forms.Panel();
+            this.PlayerSelector = new System.Windows.Forms.ComboBox();
             this.DeleteButton = new System.Windows.Forms.Button();
             this.AddInventoryButton = new System.Windows.Forms.Button();
             this.ExportImageButton = new System.Windows.Forms.Button();
@@ -76,15 +76,6 @@
             this.SelectWorldLabel.TabIndex = 17;
             this.SelectWorldLabel.Text = "← Click Here!\r\n\r\nMaps will show up in this\r\narea once you select a world.";
             // 
-            // WorldNameLabel
-            // 
-            this.WorldNameLabel.AutoSize = true;
-            this.WorldNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
-            this.WorldNameLabel.Location = new System.Drawing.Point(12, 217);
-            this.WorldNameLabel.Name = "WorldNameLabel";
-            this.WorldNameLabel.Size = new System.Drawing.Size(0, 17);
-            this.WorldNameLabel.TabIndex = 20;
-            // 
             // BedrockWorldButton
             // 
             this.BedrockWorldButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
@@ -104,7 +95,7 @@
             this.ExistingTab.Location = new System.Drawing.Point(4, 38);
             this.ExistingTab.Name = "ExistingTab";
             this.ExistingTab.Padding = new System.Windows.Forms.Padding(3);
-            this.ExistingTab.Size = new System.Drawing.Size(792, 410);
+            this.ExistingTab.Size = new System.Drawing.Size(785, 410);
             this.ExistingTab.TabIndex = 0;
             this.ExistingTab.Text = "Existing Maps";
             this.ExistingTab.UseVisualStyleBackColor = true;
@@ -113,19 +104,32 @@
             // 
             this.ExistingControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.ExistingControls.Controls.Add(this.PlayerSelector);
             this.ExistingControls.Controls.Add(this.DeleteButton);
             this.ExistingControls.Controls.Add(this.AddInventoryButton);
             this.ExistingControls.Controls.Add(this.ExportImageButton);
             this.ExistingControls.Location = new System.Drawing.Point(7, 343);
             this.ExistingControls.Name = "ExistingControls";
-            this.ExistingControls.Size = new System.Drawing.Size(777, 61);
+            this.ExistingControls.Size = new System.Drawing.Size(770, 61);
             this.ExistingControls.TabIndex = 5;
+            // 
+            // PlayerSelector
+            // 
+            this.PlayerSelector.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PlayerSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PlayerSelector.FormattingEnabled = true;
+            this.PlayerSelector.Location = new System.Drawing.Point(413, 12);
+            this.PlayerSelector.Name = "PlayerSelector";
+            this.PlayerSelector.Size = new System.Drawing.Size(219, 37);
+            this.PlayerSelector.TabIndex = 23;
+            this.PlayerSelector.SelectedIndexChanged += new System.EventHandler(this.PlayerSelector_SelectedIndexChanged);
             // 
             // DeleteButton
             // 
             this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DeleteButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.DeleteButton.Location = new System.Drawing.Point(645, 3);
+            this.DeleteButton.Location = new System.Drawing.Point(638, 3);
             this.DeleteButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.DeleteButton.Name = "DeleteButton";
             this.DeleteButton.Size = new System.Drawing.Size(119, 53);
@@ -168,7 +172,7 @@
             this.ExistingZone.Location = new System.Drawing.Point(6, 5);
             this.ExistingZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.ExistingZone.Name = "ExistingZone";
-            this.ExistingZone.Size = new System.Drawing.Size(778, 333);
+            this.ExistingZone.Size = new System.Drawing.Size(771, 333);
             this.ExistingZone.TabIndex = 2;
             // 
             // ImportTab
@@ -178,7 +182,7 @@
             this.ImportTab.Location = new System.Drawing.Point(4, 38);
             this.ImportTab.Name = "ImportTab";
             this.ImportTab.Padding = new System.Windows.Forms.Padding(3);
-            this.ImportTab.Size = new System.Drawing.Size(792, 410);
+            this.ImportTab.Size = new System.Drawing.Size(785, 410);
             this.ImportTab.TabIndex = 1;
             this.ImportTab.Text = "Import Maps";
             this.ImportTab.UseVisualStyleBackColor = true;
@@ -192,7 +196,7 @@
             this.ImportControls.Controls.Add(this.OpenButton);
             this.ImportControls.Location = new System.Drawing.Point(7, 343);
             this.ImportControls.Name = "ImportControls";
-            this.ImportControls.Size = new System.Drawing.Size(777, 61);
+            this.ImportControls.Size = new System.Drawing.Size(770, 61);
             this.ImportControls.TabIndex = 4;
             // 
             // AddChestCheck
@@ -201,10 +205,10 @@
             this.AddChestCheck.Checked = true;
             this.AddChestCheck.CheckState = System.Windows.Forms.CheckState.Checked;
             this.AddChestCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.AddChestCheck.Location = new System.Drawing.Point(356, 17);
+            this.AddChestCheck.Location = new System.Drawing.Point(365, 17);
             this.AddChestCheck.Name = "AddChestCheck";
             this.AddChestCheck.Size = new System.Drawing.Size(269, 29);
-            this.AddChestCheck.TabIndex = 19;
+            this.AddChestCheck.TabIndex = 5;
             this.AddChestCheck.Text = "Add new maps to inventory";
             this.AddChestCheck.UseVisualStyleBackColor = true;
             // 
@@ -234,6 +238,7 @@
             // 
             // ImportZone
             // 
+            this.ImportZone.AllowDrop = true;
             this.ImportZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -242,8 +247,10 @@
             this.ImportZone.Location = new System.Drawing.Point(7, 5);
             this.ImportZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.ImportZone.Name = "ImportZone";
-            this.ImportZone.Size = new System.Drawing.Size(778, 333);
+            this.ImportZone.Size = new System.Drawing.Size(771, 333);
             this.ImportZone.TabIndex = 3;
+            this.ImportZone.DragDrop += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragDrop);
+            this.ImportZone.DragEnter += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragEnter);
             // 
             // MapView
             // 
@@ -256,17 +263,17 @@
             this.MapView.Location = new System.Drawing.Point(175, 12);
             this.MapView.Name = "MapView";
             this.MapView.SelectedIndex = 0;
-            this.MapView.Size = new System.Drawing.Size(800, 452);
+            this.MapView.Size = new System.Drawing.Size(793, 452);
             this.MapView.TabIndex = 16;
             this.MapView.Visible = false;
             // 
             // TheForm
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(975, 464);
+            this.ClientSize = new System.Drawing.Size(968, 464);
             this.Controls.Add(this.BedrockWorldButton);
-            this.Controls.Add(this.WorldNameLabel);
             this.Controls.Add(this.MapView);
             this.Controls.Add(this.JavaWorldButton);
             this.Controls.Add(this.SelectWorldLabel);
@@ -291,23 +298,23 @@
 
         #endregion
 
-        private System.Windows.Forms.Button JavaWorldButton;
-        private System.Windows.Forms.Label SelectWorldLabel;
-        private System.Windows.Forms.Label WorldNameLabel;
-        private System.Windows.Forms.Button BedrockWorldButton;
-        private System.Windows.Forms.TabPage ExistingTab;
-        private System.Windows.Forms.Panel ExistingControls;
-        private System.Windows.Forms.Button DeleteButton;
-        private System.Windows.Forms.Button AddInventoryButton;
-        private System.Windows.Forms.Button ExportImageButton;
-        private System.Windows.Forms.FlowLayoutPanel ExistingZone;
-        private System.Windows.Forms.TabPage ImportTab;
-        private System.Windows.Forms.Panel ImportControls;
+        public System.Windows.Forms.Button JavaWorldButton;
+        public System.Windows.Forms.Label SelectWorldLabel;
+        public System.Windows.Forms.Button BedrockWorldButton;
+        public System.Windows.Forms.TabPage ExistingTab;
+        public System.Windows.Forms.Panel ExistingControls;
+        public System.Windows.Forms.Button DeleteButton;
+        public System.Windows.Forms.Button AddInventoryButton;
+        public System.Windows.Forms.Button ExportImageButton;
+        public System.Windows.Forms.FlowLayoutPanel ExistingZone;
+        public System.Windows.Forms.TabPage ImportTab;
+        public System.Windows.Forms.Panel ImportControls;
+        public System.Windows.Forms.Button SendButton;
+        public System.Windows.Forms.Button OpenButton;
+        public System.Windows.Forms.FlowLayoutPanel ImportZone;
+        public System.Windows.Forms.TabControl MapView;
+        public System.Windows.Forms.ComboBox PlayerSelector;
         private System.Windows.Forms.CheckBox AddChestCheck;
-        private System.Windows.Forms.Button SendButton;
-        private System.Windows.Forms.Button OpenButton;
-        private System.Windows.Forms.FlowLayoutPanel ImportZone;
-        private System.Windows.Forms.TabControl MapView;
     }
 }
 
