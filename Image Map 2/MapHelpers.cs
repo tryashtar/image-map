@@ -467,7 +467,7 @@ namespace Image_Map
 
         public override IEnumerable<string> GetPlayerIDs()
         {
-            foreach (var file in Directory.EnumerateDirectories(Path.Combine(Folder, "playerdata"), "*.dat"))
+            foreach (var file in Directory.EnumerateFiles(Path.Combine(Folder, "playerdata"), "*.dat"))
             {
                 yield return Path.GetFileNameWithoutExtension(file);
             }
