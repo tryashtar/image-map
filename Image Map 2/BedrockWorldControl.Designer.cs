@@ -39,6 +39,7 @@
             this.WorldIcon.Location = new System.Drawing.Point(14, 17);
             this.WorldIcon.Name = "WorldIcon";
             this.WorldIcon.Size = new System.Drawing.Size(121, 99);
+            this.WorldIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.WorldIcon.TabIndex = 0;
             this.WorldIcon.TabStop = false;
             this.WorldIcon.Click += new System.EventHandler(this.Control_Click);
