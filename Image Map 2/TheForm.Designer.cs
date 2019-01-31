@@ -46,11 +46,14 @@
             this.OpenButton = new System.Windows.Forms.Button();
             this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
             this.MapView = new System.Windows.Forms.TabControl();
+            this.SelectAllCheck = new System.Windows.Forms.CheckBox();
+            this.MapViewZone = new System.Windows.Forms.Panel();
             this.ExistingTab.SuspendLayout();
             this.ExistingControls.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportControls.SuspendLayout();
             this.MapView.SuspendLayout();
+            this.MapViewZone.SuspendLayout();
             this.SuspendLayout();
             // 
             // JavaWorldButton
@@ -260,12 +263,36 @@
             this.MapView.Controls.Add(this.ImportTab);
             this.MapView.Controls.Add(this.ExistingTab);
             this.MapView.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.MapView.Location = new System.Drawing.Point(175, 12);
+            this.MapView.Location = new System.Drawing.Point(0, 0);
             this.MapView.Name = "MapView";
             this.MapView.SelectedIndex = 0;
             this.MapView.Size = new System.Drawing.Size(793, 452);
             this.MapView.TabIndex = 16;
-            this.MapView.Visible = false;
+            // 
+            // SelectAllCheck
+            // 
+            this.SelectAllCheck.AutoSize = true;
+            this.SelectAllCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.SelectAllCheck.Location = new System.Drawing.Point(321, 7);
+            this.SelectAllCheck.Name = "SelectAllCheck";
+            this.SelectAllCheck.Size = new System.Drawing.Size(102, 24);
+            this.SelectAllCheck.TabIndex = 5;
+            this.SelectAllCheck.Text = "Select All";
+            this.SelectAllCheck.UseVisualStyleBackColor = true;
+            this.SelectAllCheck.CheckedChanged += new System.EventHandler(this.SelectAllCheck_CheckedChanged);
+            // 
+            // MapViewZone
+            // 
+            this.MapViewZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MapViewZone.Controls.Add(this.SelectAllCheck);
+            this.MapViewZone.Controls.Add(this.MapView);
+            this.MapViewZone.Location = new System.Drawing.Point(175, 12);
+            this.MapViewZone.Name = "MapViewZone";
+            this.MapViewZone.Size = new System.Drawing.Size(793, 452);
+            this.MapViewZone.TabIndex = 5;
+            this.MapViewZone.Visible = false;
             // 
             // TheForm
             // 
@@ -274,8 +301,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(968, 464);
             this.Controls.Add(this.BedrockWorldButton);
-            this.Controls.Add(this.MapView);
             this.Controls.Add(this.JavaWorldButton);
+            this.Controls.Add(this.MapViewZone);
             this.Controls.Add(this.SelectWorldLabel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -291,6 +318,8 @@
             this.ImportControls.ResumeLayout(false);
             this.ImportControls.PerformLayout();
             this.MapView.ResumeLayout(false);
+            this.MapViewZone.ResumeLayout(false);
+            this.MapViewZone.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -315,6 +344,8 @@
         public System.Windows.Forms.TabControl MapView;
         public System.Windows.Forms.ComboBox PlayerSelector;
         private System.Windows.Forms.CheckBox AddChestCheck;
+        private System.Windows.Forms.CheckBox SelectAllCheck;
+        public System.Windows.Forms.Panel MapViewZone;
     }
 }
 

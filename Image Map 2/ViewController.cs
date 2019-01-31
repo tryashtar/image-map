@@ -21,6 +21,12 @@ namespace Image_Map
         MapsNotImported
     }
 
+    public enum MapStatus
+    {
+        Importing,
+        Existing
+    }
+
     public class ViewController
     {
         private const string LOCAL_IDENTIFIER = "(singleplayer)";
@@ -143,6 +149,24 @@ namespace Image_Map
             return true;
         }
 
+        public void SelectAll(MapStatus area)
+        {
+            var boxes = area == MapStatus.Importing ? ImportingMapPreviews : ExistingMapPreviews;
+            foreach (var box in boxes)
+            {
+                box.SetSelected(true);
+            }
+        }
+
+        public void DeselectAll(MapStatus area)
+        {
+            var boxes = area == MapStatus.Importing ? ImportingMapPreviews : ExistingMapPreviews;
+            foreach (var box in boxes)
+            {
+                box.SetSelected(false);
+            }
+        }
+
         // right-click maps to remove them
         private void ImportingBox_MouseDown(object sender, MouseEventArgs e)
         {
@@ -159,7 +183,7 @@ namespace Image_Map
             ImportingMapPreviews.Clear();
             ExistingMapPreviews.Clear();
 
-            UI.MapView.Visible = true;
+            UI.MapViewZone.Visible = true;
             UI.ImportZone.Controls.Clear();
             UI.ExistingZone.Controls.Clear();
             foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))

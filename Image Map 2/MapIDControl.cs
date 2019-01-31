@@ -31,7 +31,12 @@ namespace Image_Map
 
         public void ToggleSelected()
         {
-            Selected = !Selected;
+            SetSelected(!Selected);
+        }
+
+        public void SetSelected(bool selected)
+        {
+            Selected = selected;
             BackColor = Selected ? Color.LightGreen : Color.White;
             SelectedChanged?.Invoke(this, Selected);
         }

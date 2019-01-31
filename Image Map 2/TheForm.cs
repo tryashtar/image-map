@@ -187,7 +187,7 @@ namespace Image_Map
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (MapView.Visible && MapView.SelectedTab == ImportTab)
+            if (MapViewZone.Visible && MapView.SelectedTab == ImportTab)
             {
                 if (keyData == (Keys.V | Keys.Control))
                 {
@@ -198,9 +198,19 @@ namespace Image_Map
                         files.CopyTo(array, 0);
                         Controller.ImportImages(array);
                     }
+                    return true;
                 }
             }
             return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void SelectAllCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            var area = MapView.SelectedTab == ImportTab ? MapStatus.Importing : MapStatus.Existing;
+            if (SelectAllCheck.Checked)
+                Controller.SelectAll(area);
+            else
+                Controller.DeselectAll(area);
         }
     }
 }
