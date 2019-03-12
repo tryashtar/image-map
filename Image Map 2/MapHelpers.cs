@@ -406,7 +406,10 @@ namespace Image_Map
                     invtag.Remove(existingitem);
                 }
                 else
+                {
+                    invtag.ListType = NbtTagType.Compound;
                     invtag.Add(chest);
+                }
                 current += 27;
                 if (current >= total)
                     return true;
