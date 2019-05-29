@@ -430,7 +430,7 @@ namespace Image_Map
     public class JavaWorld : MinecraftWorld
     {
         private NbtFile LevelDat;
-        private bool HasLocalPlayer;
+        private readonly bool HasLocalPlayer;
 
         public JavaWorld(string folder) : base(folder)
         {
@@ -704,7 +704,7 @@ namespace Image_Map
             }
             var chest = new NbtCompound()
             {
-                new NbtString("Name", "minecraft:tile.chest"), // 1.6+ support
+                new NbtString("Name", "minecraft:chest"), // 1.6+ support
                 new NbtShort("id", 54), // 1.5 support
                 new NbtByte("Count", 1),
                 new NbtCompound("tag") { chestcontents }

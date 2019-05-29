@@ -22,7 +22,9 @@ namespace Image_Map
             string icon = Path.Combine(worldfolder, "world_icon.jpeg");
             if (File.Exists(icon))
                 WorldIcon.Image = Image.FromFile(icon);
-            WorldName.Text = File.ReadAllText(Path.Combine(worldfolder, "levelname.txt"));
+            string namepath = Path.Combine(worldfolder, "levelname.txt");
+            if (File.Exists(namepath))
+                WorldName.Text = File.ReadAllText(namepath);
             FolderName.Text = Path.GetFileName(worldfolder);
         }
 

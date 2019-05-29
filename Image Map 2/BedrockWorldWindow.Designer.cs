@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BedrockWorldWindow));
             this.WorldZone = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
+            this.BrowseButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // WorldZone
@@ -55,11 +56,24 @@
             this.label1.TabIndex = 1;
             this.label1.Text = "Double-click to open a world";
             // 
+            // BrowseButton
+            // 
+            this.BrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BrowseButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.BrowseButton.Location = new System.Drawing.Point(390, 6);
+            this.BrowseButton.Name = "BrowseButton";
+            this.BrowseButton.Size = new System.Drawing.Size(102, 38);
+            this.BrowseButton.TabIndex = 2;
+            this.BrowseButton.Text = "Browse";
+            this.BrowseButton.UseVisualStyleBackColor = true;
+            this.BrowseButton.Click += new System.EventHandler(this.BrowseButton_Click);
+            // 
             // BedrockWorldWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(498, 551);
+            this.Controls.Add(this.BrowseButton);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.WorldZone);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -74,5 +88,6 @@
 
         private System.Windows.Forms.FlowLayoutPanel WorldZone;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button BrowseButton;
     }
 }

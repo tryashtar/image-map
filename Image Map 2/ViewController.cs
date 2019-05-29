@@ -18,7 +18,8 @@ namespace Image_Map
     public enum ActionResult
     {
         Success,
-        MapsNotImported
+        MapsNotImported,
+        Failure
     }
 
     public enum MapStatus
@@ -49,12 +50,20 @@ namespace Image_Map
                 return ActionResult.MapsNotImported;
             if (SelectedWorld is IDisposable disp)
                 disp.Dispose();
-            if (edition == Edition.Java)
-                SelectedWorld = new JavaWorld(folder);
-            else if (edition == Edition.Bedrock)
-                SelectedWorld = new BedrockWorld(folder);
-            else
-                throw new ArgumentException($"Don't know what edition {edition} is");
+            try
+            {
+                if (edition == Edition.Java)
+                    SelectedWorld = new JavaWorld(folder);
+                else if (edition == Edition.Bedrock)
+                    SelectedWorld = new BedrockWorld(folder);
+                else
+                    throw new ArgumentException($"Don't know what edition {edition} is");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not open this world. Perhaps it's the wrong edition, or is missing some important files.\n\n" + ex.Message, "Failed to open world!");
+                return ActionResult.Failure;
+            }
             SelectedWorld.Initialize();
             UI.PlayerSelector.Items.Clear();
             UI.PlayerSelector.Items.Add(LOCAL_IDENTIFIER);

@@ -14,10 +14,10 @@ namespace Image_Map
         ViewController Controller;
         static readonly string[] ImageExtensions = new[] { ".png", ".bmp", ".jpg", ".jpeg", ".gif" };
         string LastOpenPath = "";
-        string LastWorldPath = "";
+        string JavaSavesFolder = "";
         string LastImgExportPath = "";
-        string BedrockSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
-        CommonOpenFileDialog SelectWorldDialog = new CommonOpenFileDialog()
+        string BedrockSavesFolder;
+        CommonOpenFileDialog JavaWorldDialog = new CommonOpenFileDialog()
         {
             Title = "Select a Minecraft world folder",
             IsFolderPicker = true,
@@ -32,7 +32,7 @@ namespace Image_Map
             Title = "Import image files to turn into maps",
             Multiselect = true,
         };
-        BedrockWorldWindow WorldDialog = new BedrockWorldWindow();
+        BedrockWorldWindow BedrockWorldDialog = new BedrockWorldWindow();
         public TheForm()
         {
             InitializeComponent();
@@ -55,9 +55,14 @@ namespace Image_Map
         {
             // load up saved settings
             LastOpenPath = Properties.Settings.Default.LastOpenPath;
-            LastWorldPath = Properties.Settings.Default.LastWorldPath;
             LastImgExportPath = Properties.Settings.Default.LastImgExportPath;
             AddChestCheck.Checked = Properties.Settings.Default.AddNewMaps;
+            JavaSavesFolder = Properties.Settings.Default.JavaSavesFolder;
+            BedrockSavesFolder = Properties.Settings.Default.BedrockSavesFolder;
+            if (String.IsNullOrEmpty(BedrockSavesFolder))
+                BedrockSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
+            if (String.IsNullOrEmpty(JavaSavesFolder))
+                JavaSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves");
         }
 
         private void OpenWorldWithMessage(Edition edition)
@@ -66,22 +71,20 @@ namespace Image_Map
             // edition-specific world picking
             if (edition == Edition.Java)
             {
-                SelectWorldDialog.InitialDirectory = LastWorldPath;
-                if (SelectWorldDialog.ShowDialog() != CommonFileDialogResult.Ok)
+                JavaWorldDialog.InitialDirectory = JavaSavesFolder;
+                if (JavaWorldDialog.ShowDialog() != CommonFileDialogResult.Ok)
                     return;
-                folder = SelectWorldDialog.FileName;
+                folder = JavaWorldDialog.FileName;
+                JavaSavesFolder = Path.GetDirectoryName(folder);
             }
             else if (edition == Edition.Bedrock)
             {
-                if (!Directory.Exists(BedrockSavesFolder))
-                {
-                    MessageBox.Show("You seemingly don't have Bedrock Edition installed.", "Hmm...");
+                BedrockWorldDialog.SavesFolder = BedrockSavesFolder;
+                BedrockWorldDialog.Show(this);
+                if (!BedrockWorldDialog.Confirmed)
                     return;
-                }
-                WorldDialog.ShowWorlds(this, BedrockSavesFolder);
-                if (!WorldDialog.Confirmed)
-                    return;
-                folder = WorldDialog.SelectedWorldFolder;
+                folder = BedrockWorldDialog.SelectedWorldFolder;
+                BedrockSavesFolder = BedrockWorldDialog.SavesFolder;
             }
             // generic world opening and warning
             var result = Controller.OpenWorld(edition, folder);
@@ -121,7 +124,8 @@ namespace Image_Map
         private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             // save settings
-            Properties.Settings.Default.LastWorldPath = LastWorldPath;
+            Properties.Settings.Default.JavaSavesFolder = JavaSavesFolder;
+            Properties.Settings.Default.BedrockSavesFolder = BedrockSavesFolder;
             Properties.Settings.Default.LastOpenPath = LastOpenPath;
             Properties.Settings.Default.LastImgExportPath = LastImgExportPath;
             Properties.Settings.Default.AddNewMaps = AddChestCheck.Checked;

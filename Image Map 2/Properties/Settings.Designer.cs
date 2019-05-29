@@ -74,12 +74,12 @@ namespace Image_Map.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastWorldPath {
+        public string JavaSavesFolder {
             get {
-                return ((string)(this["LastWorldPath"]));
+                return ((string)(this["JavaSavesFolder"]));
             }
             set {
-                this["LastWorldPath"] = value;
+                this["JavaSavesFolder"] = value;
             }
         }
         
@@ -128,6 +128,18 @@ namespace Image_Map.Properties {
             }
             set {
                 this["AddNewMaps"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string BedrockSavesFolder {
+            get {
+                return ((string)(this["BedrockSavesFolder"]));
+            }
+            set {
+                this["BedrockSavesFolder"] = value;
             }
         }
     }
