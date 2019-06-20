@@ -594,6 +594,7 @@ namespace Image_Map
                     new NbtByte("unlimitedTracking", 0),
                     new NbtInt("xCenter", Int32.MaxValue),
                     new NbtInt("zCenter", Int32.MaxValue),
+                    new NbtByte("mapLocked", 1),
                     new NbtByteArray("colors", map.Value.Colors)
                 };
                 NbtFile file = new NbtFile(mapfile);
