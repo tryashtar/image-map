@@ -97,7 +97,6 @@ namespace Image_Map
             OpenWorldWithMessage(Edition.Java);
         }
 
-
         private void BedrockWorldButton_Click(object sender, EventArgs e)
         {
             OpenWorldWithMessage(Edition.Bedrock);

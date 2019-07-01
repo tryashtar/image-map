@@ -28,20 +28,22 @@ namespace Image_Map
         public Map Map { get; private set; }
         private Image OriginalImage;
 
-        public MapPreviewBox(Bitmap original, Edition edition)
+        public MapPreviewBox(PreMap original, Edition edition)
         {
+            // provide an original image, and generate and remember the converted version
             if (edition == Edition.Java)
-                Map = new JavaMap(original);
+                Map = new JavaMap(original.Contents, original.Dithered);
             else if (edition == Edition.Bedrock)
-                Map = new BedrockMap(original);
-            OriginalImage = original;
+                Map = new BedrockMap(original.Contents);
+            OriginalImage = original.Contents;
             Constructor();
         }
 
         public MapPreviewBox(Map map)
         {
+            // no original image is provided, so the two images are the same
             Map = map;
-            OriginalImage = map.Image;
+            OriginalImage = map.Image.GetImage();
             Constructor();
         }
 
@@ -50,7 +52,7 @@ namespace Image_Map
             Width = 128;
             Height = 128;
             SizeMode = PictureBoxSizeMode.Zoom;
-            Image = Map.Image;
+            Image = Map.Image.GetImage();
             BackgroundImage = Properties.Resources.item_frame;
             MouseEnter += MapPreviewBox_MouseEnter;
             MouseLeave += MapPreviewBox_MouseLeave;
@@ -58,12 +60,12 @@ namespace Image_Map
 
         private void MapPreviewBox_MouseLeave(object sender, EventArgs e)
         {
-            Image = OriginalImage;
+            Image = Map.Image.GetImage();
         }
 
         private void MapPreviewBox_MouseEnter(object sender, EventArgs e)
         {
-            Image = Map.Image;
+            Image = OriginalImage;
         }
     }
 }

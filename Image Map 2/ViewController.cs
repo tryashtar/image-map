@@ -76,23 +76,45 @@ namespace Image_Map
 
         public void ImportImages(string[] imagepaths)
         {
-            var import = new ImportWindow();
+            bool java = (SelectedWorld is JavaWorld);
+            var import = new ImportWindow(java);
             import.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
             import.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
+            import.DitherChecked = Properties.Settings.Default.Dither;
             import.StartImports(UI, imagepaths);
             Properties.Settings.Default.InterpIndex = import.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = import.ApplyAllCheck.Checked;
+            Properties.Settings.Default.Dither = import.DitherChecked;
             var taken = ImportingMapPreviews.Concat(ExistingMapPreviews).Select(x => x.ID).ToList();
             taken.Add(-1);
-            long id = taken.Max() + 1;
-            foreach (var image in import.OutputImages)
+            long id = taken.Max();
+            var tasks = new List<Task>();
+            UI.OpenButton.Enabled = false;
+            UI.SendButton.Enabled = false;
+            foreach (var premap in import.OutputImages)
             {
-                MapIDControl mapbox = new MapIDControl(id, SelectedWorld is JavaWorld ? (Map)new JavaMap(image) : new BedrockMap(image));
-                ImportingMapPreviews.Add(mapbox);
-                UI.ImportZone.Controls.Add(mapbox);
-                mapbox.MouseDown += ImportingBox_MouseDown;
                 id++;
+                MapIDControl box = new MapIDControl(id);
+                ImportingMapPreviews.Add(box);
+                UI.ImportZone.Controls.Add(box);
+                box.MouseDown += ImportingBox_MouseDown;
+                var t = new Task<MapPreviewBox>(() =>
+                {
+                    return new MapPreviewBox(premap, SelectedWorld is JavaWorld ? Edition.Java : Edition.Bedrock);
+                });
+                t.Start();
+                t.ContinueWith((prev) =>
+                {
+                    box.SetBox(prev.Result);
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+                tasks.Add(t);
             }
+            var done = Task.WhenAll(tasks);
+            done.ContinueWith((t) =>
+                {
+                    UI.OpenButton.Enabled = true;
+                    UI.SendButton.Enabled = true;
+                }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public IEnumerable<MapIDControl> GetSelectedMaps()
@@ -105,7 +127,7 @@ namespace Image_Map
             Directory.CreateDirectory(folder);
             foreach (var box in maps)
             {
-                box.Map.Image.Save(Path.Combine(folder, box.GetMapName() + ".png"));
+                box.Map.Image.GetImage().Save(Path.Combine(folder, box.GetMapName() + ".png"));
             }
         }
 
@@ -122,7 +144,7 @@ namespace Image_Map
 
         public void SaveMap(MapIDControl map, string file)
         {
-            map.Map.Image.Save(file);
+            map.Map.Image.GetImage().Save(file);
         }
 
         public bool UnsavedChanges()
@@ -197,7 +219,7 @@ namespace Image_Map
             UI.ExistingZone.Controls.Clear();
             foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
             {
-                MapIDControl mapbox = new MapIDControl(map.Key, map.Value);
+                MapIDControl mapbox = new MapIDControl(map.Key, new MapPreviewBox(map.Value));
                 ExistingMapPreviews.Add(mapbox);
                 UI.ExistingZone.Controls.Add(mapbox);
             }

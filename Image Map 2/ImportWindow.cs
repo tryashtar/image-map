@@ -15,16 +15,20 @@ namespace Image_Map
 {
     public partial class ImportWindow : Form
     {
+        private bool AllowDither = false;
         private bool Finished = false;
         private int EditingIndex = 0;
         private string[] InputPaths;
         private Image CurrentImage;
-        public List<Bitmap> OutputImages = new List<Bitmap>();
+        public bool DitherChecked { get { return DitherCheck.Checked; } set { DitherCheck.Checked = value; } }
+        public List<PreMap> OutputImages = new List<PreMap>();
         RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
-        public ImportWindow()
+        public ImportWindow(bool allowdither)
         {
             InitializeComponent();
             InterpolationModeBox.SelectedIndex = 0;
+            AllowDither = allowdither;
+            DitherCheck.Visible = allowdither;
         }
 
         public void StartImports(Form parent, string[] inputpaths)
@@ -51,9 +55,9 @@ namespace Image_Map
                 {
                     CurrentImage = Image.FromFile(InputPaths[EditingIndex]);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    MessageBox.Show($"The image {filename} could not be loaded (probably not an image file)","Bad image!");
+                    MessageBox.Show($"The image {filename} could not be loaded (probably not an image file)", "Bad image!");
                     ProcessNextImage();
                     return;
                 }
@@ -75,8 +79,13 @@ namespace Image_Map
 
         private void DimensionsInput_ValueChanged(object sender, EventArgs e)
         {
-            PreviewBox.Width = (int)((double)WidthInput.Value / (double)HeightInput.Value * PreviewBox.Height);
-            PreviewBox.Left = this.Width / 2 - (PreviewBox.Width / 2);
+            ProportionPreview();
+            PreviewBox.Refresh();
+        }
+
+        private void ImportWindow_Layout(object sender, LayoutEventArgs e)
+        {
+            ProportionPreview();
         }
 
         private void PreviewBox_Paint(object sender, PaintEventArgs e)
@@ -114,10 +123,9 @@ namespace Image_Map
             PreviewBox.Interp = GetInterpolationMode();
         }
 
-        private static Bitmap CropImage(Image img, Rectangle cropArea)
+        private static Bitmap CropImage(Bitmap img, Rectangle cropArea)
         {
-            Bitmap bmpImage = new Bitmap(img);
-            return bmpImage.Clone(cropArea, PixelFormat.DontCare);
+            return img.Clone(cropArea, PixelFormat.DontCare);
         }
 
         private static Bitmap ResizeImg(Image image, int width, int height, InterpolationMode mode)
@@ -161,11 +169,13 @@ namespace Image_Map
                 {
                     for (int x = 0; x < WidthInput.Value; x++)
                     {
-                        OutputImages.Add(CropImage(img, new Rectangle(
+                        bool dithered = AllowDither && DitherCheck.Checked;
+                        OutputImages.Add(new PreMap(CropImage(img, new Rectangle(
                             (int)(x * img.Width / WidthInput.Value),
                             (int)(y * img.Height / HeightInput.Value),
                             (int)(img.Width / WidthInput.Value),
-                            (int)(img.Height / HeightInput.Value))));
+                            (int)(img.Height / HeightInput.Value))),
+                            dithered));
                     }
                 }
             }
@@ -193,6 +203,27 @@ namespace Image_Map
                 Rotation = RotateFlipType.RotateNoneFlipNone;
             CurrentImage.RotateFlip(RotateFlipType.Rotate90FlipNone);
             PreviewBox.Refresh();
+        }
+
+        private void ProportionPreview()
+        {
+            double ideal = (double)HeightInput.Value / (double)WidthInput.Value;
+            PreviewBox.Height = (int)Math.Min(PreviewPanel.Height, ideal * PreviewPanel.Width);
+            PreviewBox.Width = (int)Math.Min(PreviewPanel.Width, PreviewPanel.Height / ideal);
+            PreviewBox.Left = PreviewPanel.Width / 2 - (PreviewBox.Width / 2);
+            PreviewBox.Top = PreviewPanel.Height / 2 - (PreviewBox.Height / 2);
+        }
+    }
+
+    public class PreMap
+    {
+        public Bitmap Contents { get; private set; }
+        public bool Dithered { get; private set; }
+        // holds a 128x128 image and some settings, ready to be turned into a map
+        public PreMap(Bitmap contents, bool dithered)
+        {
+            Contents = contents;
+            Dithered = dithered;
         }
     }
 }

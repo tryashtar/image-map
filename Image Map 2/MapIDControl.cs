@@ -16,17 +16,27 @@ namespace Image_Map
         public Map Map { get; private set; }
         public bool Selected { get; private set; }
         public event EventHandler<bool> SelectedChanged;
-        public MapIDControl(long id, Map map)
+
+        // awaiting to receive a preview box
+        public MapIDControl(long id)
         {
             ID = id;
-            Map = map;
             Selected = false;
             InitializeComponent();
             AutoScaleMode = AutoScaleMode.None;
-            MapPreviewBox box = new MapPreviewBox(map);
+            IDLabel.Text = $"map_{id}";
+        }
+
+        public MapIDControl(long id, MapPreviewBox box) : this(id)
+        {
+            SetBox(box);
+        }
+
+        public void SetBox(MapPreviewBox box)
+        {
             box.MouseDown += Box_MouseDown;
             Controls.Add(box);
-            IDLabel.Text = $"map_{id}";
+            Map = box.Map;
         }
 
         public void ToggleSelected()

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
+using System.Drawing.Imaging;
 
 namespace Image_Map
 {
@@ -14,71 +16,114 @@ namespace Image_Map
         public const int MAP_WIDTH = 128;
         public const int MAP_HEIGHT = 128;
         public byte[] Colors { get; protected set; }
-        public Bitmap Image { get; protected set; }
+        public LockBitmap Image { get; protected set; }
         public Map(Bitmap original)
         {
             if (original.Height != MAP_HEIGHT || original.Width != MAP_WIDTH)
                 throw new ArgumentException($"Invalid image dimensions: {original.Size} is not {new Size(MAP_WIDTH, MAP_HEIGHT)}");
-            Image = (Bitmap)original.Clone();
+            Image = new LockBitmap((Bitmap)original.Clone());
         }
         public Map(byte[] colors)
         {
             Colors = colors;
         }
+
+        protected static int ByteClamp(int a, int b)
+        {
+            int sum = a + b;
+            return sum > 255 ? 255 : (sum < 0 ? 0 : sum);
+        }
     }
 
     public class JavaMap : Map
     {
-        public JavaMap(Bitmap original) : base(original)
+        public JavaMap(Bitmap original, bool dither) : base(original)
         {
             #region java map algorithm
             Colors = new byte[MAP_WIDTH * MAP_HEIGHT];
+            Image.LockBits();
 
-            for (int i = 0; i < MAP_WIDTH; i++)
+            for (int y = 0; y < MAP_HEIGHT; y++)
             {
-                for (int j = 0; j < MAP_HEIGHT; j++)
+                for (int x = 0; x < MAP_WIDTH; x++)
                 {
-                    Color realpixel = Image.GetPixel(i, j);
-                    Color nearest = Color.Empty;
+                    Color oldpixel = Image.GetPixel(x, y);
+                    Color newpixel = Color.Empty;
                     // partial transparency is not allowed
-                    if (realpixel.A < 128)
-                        nearest = Color.FromArgb(0, 0, 0, 0);
+                    if (oldpixel.A < 128)
+                        newpixel = Color.FromArgb(0, 0, 0, 0);
                     else
                     {
                         double mindist = Double.PositiveInfinity;
                         // find the color in the palette that is closest to this one
-                        foreach (Color mapcolor in ColorToByte.Keys.Where(x => x.A == 255))
+                        foreach (Color mapcolor in ColorToByte.Keys.Where(o => o.A == 255))
                         {
-                            double distance = ColorDistance(realpixel, mapcolor);
+                            double distance = ColorDistance(oldpixel, mapcolor);
                             if (mindist > distance)
                             {
                                 mindist = distance;
-                                nearest = mapcolor;
+                                newpixel = mapcolor;
                             }
                         }
                     }
-                    Image.SetPixel(i, j, nearest);
-                    if (nearest == Color.FromArgb(0, 0, 0, 0))
-                        Colors[MAP_WIDTH * j + i] = 0x00;
+                    Image.SetPixel(x, y, newpixel);
+                    if (dither)
+                    {
+                        // floyd-steinberg
+                        int error_a = oldpixel.A - newpixel.A;
+                        int error_r = oldpixel.R - newpixel.R;
+                        int error_g = oldpixel.G - newpixel.G;
+                        int error_b = oldpixel.B - newpixel.B;
+                        GiveError(x + 1, y, error_a, error_r, error_g, error_b, 7);
+                        GiveError(x, y - 1, error_a, error_r, error_g, error_b, 3);
+                        GiveError(x, y, error_a, error_r, error_g, error_b, 5);
+                        GiveError(x, y + 1, error_a, error_r, error_g, error_b, 1);
+                    }
+                    if (newpixel == Color.FromArgb(0, 0, 0, 0))
+                        Colors[MAP_WIDTH * y + x] = 0x00;
                     else
-                        Colors[MAP_WIDTH * j + i] = ColorToByte[nearest];
+                        Colors[MAP_WIDTH * y + x] = ColorToByte[newpixel];
                 }
             }
+            Image.UnlockBits();
             #endregion
+        }
+
+        private void GiveError(int x, int y, int alpha, int red, int green, int blue, int proportion)
+        {
+            if (x >= 0 && y >= 0 && x < Image.Width && y < Image.Height)
+            {
+                Color old = Image.GetPixel(x, y);
+                Image.SetPixel(x, y, Color.FromArgb(
+                    ByteClamp(old.A, (alpha * proportion) >> 4),
+                    ByteClamp(old.R, (red * proportion) >> 4),
+                    ByteClamp(old.G, (green * proportion) >> 4),
+                    ByteClamp(old.B, (blue * proportion) >> 4)
+                ));
+            }
         }
 
         public JavaMap(byte[] colors) : base(colors)
         {
             if (colors.Length != MAP_WIDTH * MAP_HEIGHT)
                 throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}");
-            Image = new Bitmap(MAP_WIDTH, MAP_HEIGHT);
-            for (int i = 0; i < MAP_WIDTH; i++)
+            Image = new LockBitmap(MAP_WIDTH, MAP_HEIGHT);
+            Image.LockBits();
+            for (int y = 0; y < MAP_HEIGHT; y++)
             {
-                for (int j = 0; j < MAP_HEIGHT; j++)
+                for (int x = 0; x < MAP_WIDTH; x++)
                 {
-                    Image.SetPixel(i, j, ByteToColor[colors[(MAP_WIDTH * j) + i]]);
+                    if (ByteToColor.ContainsKey(colors[(MAP_WIDTH * y) + x]))
+                    {
+                        Image.SetPixel(x, y, ByteToColor[colors[(MAP_WIDTH * y) + x]]);
+                    }
+                    else
+                    {
+                        Image.SetPixel(x, y, Color.Green);
+                    }
                 }
             }
+            Image.UnlockBits();
         }
 
         #region map conversion helpers
@@ -319,15 +364,15 @@ namespace Image_Map
         {
             #region bedrock map algorithm
             Colors = new byte[MAP_WIDTH * MAP_HEIGHT * 4];
-
-            for (int i = 0; i < MAP_WIDTH; i++)
+            Image.LockBits();
+            for (int y = 0; y < MAP_HEIGHT; y++)
             {
-                for (int j = 0; j < MAP_HEIGHT; j++)
+                for (int x = 0; x < MAP_WIDTH; x++)
                 {
-                    Color realpixel = Image.GetPixel(i, j);
+                    Color realpixel = Image.GetPixel(x, y);
                     Color nearest = Color.FromArgb(realpixel.A < 128 ? 0 : 255, realpixel.R, realpixel.G, realpixel.B);
-                    Image.SetPixel(i, j, nearest);
-                    int byteindex = (MAP_WIDTH * 4 * j) + (4 * i);
+                    Image.SetPixel(x, y, nearest);
+                    int byteindex = (MAP_WIDTH * 4 * y) + (4 * x);
                     Colors[byteindex] = nearest.R;
                     Colors[byteindex + 1] = nearest.G;
                     Colors[byteindex + 2] = nearest.B;
@@ -336,6 +381,7 @@ namespace Image_Map
                     Colors[byteindex + 3] = nearest.A;
                 }
             }
+            Image.UnlockBits();
             #endregion
         }
 
@@ -343,15 +389,17 @@ namespace Image_Map
         {
             if (colors.Length != MAP_WIDTH * MAP_HEIGHT * 4)
                 throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}*4");
-            Image = new Bitmap(MAP_WIDTH, MAP_HEIGHT);
-            for (int i = 0; i < MAP_WIDTH; i++)
+            Image = new LockBitmap(MAP_WIDTH, MAP_HEIGHT);
+            Image.LockBits();
+            for (int y = 0; y < MAP_HEIGHT; y++)
             {
-                for (int j = 0; j < MAP_HEIGHT; j++)
+                for (int x = 0; x < MAP_WIDTH; x++)
                 {
-                    int byteindex = (MAP_WIDTH * 4 * j) + (4 * i);
-                    Image.SetPixel(i, j, Color.FromArgb(colors[byteindex + 3], colors[byteindex], colors[byteindex + 1], colors[byteindex + 2]));
+                    int byteindex = (MAP_WIDTH * 4 * y) + (4 * x);
+                    Image.SetPixel(x, y, Color.FromArgb(colors[byteindex + 3], colors[byteindex], colors[byteindex + 1], colors[byteindex + 2]));
                 }
             }
+            Image.UnlockBits();
         }
     }
 
@@ -716,6 +764,111 @@ namespace Image_Map
         private static bool UuidString(string input)
         {
             return Regex.Match(input, @"^[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}$").Success;
+        }
+    }
+
+    public class LockBitmap
+    {
+        Bitmap source = null;
+        IntPtr Iptr = IntPtr.Zero;
+        BitmapData bitmapData = null;
+
+        public byte[] Pixels { get; set; }
+        public int Depth { get; private set; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
+        public LockBitmap(Bitmap source)
+        {
+            this.source = source;
+        }
+
+        public LockBitmap(int width, int height)
+        {
+            this.source = new Bitmap(width, height);
+        }
+
+        public Bitmap GetImage()
+        {
+            return source;
+        }
+
+        public void LockBits()
+        {
+            Width = source.Width;
+            Height = source.Height;
+            int PixelCount = Width * Height;
+            Rectangle rect = new Rectangle(0, 0, Width, Height);
+            Depth = System.Drawing.Bitmap.GetPixelFormatSize(source.PixelFormat);
+            if (Depth != 8 && Depth != 24 && Depth != 32)
+            {
+                throw new ArgumentException("Only 8, 24 and 32 bpp images are supported.");
+            }
+            bitmapData = source.LockBits(rect, ImageLockMode.ReadWrite, source.PixelFormat);
+            int step = Depth / 8;
+            Pixels = new byte[PixelCount * step];
+            Iptr = bitmapData.Scan0;
+            Marshal.Copy(Iptr, Pixels, 0, Pixels.Length);
+        }
+
+        public void UnlockBits()
+        {
+            Marshal.Copy(Pixels, 0, Iptr, Pixels.Length);
+            source.UnlockBits(bitmapData);
+        }
+
+        public Color GetPixel(int x, int y)
+        {
+            int cCount = Depth / 8;
+            int i = ((y * Width) + x) * cCount;
+            if (i > Pixels.Length - cCount)
+                throw new IndexOutOfRangeException();
+
+            if (Depth == 32) // For 32 bpp get Red, Green, Blue and Alpha
+            {
+                byte b = Pixels[i];
+                byte g = Pixels[i + 1];
+                byte r = Pixels[i + 2];
+                byte a = Pixels[i + 3]; // a
+                return Color.FromArgb(a, r, g, b);
+            }
+            else if (Depth == 24) // For 24 bpp get Red, Green and Blue
+            {
+                byte b = Pixels[i];
+                byte g = Pixels[i + 1];
+                byte r = Pixels[i + 2];
+                return Color.FromArgb(r, g, b);
+            }
+            else if (Depth == 8) // For 8 bpp get color value (Red, Green and Blue values are the same)
+            {
+                byte c = Pixels[i];
+                return Color.FromArgb(c, c, c);
+            }
+            return Color.Empty;
+        }
+
+        public void SetPixel(int x, int y, Color color)
+        {
+            int cCount = Depth / 8;
+            int i = ((y * Width) + x) * cCount;
+
+            if (Depth == 32) // For 32 bpp set Red, Green, Blue and Alpha
+            {
+                Pixels[i] = color.B;
+                Pixels[i + 1] = color.G;
+                Pixels[i + 2] = color.R;
+                Pixels[i + 3] = color.A;
+            }
+            else if (Depth == 24) // For 24 bpp set Red, Green and Blue
+            {
+                Pixels[i] = color.B;
+                Pixels[i + 1] = color.G;
+                Pixels[i + 2] = color.R;
+            }
+            else if (Depth == 8) // For 8 bpp set color value (Red, Green and Blue values are the same)
+            {
+                Pixels[i] = color.B;
+            }
         }
     }
 }
