@@ -103,19 +103,31 @@ namespace Image_Map
             var tasks = new List<Task>();
             UI.OpenButton.Enabled = false;
             UI.SendButton.Enabled = false;
-            foreach (var premap in import.OutputImages)
+            foreach (var settings in import.OutputSettings)
             {
-                id++;
-                MapIDControl box = new MapIDControl(id);
-                SendToZone(box, MapStatus.Importing);
-                var t = new Task<MapPreviewBox>(() =>
+                var boxes = new List<MapIDControl>();
+                for (int i = 0; i < settings.SplitH * settings.SplitW; i++)
                 {
-                    return new MapPreviewBox(premap, SelectedWorld is JavaWorld ? Edition.Java : Edition.Bedrock);
+                    var box = new MapIDControl(id);
+                    boxes.Add(box);
+                    SendToZone(box, MapStatus.Importing);
+                    id++;
+                }
+                var t = new Task<IEnumerable<Map>>(() =>
+                {
+                    if (java)
+                        return JavaMap.FromSettings(settings);
+                    else
+                        return BedrockMap.FromSettings(settings);
                 });
                 t.Start();
                 t.ContinueWith((prev) =>
                 {
-                    box.SetBox(prev.Result);
+                    var results = prev.Result.ToArray();
+                    for (int i = 0; i < settings.SplitH * settings.SplitW; i++)
+                    {
+                        boxes[i].SetBox(new MapPreviewBox(results[i]));
+                    }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
                 tasks.Add(t);
             }

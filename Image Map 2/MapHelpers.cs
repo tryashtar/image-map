@@ -8,6 +8,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 
 namespace Image_Map
 {
@@ -17,11 +18,13 @@ namespace Image_Map
         public const int MAP_HEIGHT = 128;
         public byte[] Colors { get; protected set; }
         public LockBitmap Image { get; protected set; }
-        public Map(Bitmap original)
+        public Bitmap Original { get; protected set; }
+
+        protected Map(Bitmap original, Bitmap converted, byte[] colors)
         {
-            if (original.Height != MAP_HEIGHT || original.Width != MAP_WIDTH)
-                throw new ArgumentException($"Invalid image dimensions: {original.Size} is not {new Size(MAP_WIDTH, MAP_HEIGHT)}");
-            Image = new LockBitmap((Bitmap)original.Clone());
+            Original = original;
+            Image = new LockBitmap((Bitmap)converted.Clone());
+            Colors = colors;
         }
         public Map(byte[] colors)
         {
@@ -33,68 +36,151 @@ namespace Image_Map
             int sum = a + b;
             return sum > 255 ? 255 : (sum < 0 ? 0 : sum);
         }
+
+        protected static Bitmap CropImage(Bitmap img, Rectangle cropArea)
+        {
+            return img.Clone(cropArea, PixelFormat.DontCare);
+        }
+
+        protected static Bitmap ResizeImg(Image image, int width, int height, InterpolationMode mode)
+        {
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = mode;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            return destImage;
+        }
+    }
+
+    public class MapCreationSettings
+    {
+        public Bitmap Original { get; private set; }
+        public int SplitW { get; private set; }
+        public int SplitH { get; private set; }
+        public InterpolationMode InterpMode { get; private set; }
+        public bool Dither { get; private set; }
+
+        public MapCreationSettings(Bitmap original, int splitW, int splitH, InterpolationMode interpMode, bool dither)
+        {
+            Original = original;
+            SplitW = splitW;
+            SplitH = splitH;
+            InterpMode = interpMode;
+            Dither = dither;
+        }
     }
 
     public class JavaMap : Map
     {
-        public JavaMap(Bitmap original, bool dither) : base(original)
+        public static IEnumerable<JavaMap> FromSettings(MapCreationSettings settings)
         {
-            #region java map algorithm
-            Colors = new byte[MAP_WIDTH * MAP_HEIGHT];
-            Image.LockBits();
-
-            for (int y = 0; y < MAP_HEIGHT; y++)
+            Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode);
+            LockBitmap final = new LockBitmap((Bitmap)original.Clone());
+            final.LockBits();
+            // first index = which map this is
+            var colors = new byte[settings.SplitW * settings.SplitH][];
+            for (int i = 0; i < colors.Length; i++)
             {
-                for (int x = 0; x < MAP_WIDTH; x++)
+                colors[i] = new byte[MAP_WIDTH * MAP_HEIGHT];
+            }
+
+            #region java map algorithm
+            for (int y = 0; y < final.Height; y++)
+            {
+                for (int x = 0; x < final.Width; x++)
                 {
-                    Color oldpixel = Image.GetPixel(x, y);
+                    Color oldpixel = final.GetPixel(x, y);
                     Color newpixel = Color.Empty;
                     // partial transparency is not allowed
                     if (oldpixel.A < 128)
                         newpixel = Color.FromArgb(0, 0, 0, 0);
                     else
                     {
-                        double mindist = Double.PositiveInfinity;
-                        // find the color in the palette that is closest to this one
-                        foreach (Color mapcolor in ColorToByte.Keys.Where(o => o.A == 255))
+                        if (!NearestColorCache.TryGetValue(oldpixel, out newpixel))
                         {
-                            double distance = ColorDistance(oldpixel, mapcolor);
-                            if (mindist > distance)
+                            double mindist = Double.PositiveInfinity;
+                            // find the color in the palette that is closest to this one
+                            foreach (Color mapcolor in ColorToByte.Keys.Where(o => o.A == 255))
                             {
-                                mindist = distance;
-                                newpixel = mapcolor;
+                                double distance = ColorDistance(oldpixel, mapcolor);
+                                if (mindist > distance)
+                                {
+                                    mindist = distance;
+                                    newpixel = mapcolor;
+                                }
                             }
+                            NearestColorCache[oldpixel] = newpixel;
                         }
                     }
-                    Image.SetPixel(x, y, newpixel);
-                    if (dither)
+                    final.SetPixel(x, y, newpixel);
+                    if (settings.Dither)
                     {
                         // floyd-steinberg
                         int error_a = oldpixel.A - newpixel.A;
                         int error_r = oldpixel.R - newpixel.R;
                         int error_g = oldpixel.G - newpixel.G;
                         int error_b = oldpixel.B - newpixel.B;
-                        GiveError(x + 1, y, error_a, error_r, error_g, error_b, 7);
-                        GiveError(x, y - 1, error_a, error_r, error_g, error_b, 3);
-                        GiveError(x, y, error_a, error_r, error_g, error_b, 5);
-                        GiveError(x, y + 1, error_a, error_r, error_g, error_b, 1);
+                        GiveError(final, x + 1, y, error_a, error_r, error_g, error_b, 7);
+                        GiveError(final, x - 1, y + 1, error_a, error_r, error_g, error_b, 3);
+                        GiveError(final, x, y + 1, error_a, error_r, error_g, error_b, 5);
+                        GiveError(final, x + 1, y + 1, error_a, error_r, error_g, error_b, 1);
                     }
+                    int currentmap = y / MAP_HEIGHT * settings.SplitW + x / MAP_WIDTH;
+                    int currentpixel = MAP_WIDTH * (y % MAP_HEIGHT) + (x % MAP_WIDTH);
                     if (newpixel == Color.FromArgb(0, 0, 0, 0))
-                        Colors[MAP_WIDTH * y + x] = 0x00;
+                        colors[currentmap][currentpixel] = 0x00;
                     else
-                        Colors[MAP_WIDTH * y + x] = ColorToByte[newpixel];
+                        colors[currentmap][currentpixel] = ColorToByte[newpixel];
                 }
             }
-            Image.UnlockBits();
             #endregion
+
+            final.UnlockBits();
+
+            var maps = new List<JavaMap>();
+            for (int y = 0; y < settings.SplitH; y++)
+            {
+                for (int x = 0; x < settings.SplitW; x++)
+                {
+                    Rectangle crop = new Rectangle(
+                        x * original.Width / settings.SplitW,
+                        y * original.Height / settings.SplitH,
+                        original.Width / settings.SplitW,
+                        original.Height / settings.SplitH);
+                    maps.Add(new JavaMap(
+                        CropImage(original, crop),
+                        CropImage(final.GetImage(), crop),
+                        colors[settings.SplitW * y + x]));
+                }
+            }
+            return maps;
         }
 
-        private void GiveError(int x, int y, int alpha, int red, int green, int blue, int proportion)
+        protected JavaMap(Bitmap original, Bitmap converted, byte[] colors) : base(original, converted, colors)
+        { }
+
+        private static void GiveError(LockBitmap img, int x, int y, int alpha, int red, int green, int blue, int proportion)
         {
-            if (x >= 0 && y >= 0 && x < Image.Width && y < Image.Height)
+            if (x >= 0 && y >= 0 && x < img.Width && y < img.Height)
             {
-                Color old = Image.GetPixel(x, y);
-                Image.SetPixel(x, y, Color.FromArgb(
+                Color old = img.GetPixel(x, y);
+                img.SetPixel(x, y, Color.FromArgb(
                     ByteClamp(old.A, (alpha * proportion) >> 4),
                     ByteClamp(old.R, (red * proportion) >> 4),
                     ByteClamp(old.G, (green * proportion) >> 4),
@@ -113,22 +199,22 @@ namespace Image_Map
             {
                 for (int x = 0; x < MAP_WIDTH; x++)
                 {
-                    if (ByteToColor.ContainsKey(colors[(MAP_WIDTH * y) + x]))
-                    {
-                        Image.SetPixel(x, y, ByteToColor[colors[(MAP_WIDTH * y) + x]]);
-                    }
+                    byte color = colors[(MAP_WIDTH * y) + x];
+                    if (ByteToColor.TryGetValue(color, out Color col))
+                        Image.SetPixel(x, y, col);
                     else
-                    {
-                        Image.SetPixel(x, y, Color.Green);
-                    }
+                        Image.SetPixel(x, y, Color.Transparent);
                 }
             }
             Image.UnlockBits();
+            Original = Image.GetImage();
         }
 
         #region map conversion helpers
         private static Dictionary<Color, byte> ColorToByte;
         private static Dictionary<byte, Color> ByteToColor;
+        // every time we learn the nearest palette entry for a color, store it here so we don't have to look it up again
+        private static Dictionary<Color, Color> NearestColorCache;
         static JavaMap()
         {
             // java's color map: stores the bytes and the RGB color they correspond to on a map
@@ -343,6 +429,7 @@ namespace Image_Map
                 #endregion
             };
             ByteToColor = ColorToByte.ToDictionary(x => x.Value, x => x.Key);
+            NearestColorCache = new Dictionary<Color, Color>();
         }
 
         // color distance algorithm I stole from https://stackoverflow.com/a/33782458
@@ -353,37 +440,66 @@ namespace Image_Map
             long r = (long)e1.R - e2.R;
             long g = (long)e1.G - e2.G;
             long b = (long)e1.B - e2.B;
-            return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
+            return (((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8);
         }
         #endregion
     }
 
     public class BedrockMap : Map
     {
-        public BedrockMap(Bitmap original) : base(original)
+        public static IEnumerable<BedrockMap> FromSettings(MapCreationSettings settings)
         {
-            #region bedrock map algorithm
-            Colors = new byte[MAP_WIDTH * MAP_HEIGHT * 4];
-            Image.LockBits();
-            for (int y = 0; y < MAP_HEIGHT; y++)
+            Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode);
+            LockBitmap final = new LockBitmap((Bitmap)original.Clone());
+            final.LockBits();
+            // first index = which map this is
+            var colors = new byte[settings.SplitW * settings.SplitH][];
+            for (int i = 0; i < colors.Length; i++)
             {
-                for (int x = 0; x < MAP_WIDTH; x++)
+                colors[i] = new byte[MAP_WIDTH * MAP_HEIGHT * 4];
+            }
+
+            #region bedrock map algorithm
+            for (int y = 0; y < final.Height; y++)
+            {
+                for (int x = 0; x < final.Width; x++)
                 {
-                    Color realpixel = Image.GetPixel(x, y);
+                    Color realpixel = final.GetPixel(x, y);
                     Color nearest = Color.FromArgb(realpixel.A < 128 ? 0 : 255, realpixel.R, realpixel.G, realpixel.B);
-                    Image.SetPixel(x, y, nearest);
-                    int byteindex = (MAP_WIDTH * 4 * y) + (4 * x);
-                    Colors[byteindex] = nearest.R;
-                    Colors[byteindex + 1] = nearest.G;
-                    Colors[byteindex + 2] = nearest.B;
+                    final.SetPixel(x, y, nearest);
+                    int currentmap = y / MAP_HEIGHT * settings.SplitW + x / MAP_WIDTH;
+                    int byteindex = MAP_WIDTH * 4 * (y % MAP_HEIGHT) + 4 * (x % MAP_WIDTH);
+                    colors[currentmap][byteindex] = nearest.R;
+                    colors[currentmap][byteindex + 1] = nearest.G;
+                    colors[currentmap][byteindex + 2] = nearest.B;
                     // saving the alpha works just fine, but bedrock renders each pixel fully solid or transparent
                     // it rounds (<128: invisible, >=128: solid)
-                    Colors[byteindex + 3] = nearest.A;
+                    colors[currentmap][byteindex + 3] = nearest.A;
                 }
             }
-            Image.UnlockBits();
             #endregion
+            final.UnlockBits();
+
+            var maps = new List<BedrockMap>();
+            for (int y = 0; y < settings.SplitH; y++)
+            {
+                for (int x = 0; x < settings.SplitW; x++)
+                {
+                    Rectangle crop = new Rectangle(
+                        x * original.Width / settings.SplitW,
+                        y * original.Height / settings.SplitH,
+                        original.Width / settings.SplitW,
+                        original.Height / settings.SplitH);
+                    maps.Add(new BedrockMap(
+                        CropImage(original, crop),
+                        CropImage(final.GetImage(), crop),
+                        colors[settings.SplitW * y + x]));
+                }
+            }
+            return maps;
         }
+        protected BedrockMap(Bitmap original, Bitmap converted, byte[] colors) : base(original, converted, colors)
+        { }
 
         public BedrockMap(byte[] colors) : base(colors)
         {
@@ -400,6 +516,7 @@ namespace Image_Map
                 }
             }
             Image.UnlockBits();
+            Original = Image.GetImage();
         }
     }
 

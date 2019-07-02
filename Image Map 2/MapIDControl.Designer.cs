@@ -47,7 +47,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
+            this.BackgroundImage = global::Image_Map.Properties.Resources.image_map_icon;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.Controls.Add(this.IDLabel);
+            this.DoubleBuffered = true;
             this.Name = "MapIDControl";
             this.Size = new System.Drawing.Size(140, 150);
             this.ResumeLayout(false);

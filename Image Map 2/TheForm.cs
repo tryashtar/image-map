@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 
 namespace Image_Map
@@ -160,18 +158,34 @@ namespace Image_Map
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (MapViewZone.Visible && MapView.SelectedTab == ImportTab)
+            if (MapViewZone.Visible)
             {
-                if (keyData == (Keys.V | Keys.Control))
+                if (MapView.SelectedTab == ImportTab)
                 {
-                    if (Clipboard.ContainsFileDropList())
+                    if (keyData == (Keys.V | Keys.Control))
                     {
-                        var files = Clipboard.GetFileDropList();
-                        string[] array = new string[files.Count];
-                        files.CopyTo(array, 0);
-                        Controller.ImportImages(array);
+                        if (Clipboard.ContainsFileDropList())
+                        {
+                            var files = Clipboard.GetFileDropList();
+                            string[] array = new string[files.Count];
+                            files.CopyTo(array, 0);
+                            Controller.ImportImages(array);
+                        }
+                        return true;
                     }
-                    return true;
+                    else if (keyData == Keys.Delete)
+                    {
+                        ImportContextDiscard_Click(this, new EventArgs());
+                        return true;
+                    }
+                }
+                else if (MapView.SelectedTab == ExistingTab)
+                {
+                    if (keyData == Keys.Delete)
+                    {
+                        ExistingContextDelete_Click(this, new EventArgs());
+                        return true;
+                    }
                 }
             }
             if (keyData == (Keys.A | Keys.Control))

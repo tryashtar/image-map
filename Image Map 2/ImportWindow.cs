@@ -19,9 +19,9 @@ namespace Image_Map
         private bool Finished = false;
         private int EditingIndex = 0;
         private string[] InputPaths;
-        private Image CurrentImage;
+        private Bitmap CurrentImage;
         public bool DitherChecked { get { return DitherCheck.Checked; } set { DitherCheck.Checked = value; } }
-        public List<PreMap> OutputImages = new List<PreMap>();
+        public List<MapCreationSettings> OutputSettings = new List<MapCreationSettings>();
         RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
         public ImportWindow(bool allowdither)
         {
@@ -34,7 +34,7 @@ namespace Image_Map
         public void StartImports(Form parent, string[] inputpaths)
         {
             InputPaths = inputpaths;
-            OutputImages.Clear();
+            OutputSettings.Clear();
             CurrentIndexLabel.Visible = (InputPaths.Length > 1);
             ApplyAllCheck.Visible = (InputPaths.Length > 1);
             EditingIndex = -1;
@@ -63,7 +63,7 @@ namespace Image_Map
                 string filename = Path.GetFileName(InputPaths[EditingIndex]);
                 try
                 {
-                    CurrentImage = Image.FromFile(InputPaths[EditingIndex]);
+                    CurrentImage = new Bitmap(InputPaths[EditingIndex]);
                 }
                 catch (Exception)
                 {
@@ -133,36 +133,6 @@ namespace Image_Map
             PreviewBox.Interp = GetInterpolationMode();
         }
 
-        private static Bitmap CropImage(Bitmap img, Rectangle cropArea)
-        {
-            return img.Clone(cropArea, PixelFormat.DontCare);
-        }
-
-        private static Bitmap ResizeImg(Image image, int width, int height, InterpolationMode mode)
-        {
-            var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new Bitmap(width, height);
-
-            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-
-            using (var graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = mode;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                using (var wrapMode = new ImageAttributes())
-                {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
-                }
-            }
-
-            return destImage;
-        }
-
         private void ConfirmButton_Click(object sender, EventArgs e)
         {
             int index = EditingIndex;
@@ -171,23 +141,11 @@ namespace Image_Map
             {
                 if (i > index)
                 {
-                    CurrentImage = Image.FromFile(InputPaths[i]);
+                    CurrentImage = new Bitmap(InputPaths[i]);
                     CurrentImage.RotateFlip(Rotation);
                 }
-                Bitmap img = ResizeImg(CurrentImage, (int)(128 * WidthInput.Value), (int)(128 * HeightInput.Value), GetInterpolationMode());
-                for (int y = 0; y < HeightInput.Value; y++)
-                {
-                    for (int x = 0; x < WidthInput.Value; x++)
-                    {
-                        bool dithered = AllowDither && DitherCheck.Checked;
-                        OutputImages.Add(new PreMap(CropImage(img, new Rectangle(
-                            (int)(x * img.Width / WidthInput.Value),
-                            (int)(y * img.Height / HeightInput.Value),
-                            (int)(img.Width / WidthInput.Value),
-                            (int)(img.Height / HeightInput.Value))),
-                            dithered));
-                    }
-                }
+                bool dithered = AllowDither && DitherCheck.Checked;
+                OutputSettings.Add(new MapCreationSettings(CurrentImage, (int)WidthInput.Value, (int)HeightInput.Value, GetInterpolationMode(), dithered));
             }
             EditingIndex = final;
             ProcessNextImage();
@@ -222,18 +180,6 @@ namespace Image_Map
             PreviewBox.Width = (int)Math.Min(PreviewPanel.Width, PreviewPanel.Height / ideal);
             PreviewBox.Left = PreviewPanel.Width / 2 - (PreviewBox.Width / 2);
             PreviewBox.Top = PreviewPanel.Height / 2 - (PreviewBox.Height / 2);
-        }
-    }
-
-    public class PreMap
-    {
-        public Bitmap Contents { get; private set; }
-        public bool Dithered { get; private set; }
-        // holds a 128x128 image and some settings, ready to be turned into a map
-        public PreMap(Bitmap contents, bool dithered)
-        {
-            Contents = contents;
-            Dithered = dithered;
         }
     }
 }

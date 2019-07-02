@@ -177,6 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="image-map-icon.ico" />
+    <None Include="Resources\image_map_icon.png" />
     <None Include="Resources\item_frame.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

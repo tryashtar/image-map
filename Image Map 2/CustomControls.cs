@@ -28,22 +28,10 @@ namespace Image_Map
         public Map Map { get; private set; }
         private Image OriginalImage;
 
-        public MapPreviewBox(PreMap original, Edition edition)
-        {
-            // provide an original image, and generate and remember the converted version
-            if (edition == Edition.Java)
-                Map = new JavaMap(original.Contents, original.Dithered);
-            else if (edition == Edition.Bedrock)
-                Map = new BedrockMap(original.Contents);
-            OriginalImage = original.Contents;
-            Constructor();
-        }
-
         public MapPreviewBox(Map map)
         {
-            // no original image is provided, so the two images are the same
             Map = map;
-            OriginalImage = map.Image.GetImage();
+            OriginalImage = map.Original;
             Constructor();
         }
 

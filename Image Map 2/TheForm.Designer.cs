@@ -35,12 +35,13 @@
             this.BedrockWorldButton = new System.Windows.Forms.Button();
             this.ExistingTab = new System.Windows.Forms.TabPage();
             this.ExistingZone = new System.Windows.Forms.FlowLayoutPanel();
+            this.ExistingControls = new System.Windows.Forms.Panel();
             this.ImportTab = new System.Windows.Forms.TabPage();
+            this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
             this.ImportControls = new System.Windows.Forms.Panel();
             this.AddChestCheck = new System.Windows.Forms.CheckBox();
             this.SendButton = new System.Windows.Forms.Button();
             this.OpenButton = new System.Windows.Forms.Button();
-            this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
             this.MapView = new System.Windows.Forms.TabControl();
             this.MapViewZone = new System.Windows.Forms.Panel();
             this.ImportContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -54,7 +55,6 @@
             this.ExistingContextExport = new System.Windows.Forms.ToolStripMenuItem();
             this.ExistingContextDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.ExistingContextSelectAll = new System.Windows.Forms.ToolStripMenuItem();
-            this.ExistingControls = new System.Windows.Forms.Panel();
             this.ExistingTab.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportControls.SuspendLayout();
@@ -122,6 +122,15 @@
             this.ExistingZone.Size = new System.Drawing.Size(779, 343);
             this.ExistingZone.TabIndex = 2;
             // 
+            // ExistingControls
+            // 
+            this.ExistingControls.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.ExistingControls.Location = new System.Drawing.Point(3, 346);
+            this.ExistingControls.Name = "ExistingControls";
+            this.ExistingControls.Size = new System.Drawing.Size(779, 61);
+            this.ExistingControls.TabIndex = 5;
+            this.ExistingControls.Visible = false;
+            // 
             // ImportTab
             // 
             this.ImportTab.Controls.Add(this.ImportZone);
@@ -133,6 +142,20 @@
             this.ImportTab.TabIndex = 1;
             this.ImportTab.Text = "Import Maps";
             this.ImportTab.UseVisualStyleBackColor = true;
+            // 
+            // ImportZone
+            // 
+            this.ImportZone.AllowDrop = true;
+            this.ImportZone.AutoScroll = true;
+            this.ImportZone.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.ImportZone.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ImportZone.Location = new System.Drawing.Point(3, 3);
+            this.ImportZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ImportZone.Name = "ImportZone";
+            this.ImportZone.Size = new System.Drawing.Size(779, 343);
+            this.ImportZone.TabIndex = 3;
+            this.ImportZone.DragDrop += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragDrop);
+            this.ImportZone.DragEnter += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragEnter);
             // 
             // ImportControls
             // 
@@ -181,20 +204,6 @@
             this.OpenButton.Text = "Open";
             this.OpenButton.UseVisualStyleBackColor = true;
             this.OpenButton.Click += new System.EventHandler(this.OpenButton_Click);
-            // 
-            // ImportZone
-            // 
-            this.ImportZone.AllowDrop = true;
-            this.ImportZone.AutoScroll = true;
-            this.ImportZone.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.ImportZone.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ImportZone.Location = new System.Drawing.Point(3, 3);
-            this.ImportZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.ImportZone.Name = "ImportZone";
-            this.ImportZone.Size = new System.Drawing.Size(779, 343);
-            this.ImportZone.TabIndex = 3;
-            this.ImportZone.DragDrop += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragDrop);
-            this.ImportZone.DragEnter += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragEnter);
             // 
             // MapView
             // 
@@ -309,14 +318,6 @@
             this.ExistingContextSelectAll.Size = new System.Drawing.Size(189, 24);
             this.ExistingContextSelectAll.Text = "Select all";
             this.ExistingContextSelectAll.Click += new System.EventHandler(this.ExistingContextSelectAll_Click);
-            // 
-            // ExistingControls
-            // 
-            this.ExistingControls.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.ExistingControls.Location = new System.Drawing.Point(3, 346);
-            this.ExistingControls.Name = "ExistingControls";
-            this.ExistingControls.Size = new System.Drawing.Size(779, 61);
-            this.ExistingControls.TabIndex = 5;
             // 
             // TheForm
             // 
