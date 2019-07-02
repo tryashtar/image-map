@@ -17,11 +17,6 @@ namespace Image_Map
         string JavaSavesFolder = "";
         string LastImgExportPath = "";
         string BedrockSavesFolder;
-        CommonOpenFileDialog JavaWorldDialog = new CommonOpenFileDialog()
-        {
-            Title = "Select a Minecraft world folder",
-            IsFolderPicker = true,
-        };
         SaveFileDialog ExportDialog = new SaveFileDialog()
         {
             Title = "Export this map as a PNG",
@@ -32,7 +27,8 @@ namespace Image_Map
             Title = "Import image files to turn into maps",
             Multiselect = true,
         };
-        BedrockWorldWindow BedrockWorldDialog = new BedrockWorldWindow();
+        WorldWindow JavaWorldDialog = new WorldWindow(Edition.Java);
+        WorldWindow BedrockWorldDialog = new WorldWindow(Edition.Bedrock);
         public TheForm()
         {
             InitializeComponent();
@@ -54,6 +50,7 @@ namespace Image_Map
         private void TheForm_Load(object sender, EventArgs e)
         {
             // load up saved settings
+            AddChestCheck.Checked = Properties.Settings.Default.GiveChest;
             LastOpenPath = Properties.Settings.Default.LastOpenPath;
             LastImgExportPath = Properties.Settings.Default.LastImgExportPath;
             AddChestCheck.Checked = Properties.Settings.Default.AddNewMaps;
@@ -65,17 +62,31 @@ namespace Image_Map
                 JavaSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves");
         }
 
+        private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
+        {
+            int conflicts = Controller.SendMapsToWorld(maps, MapReplaceOption.Info, destination);
+            if (conflicts > 0)
+            {
+                var option = new ReplaceOptionDialog(conflicts);
+                option.ShowDialog(this);
+                Controller.SendMapsToWorld(maps, option.SelectedOption, destination);
+            }
+            else
+                Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
+        }
+
         private void OpenWorldWithMessage(Edition edition)
         {
             string folder = null;
             // edition-specific world picking
             if (edition == Edition.Java)
             {
-                JavaWorldDialog.InitialDirectory = JavaSavesFolder;
-                if (JavaWorldDialog.ShowDialog() != CommonFileDialogResult.Ok)
+                JavaWorldDialog.SavesFolder = JavaSavesFolder;
+                JavaWorldDialog.Show(this);
+                if (!JavaWorldDialog.Confirmed)
                     return;
-                folder = JavaWorldDialog.FileName;
-                JavaSavesFolder = Path.GetDirectoryName(folder);
+                folder = JavaWorldDialog.SelectedWorldFolder;
+                JavaSavesFolder = JavaWorldDialog.SavesFolder;
             }
             else if (edition == Edition.Bedrock)
             {
@@ -89,7 +100,7 @@ namespace Image_Map
             // generic world opening and warning
             var result = Controller.OpenWorld(edition, folder);
             if (result == ActionResult.MapsNotImported && MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                result = Controller.OpenWorld(edition, folder, bypass_mapwarning: true);
+                Controller.OpenWorld(edition, folder, bypass_mapwarning: true);
         }
 
         private void JavaWorldButton_Click(object sender, EventArgs e)
@@ -114,10 +125,7 @@ namespace Image_Map
 
         private void SendButton_Click(object sender, EventArgs e)
         {
-            if (AddChestCheck.Checked)
-                Controller.SendMapsToWorld(PlayerSelector.Text);
-            else
-                Controller.SendMapsToWorld();
+            SendMapsWithMessage(Controller.GetAllMaps(MapStatus.Importing), AddChestCheck.Checked ? ViewController.LOCAL_IDENTIFIER : ViewController.NOBODY_IDENTIFIER);
         }
 
         private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -128,52 +136,14 @@ namespace Image_Map
             Properties.Settings.Default.LastOpenPath = LastOpenPath;
             Properties.Settings.Default.LastImgExportPath = LastImgExportPath;
             Properties.Settings.Default.AddNewMaps = AddChestCheck.Checked;
+            Properties.Settings.Default.GiveChest = AddChestCheck.Checked;
             Properties.Settings.Default.Save();
-        }
-
-        private void ExportImageButton_Click(object sender, EventArgs e)
-        {
-            var selected = Controller.GetSelectedMaps();
-            // super epic way to check if there is exactly one item
-            bool onlyone = selected.Take(2).Count() == 1;
-            if (onlyone)
-                ExportDialog.FileName = selected.First().GetMapName() + ".png";
-            else
-                ExportDialog.FileName = "";
-            ExportDialog.InitialDirectory = LastImgExportPath;
-            if (ExportDialog.ShowDialog() == DialogResult.OK)
-            {
-                LastImgExportPath = Path.GetDirectoryName(ExportDialog.FileName);
-                if (onlyone)
-                    Controller.SaveMap(selected.First(), ExportDialog.FileName);
-                else
-                    Controller.SaveMaps(selected, Path.ChangeExtension(ExportDialog.FileName, ""));
-            }
-        }
-
-        private void AddInventoryButton_Click(object sender, EventArgs e)
-        {
-            bool success = Controller.AddChests(Controller.GetSelectedMaps().Select(x => x.ID), PlayerSelector.Text);
-            if (!success)
-                MessageBox.Show("There wasn't enough space to fit the chests in your inventory. One or more were not added.", "Chest alert!");
-        }
-
-        private void DeleteButton_Click(object sender, EventArgs e)
-        {
-            var selected = Controller.GetSelectedMaps();
-            if (selected.Any() && MessageBox.Show("Deleting these maps will remove all copies from the world permanently.\n\nWould you like to delete these maps?", $"Delete {selected.Count()} maps?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                Controller.DeleteMapsFromWorld(selected);
         }
 
         private void TheForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (Controller.UnsavedChanges() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you exit now, these maps will disappear.\n\nWould you like to exit anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
                 e.Cancel = true;
-        }
-
-        private void PlayerSelector_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.GiveChest = (PlayerSelector.SelectedIndex != 1);
         }
 
         private void ImportZone_DragEnter(object sender, DragEventArgs e)
@@ -204,16 +174,141 @@ namespace Image_Map
                     return true;
                 }
             }
+            if (keyData == (Keys.A | Keys.Control))
+            {
+                if (MapView.SelectedTab == ImportTab)
+                    Controller.SelectAll(MapStatus.Importing);
+                else if (MapView.SelectedTab == ExistingTab)
+                    Controller.SelectAll(MapStatus.Existing);
+                return true;
+            }
+            else if (keyData == (Keys.D | Keys.Control))
+            {
+                if (MapView.SelectedTab == ImportTab)
+                    Controller.DeselectAll(MapStatus.Importing);
+                else if (MapView.SelectedTab == ExistingTab)
+                    Controller.DeselectAll(MapStatus.Existing);
+                return true;
+            }
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void SelectAllCheck_CheckedChanged(object sender, EventArgs e)
+        private void ImportContextSend_Click(object sender, EventArgs e)
         {
-            var area = MapView.SelectedTab == ImportTab ? MapStatus.Importing : MapStatus.Existing;
-            if (SelectAllCheck.Checked)
-                Controller.SelectAll(area);
+            SendMapsWithMessage(Controller.GetSelectedMaps(MapStatus.Importing), AddChestCheck.Checked ? ViewController.LOCAL_IDENTIFIER : ViewController.NOBODY_IDENTIFIER);
+        }
+
+        private void ChangeMapIDs(IEnumerable<MapIDControl> boxes, MapStatus area)
+        {
+            var input = new IDInputDialog(boxes.First().ID);
+            input.ShowDialog(this);
+            if (input.Confirmed)
+            {
+                long firstid;
+                if (input.WantsAuto)
+                    firstid = Controller.GetSafeID();
+                else
+                    firstid = input.SelectedID;
+                int count = Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Info);
+                if (count > 0)
+                {
+                    var picker = new ReplaceOptionDialog(count);
+                    picker.ShowDialog(this);
+                    Controller.ChangeMapIDs(boxes, firstid, area, picker.SelectedOption);
+                }
+                else
+                    Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
+            }
+        }
+
+        private void ImportContextChangeID_Click(object sender, EventArgs e)
+        {
+            ChangeMapIDs(Controller.GetSelectedMaps(MapStatus.Importing).ToArray(), MapStatus.Importing);
+        }
+
+        private void ImportContextDiscard_Click(object sender, EventArgs e)
+        {
+            var selected = Controller.GetSelectedMaps(MapStatus.Importing).ToArray();
+            foreach (var box in selected)
+            {
+                Controller.RemoveFromZone(box, MapStatus.Importing);
+            }
+        }
+
+        private void ImportContextSelectAll_Click(object sender, EventArgs e)
+        {
+            if (Controller.GetAllMaps(MapStatus.Importing).All(x => x.Selected))
+                Controller.DeselectAll(MapStatus.Importing);
             else
-                Controller.DeselectAll(area);
+                Controller.SelectAll(MapStatus.Importing);
+        }
+
+        private void ExistingContextAdd_Click(object sender, EventArgs e)
+        { }
+
+        private void ExistingContextChangeID_Click(object sender, EventArgs e)
+        {
+            ChangeMapIDs(Controller.GetSelectedMaps(MapStatus.Existing).ToArray(), MapStatus.Existing);
+        }
+
+        private void ExistingContextExport_Click(object sender, EventArgs e)
+        {
+            var selected = Controller.GetSelectedMaps(MapStatus.Existing);
+            // super epic way to check if there is exactly one item
+            bool onlyone = selected.Take(2).Count() == 1;
+            if (onlyone)
+                ExportDialog.FileName = selected.First().GetMapName() + ".png";
+            else
+                ExportDialog.FileName = "";
+            ExportDialog.InitialDirectory = LastImgExportPath;
+            if (ExportDialog.ShowDialog() == DialogResult.OK)
+            {
+                LastImgExportPath = Path.GetDirectoryName(ExportDialog.FileName);
+                if (onlyone)
+                    Controller.SaveMap(selected.First(), ExportDialog.FileName);
+                else
+                    Controller.SaveMaps(selected, Path.ChangeExtension(ExportDialog.FileName, ""));
+            }
+        }
+
+        private void ExistingContextDelete_Click(object sender, EventArgs e)
+        {
+            var selected = Controller.GetSelectedMaps(MapStatus.Existing);
+            if (selected.Any() && MessageBox.Show("Deleting these maps will remove all copies from the world permanently.\n\nWould you like to delete these maps?", $"Delete {selected.Count()} maps?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                Controller.DeleteMapsFromWorld(selected);
+        }
+
+        private void ExistingContextPlayerName_Click(object sender, EventArgs e)
+        {
+            bool success = Controller.AddChests(Controller.GetSelectedMaps(MapStatus.Existing).Select(x => x.ID), ((ToolStripMenuItem)sender).Text);
+            if (!success)
+                MessageBox.Show("There wasn't enough space to fit the chests in your inventory. One or more were not added.", "Chest alert!");
+        }
+
+        private void ExistingContextSelectAll_Click(object sender, EventArgs e)
+        {
+            if (Controller.GetAllMaps(MapStatus.Existing).All(x => x.Selected))
+                Controller.DeselectAll(MapStatus.Existing);
+            else
+                Controller.SelectAll(MapStatus.Existing);
+        }
+
+        private void ImportContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (Controller.GetAllMaps(MapStatus.Importing).All(x => x.Selected))
+                ImportContextSelectAll.Text = "Deselect all";
+            else
+                ImportContextSelectAll.Text = "Select all";
+        }
+
+        private void ExistingContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            ExistingContextAdd.DropDownItems.Clear();
+            ExistingContextAdd.DropDownItems.AddRange(Controller.GetPlayerDestinations().Select(x => new ToolStripMenuItem(x, null, ExistingContextPlayerName_Click)).ToArray());
+            if (Controller.GetAllMaps(MapStatus.Existing).All(x => x.Selected))
+                ExistingContextSelectAll.Text = "Deselect all";
+            else
+                ExistingContextSelectAll.Text = "Select all";
         }
     }
 }

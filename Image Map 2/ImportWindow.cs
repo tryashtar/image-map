@@ -43,6 +43,16 @@ namespace Image_Map
                 ShowDialog(parent);
         }
 
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Enter)
+            {
+                ConfirmButton_Click(this, new EventArgs());
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
         private void ProcessNextImage()
         {
             EditingIndex++;

@@ -22,6 +22,14 @@ namespace Image_Map
         Failure
     }
 
+    public enum MapReplaceOption
+    {
+        ChangeExisting,
+        ReplaceExisting,
+        Skip,
+        Info
+    }
+
     public enum MapStatus
     {
         Importing,
@@ -30,12 +38,15 @@ namespace Image_Map
 
     public class ViewController
     {
-        private const string LOCAL_IDENTIFIER = "(singleplayer)";
-        private const string NOBODY_IDENTIFIER = "(nobody)";
+        public const string LOCAL_IDENTIFIER = "(singleplayer)";
+        public const string NOBODY_IDENTIFIER = "(nobody)";
         MinecraftWorld SelectedWorld;
-        TheForm UI;
+        readonly TheForm UI;
         List<MapIDControl> ImportingMapPreviews;
         List<MapIDControl> ExistingMapPreviews;
+        private MapIDControl LastImportSelected;
+        private MapIDControl LastExistingSelected;
+        private List<string> PlayerDestinations;
 
         public ViewController(TheForm form)
         {
@@ -65,14 +76,17 @@ namespace Image_Map
                 return ActionResult.Failure;
             }
             SelectedWorld.Initialize();
-            UI.PlayerSelector.Items.Clear();
-            UI.PlayerSelector.Items.Add(LOCAL_IDENTIFIER);
-            UI.PlayerSelector.Items.Add(NOBODY_IDENTIFIER);
-            UI.PlayerSelector.Items.AddRange(SelectedWorld.GetPlayerIDs().ToArray());
-            UI.PlayerSelector.SelectedIndex = Properties.Settings.Default.GiveChest ? 0 : 1;
             NewWorldOpened();
+            PlayerDestinations = new List<string>();
+            PlayerDestinations.Add(LOCAL_IDENTIFIER);
+            foreach (var uuid in SelectedWorld.GetPlayerIDs())
+            {
+                PlayerDestinations.Add(uuid);
+            }
             return ActionResult.Success;
         }
+
+        public IEnumerable<string> GetPlayerDestinations() => PlayerDestinations;
 
         public void ImportImages(string[] imagepaths)
         {
@@ -85,9 +99,7 @@ namespace Image_Map
             Properties.Settings.Default.InterpIndex = import.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = import.ApplyAllCheck.Checked;
             Properties.Settings.Default.Dither = import.DitherChecked;
-            var taken = ImportingMapPreviews.Concat(ExistingMapPreviews).Select(x => x.ID).ToList();
-            taken.Add(-1);
-            long id = taken.Max();
+            long id = GetSafeID();
             var tasks = new List<Task>();
             UI.OpenButton.Enabled = false;
             UI.SendButton.Enabled = false;
@@ -95,9 +107,7 @@ namespace Image_Map
             {
                 id++;
                 MapIDControl box = new MapIDControl(id);
-                ImportingMapPreviews.Add(box);
-                UI.ImportZone.Controls.Add(box);
-                box.MouseDown += ImportingBox_MouseDown;
+                SendToZone(box, MapStatus.Importing);
                 var t = new Task<MapPreviewBox>(() =>
                 {
                     return new MapPreviewBox(premap, SelectedWorld is JavaWorld ? Edition.Java : Edition.Bedrock);
@@ -117,9 +127,77 @@ namespace Image_Map
                 }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        public IEnumerable<MapIDControl> GetSelectedMaps()
+        // returns number of conflicts
+        public int ChangeMapIDs(IEnumerable<MapIDControl> boxes, long id, MapStatus area, MapReplaceOption option)
         {
-            return ExistingMapPreviews.Where(x => x.Selected);
+            int conflicts = 0;
+            var write = new List<MapIDControl>();
+            foreach (var box in boxes.ToArray())
+            {
+                bool shouldchange = (option != MapReplaceOption.Info);
+                var currentholder = GetMapByID(id, area);
+                if (currentholder != null && currentholder != box)
+                {
+                    if (option == MapReplaceOption.ChangeExisting)
+                    {
+                        currentholder.SetID(GetSafeID());
+                        if (area == MapStatus.Existing)
+                            write.Add(currentholder);
+                    }
+                    else if (option == MapReplaceOption.ReplaceExisting)
+                        RemoveFromZone(currentholder, area);
+                    else if (option == MapReplaceOption.Skip)
+                        shouldchange = false;
+                    conflicts++;
+                }
+                if (shouldchange)
+                {
+                    if (area == MapStatus.Existing)
+                    {
+                        SelectedWorld.RemoveMap(box.ID);
+                        write.Add(box);
+                    }
+                    box.SetID(id);
+                }
+                id++;
+            }
+            SendMapsToWorld(write, MapReplaceOption.ReplaceExisting);
+            DetermineTransferConflicts();
+            return conflicts;
+        }
+
+        private void DetermineTransferConflicts()
+        {
+            foreach (var box in GetAllMaps(MapStatus.Importing))
+            {
+                var counterpart = GetMapByID(box.ID, MapStatus.Existing);
+                box.SetConflict(counterpart != null);
+            }
+        }
+
+        public long GetSafeID()
+        {
+            var taken = ImportingMapPreviews.Concat(ExistingMapPreviews).Select(x => x.ID).ToList();
+            taken.Add(-1);
+            return taken.Max() + 1;
+        }
+
+        public MapIDControl GetMapByID(long id, MapStatus area)
+        {
+            return GetAllMaps(area).FirstOrDefault(x => x.ID == id);
+        }
+
+        public IEnumerable<MapIDControl> GetSelectedMaps(MapStatus area)
+        {
+            return GetAllMaps(area).Where(x => x.Selected);
+        }
+
+        public IEnumerable<MapIDControl> GetAllMaps(MapStatus area)
+        {
+            if (area == MapStatus.Importing)
+                return ImportingMapPreviews;
+            else
+                return ExistingMapPreviews;
         }
 
         public void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
@@ -136,10 +214,10 @@ namespace Image_Map
             var remove = maps.ToArray();
             foreach (var box in remove)
             {
-                ExistingMapPreviews.Remove(box);
-                UI.ExistingZone.Controls.Remove(box);
+                RemoveFromZone(box, MapStatus.Existing);
                 SelectedWorld.RemoveMap(box.ID);
             }
+            DetermineTransferConflicts();
         }
 
         public void SaveMap(MapIDControl map, string file)
@@ -152,20 +230,44 @@ namespace Image_Map
             return ImportingMapPreviews.Any();
         }
 
-        public void SendMapsToWorld()
+        // returns number of conflicts, does nothing if there is at least one
+        public int SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, string playerid = NOBODY_IDENTIFIER)
         {
-            SendMapsToWorld(NOBODY_IDENTIFIER);
-        }
-
-        public void SendMapsToWorld(string playerid)
-        {
-            SelectedWorld.AddMaps(ImportingMapPreviews.ToDictionary(x => x.ID, x => x.Map));
-            var ids = ImportingMapPreviews.Select(x => x.ID);
+            var writemaps = maps.ToList();
+            var conflictids = new List<long>();
+            // check for  conflicts
+            foreach (var map in maps)
+            {
+                if (map.Conflicted)
+                {
+                    conflictids.Add(map.ID);
+                    if (option == MapReplaceOption.Skip)
+                        writemaps.Remove(map);
+                }
+            }
+            if (option == MapReplaceOption.Info)
+                return conflictids.Count;
+            if (option == MapReplaceOption.ChangeExisting)
+            {
+                foreach (var conflict in conflictids)
+                {
+                    var currentholder = GetMapByID(conflict, MapStatus.Existing);
+                    currentholder.SetID(GetSafeID());
+                    writemaps.Add(currentholder);
+                }
+            }
+            SelectedWorld.AddMaps(writemaps.ToDictionary(x => x.ID, x => x.Map));
+            var ids = writemaps.Select(x => x.ID);
             AddChests(ids, playerid);
-            ExistingMapPreviews.AddRange(ImportingMapPreviews);
-            UI.ExistingZone.Controls.AddRange(ImportingMapPreviews.ToArray());
-            ImportingMapPreviews.Clear();
-            UI.ImportZone.Controls.Clear();
+            foreach (var box in writemaps.ToArray())
+            {
+                var exists = GetMapByID(box.ID, MapStatus.Existing);
+                if (exists != null && exists != box)
+                    RemoveFromZone(exists, MapStatus.Existing);
+                SendToZone(box, MapStatus.Existing);
+            }
+            DetermineTransferConflicts();
+            return conflictids.Count;
         }
 
         // returns false if there wasn't enough room
@@ -182,8 +284,7 @@ namespace Image_Map
 
         public void SelectAll(MapStatus area)
         {
-            var boxes = area == MapStatus.Importing ? ImportingMapPreviews : ExistingMapPreviews;
-            foreach (var box in boxes)
+            foreach (var box in GetAllMaps(area))
             {
                 box.SetSelected(true);
             }
@@ -191,21 +292,109 @@ namespace Image_Map
 
         public void DeselectAll(MapStatus area)
         {
-            var boxes = area == MapStatus.Importing ? ImportingMapPreviews : ExistingMapPreviews;
-            foreach (var box in boxes)
+            foreach (var box in GetAllMaps(area))
             {
                 box.SetSelected(false);
             }
         }
 
-        // right-click maps to remove them
+        private void ClickSelect(MapIDControl box, MapStatus area)
+        {
+            MapIDControl current = area == MapStatus.Importing ? LastImportSelected : LastExistingSelected;
+            var list = area == MapStatus.Importing ? ImportingMapPreviews : ExistingMapPreviews;
+
+            box.ToggleSelected();
+            if (Control.ModifierKeys == Keys.Shift && current != null)
+            {
+                bool state = current.Selected;
+                int first = list.IndexOf(current);
+                int last = list.IndexOf(box);
+                for (int i = Math.Min(first, last); i < Math.Max(first, last); i++)
+                {
+                    list[i].SetSelected(state);
+                }
+            }
+            if (area == MapStatus.Importing)
+                LastImportSelected = box;
+            else
+                LastExistingSelected = box;
+        }
+
         private void ImportingBox_MouseDown(object sender, MouseEventArgs e)
         {
             MapIDControl box = sender as MapIDControl;
             if (e.Button == MouseButtons.Right)
             {
-                ImportingMapPreviews.Remove(box);
+                if (!box.Selected)
+                {
+                    foreach (var other in ImportingMapPreviews)
+                    {
+                        other.SetSelected(false);
+                    }
+                    box.SetSelected(true);
+                }
+                UI.ImportContextMenu.Show(box, new Point(e.X, e.Y));
+            }
+            else
+                ClickSelect(box, MapStatus.Importing);
+        }
+
+        private void ExistingBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            MapIDControl box = sender as MapIDControl;
+            if (e.Button == MouseButtons.Right)
+            {
+                if (!box.Selected)
+                {
+                    foreach (var other in ExistingMapPreviews)
+                    {
+                        other.SetSelected(false);
+                    }
+                    box.SetSelected(true);
+                }
+                UI.ExistingContextMenu.Show(box, new Point(e.X, e.Y));
+            }
+            else
+                ClickSelect(box, MapStatus.Existing);
+        }
+
+        public void RemoveFromZone(MapIDControl box, MapStatus location)
+        {
+            box.SetSelected(false);
+            box.SetConflict(false);
+            if (box == LastImportSelected)
+                LastImportSelected = null;
+            if (box == LastExistingSelected)
+                LastExistingSelected = null;
+            if (location == MapStatus.Importing)
+            {
                 UI.ImportZone.Controls.Remove(box);
+                ImportingMapPreviews.Remove(box);
+                box.MouseDown -= ImportingBox_MouseDown;
+            }
+            else if (location == MapStatus.Existing)
+            {
+                UI.ExistingZone.Controls.Remove(box);
+                ExistingMapPreviews.Remove(box);
+                box.MouseDown -= ExistingBox_MouseDown;
+            }
+        }
+
+        private void SendToZone(MapIDControl box, MapStatus location)
+        {
+            if (location == MapStatus.Importing)
+            {
+                RemoveFromZone(box, MapStatus.Existing);
+                UI.ImportZone.Controls.Add(box);
+                ImportingMapPreviews.Add(box);
+                box.MouseDown += ImportingBox_MouseDown;
+            }
+            else if (location == MapStatus.Existing)
+            {
+                RemoveFromZone(box, MapStatus.Importing);
+                UI.ExistingZone.Controls.Add(box);
+                ExistingMapPreviews.Add(box);
+                box.MouseDown += ExistingBox_MouseDown;
             }
         }
 
@@ -220,8 +409,7 @@ namespace Image_Map
             foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
             {
                 MapIDControl mapbox = new MapIDControl(map.Key, new MapPreviewBox(map.Value));
-                ExistingMapPreviews.Add(mapbox);
-                UI.ExistingZone.Controls.Add(mapbox);
+                SendToZone(mapbox, MapStatus.Existing);
             }
             UI.Text = "Image Map – " + SelectedWorld.Name;
         }

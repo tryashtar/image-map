@@ -15,16 +15,17 @@ namespace Image_Map
         public long ID { get; private set; }
         public Map Map { get; private set; }
         public bool Selected { get; private set; }
+        public bool Conflicted { get; private set; }
         public event EventHandler<bool> SelectedChanged;
 
         // awaiting to receive a preview box
         public MapIDControl(long id)
         {
-            ID = id;
-            Selected = false;
             InitializeComponent();
             AutoScaleMode = AutoScaleMode.None;
-            IDLabel.Text = $"map_{id}";
+            SetSelected(false);
+            SetID(id);
+            SetConflict(false);
         }
 
         public MapIDControl(long id, MapPreviewBox box) : this(id)
@@ -37,6 +38,20 @@ namespace Image_Map
             box.MouseDown += Box_MouseDown;
             Controls.Add(box);
             Map = box.Map;
+            box.Left = this.Width / 2 - box.Width / 2;
+            box.Top = 3;
+        }
+
+        public void SetID(long id)
+        {
+            ID = id;
+            IDLabel.Text = $"map_{id}";
+        }
+
+        public void SetConflict(bool conflict)
+        {
+            Conflicted = conflict;
+            UpdateColor();
         }
 
         public void ToggleSelected()
@@ -46,9 +61,12 @@ namespace Image_Map
 
         public void SetSelected(bool selected)
         {
-            Selected = selected;
-            BackColor = Selected ? Color.LightGreen : Color.White;
-            SelectedChanged?.Invoke(this, Selected);
+            if (selected != Selected)
+            {
+                Selected = selected;
+                SelectedChanged?.Invoke(this, Selected);
+                UpdateColor();
+            }
         }
 
         public string GetMapName()
@@ -56,10 +74,27 @@ namespace Image_Map
             return "map_" + ID;
         }
 
+        private void UpdateColor()
+        {
+            if (Selected)
+            {
+                if (Conflicted)
+                    BackColor = Color.FromArgb(255, 173, 213);
+                else
+                    BackColor = Color.LightBlue;
+            }
+            else
+            {
+                if (Conflicted)
+                    BackColor = Color.FromArgb(255, 179, 153);
+                else
+                    BackColor = Color.White;
+            }
+        }
+
         private void Box_MouseDown(object sender, MouseEventArgs e)
         {
             OnMouseDown(e);
-            ToggleSelected();
         }
     }
 }

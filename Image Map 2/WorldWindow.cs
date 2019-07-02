@@ -7,20 +7,22 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Image_Map
 {
-    public partial class BedrockWorldWindow : Form
+    public partial class WorldWindow : Form
     {
         public bool Confirmed { get; private set; } = false;
         public string SelectedWorldFolder { get; private set; }
         public string SavesFolder { get; set; }
+        public Edition Edition { get; private set; }
         CommonOpenFileDialog SavesDialog = new CommonOpenFileDialog()
         {
-            Title = "Select your Bedrock saves location",
+            Title = "Select your world saves location",
             IsFolderPicker = true,
         };
 
-        public BedrockWorldWindow()
+        public WorldWindow(Edition edition)
         {
             InitializeComponent();
+            Edition = edition;
         }
 
         private void LoadWorlds(string savesfolder)
@@ -33,7 +35,8 @@ namespace Image_Map
             {
                 try
                 {
-                    var control = new BedrockWorldControl(world);
+                    var control = new WorldControl(world, Edition);
+                    control.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                     WorldZone.Controls.Add(control);
                     control.Click += World_Click;
                     control.DoubleClick += World_DoubleClick;
@@ -54,17 +57,17 @@ namespace Image_Map
 
         private void World_Click(object sender, EventArgs e)
         {
-            foreach (BedrockWorldControl control in WorldZone.Controls)
+            foreach (WorldControl control in WorldZone.Controls)
             {
                 control.BackColor = Color.Transparent;
             }
-            ((BedrockWorldControl)sender).BackColor = Color.LightGreen;
+            ((WorldControl)sender).BackColor = Color.LightGreen;
         }
 
         private void World_DoubleClick(object sender, EventArgs e)
         {
             Confirmed = true;
-            SelectedWorldFolder = ((BedrockWorldControl)sender).WorldFolder;
+            SelectedWorldFolder = ((WorldControl)sender).WorldFolder;
             this.Close();
         }
 

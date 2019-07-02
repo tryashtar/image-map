@@ -28,16 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForm));
             this.JavaWorldButton = new System.Windows.Forms.Button();
             this.SelectWorldLabel = new System.Windows.Forms.Label();
             this.BedrockWorldButton = new System.Windows.Forms.Button();
             this.ExistingTab = new System.Windows.Forms.TabPage();
-            this.ExistingControls = new System.Windows.Forms.Panel();
-            this.PlayerSelector = new System.Windows.Forms.ComboBox();
-            this.DeleteButton = new System.Windows.Forms.Button();
-            this.AddInventoryButton = new System.Windows.Forms.Button();
-            this.ExportImageButton = new System.Windows.Forms.Button();
             this.ExistingZone = new System.Windows.Forms.FlowLayoutPanel();
             this.ImportTab = new System.Windows.Forms.TabPage();
             this.ImportControls = new System.Windows.Forms.Panel();
@@ -46,14 +42,26 @@
             this.OpenButton = new System.Windows.Forms.Button();
             this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
             this.MapView = new System.Windows.Forms.TabControl();
-            this.SelectAllCheck = new System.Windows.Forms.CheckBox();
             this.MapViewZone = new System.Windows.Forms.Panel();
+            this.ImportContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ImportContextSend = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportContextChangeID = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportContextDiscard = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportContextSelectAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ExistingContextAdd = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextChangeID = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextExport = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextDelete = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextSelectAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingControls = new System.Windows.Forms.Panel();
             this.ExistingTab.SuspendLayout();
-            this.ExistingControls.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportControls.SuspendLayout();
             this.MapView.SuspendLayout();
             this.MapViewZone.SuspendLayout();
+            this.ImportContextMenu.SuspendLayout();
+            this.ExistingContextMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // JavaWorldButton
@@ -93,8 +101,8 @@
             // 
             // ExistingTab
             // 
-            this.ExistingTab.Controls.Add(this.ExistingControls);
             this.ExistingTab.Controls.Add(this.ExistingZone);
+            this.ExistingTab.Controls.Add(this.ExistingControls);
             this.ExistingTab.Location = new System.Drawing.Point(4, 38);
             this.ExistingTab.Name = "ExistingTab";
             this.ExistingTab.Padding = new System.Windows.Forms.Padding(3);
@@ -103,85 +111,21 @@
             this.ExistingTab.Text = "Existing Maps";
             this.ExistingTab.UseVisualStyleBackColor = true;
             // 
-            // ExistingControls
-            // 
-            this.ExistingControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExistingControls.Controls.Add(this.PlayerSelector);
-            this.ExistingControls.Controls.Add(this.DeleteButton);
-            this.ExistingControls.Controls.Add(this.AddInventoryButton);
-            this.ExistingControls.Controls.Add(this.ExportImageButton);
-            this.ExistingControls.Location = new System.Drawing.Point(7, 343);
-            this.ExistingControls.Name = "ExistingControls";
-            this.ExistingControls.Size = new System.Drawing.Size(770, 61);
-            this.ExistingControls.TabIndex = 5;
-            // 
-            // PlayerSelector
-            // 
-            this.PlayerSelector.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.PlayerSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.PlayerSelector.FormattingEnabled = true;
-            this.PlayerSelector.Location = new System.Drawing.Point(413, 12);
-            this.PlayerSelector.Name = "PlayerSelector";
-            this.PlayerSelector.Size = new System.Drawing.Size(219, 37);
-            this.PlayerSelector.TabIndex = 23;
-            this.PlayerSelector.SelectedIndexChanged += new System.EventHandler(this.PlayerSelector_SelectedIndexChanged);
-            // 
-            // DeleteButton
-            // 
-            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DeleteButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.DeleteButton.Location = new System.Drawing.Point(638, 3);
-            this.DeleteButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.DeleteButton.Name = "DeleteButton";
-            this.DeleteButton.Size = new System.Drawing.Size(119, 53);
-            this.DeleteButton.TabIndex = 19;
-            this.DeleteButton.Text = "Delete";
-            this.DeleteButton.UseVisualStyleBackColor = true;
-            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
-            // 
-            // AddInventoryButton
-            // 
-            this.AddInventoryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.AddInventoryButton.Location = new System.Drawing.Point(199, 3);
-            this.AddInventoryButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.AddInventoryButton.Name = "AddInventoryButton";
-            this.AddInventoryButton.Size = new System.Drawing.Size(208, 53);
-            this.AddInventoryButton.TabIndex = 18;
-            this.AddInventoryButton.Text = "Add to Inventory";
-            this.AddInventoryButton.UseVisualStyleBackColor = true;
-            this.AddInventoryButton.Click += new System.EventHandler(this.AddInventoryButton_Click);
-            // 
-            // ExportImageButton
-            // 
-            this.ExportImageButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.ExportImageButton.Location = new System.Drawing.Point(3, 3);
-            this.ExportImageButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.ExportImageButton.Name = "ExportImageButton";
-            this.ExportImageButton.Size = new System.Drawing.Size(190, 53);
-            this.ExportImageButton.TabIndex = 17;
-            this.ExportImageButton.Text = "Export Image";
-            this.ExportImageButton.UseVisualStyleBackColor = true;
-            this.ExportImageButton.Click += new System.EventHandler(this.ExportImageButton_Click);
-            // 
             // ExistingZone
             // 
-            this.ExistingZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ExistingZone.AutoScroll = true;
             this.ExistingZone.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.ExistingZone.Location = new System.Drawing.Point(6, 5);
+            this.ExistingZone.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ExistingZone.Location = new System.Drawing.Point(3, 3);
             this.ExistingZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.ExistingZone.Name = "ExistingZone";
-            this.ExistingZone.Size = new System.Drawing.Size(771, 333);
+            this.ExistingZone.Size = new System.Drawing.Size(779, 343);
             this.ExistingZone.TabIndex = 2;
             // 
             // ImportTab
             // 
-            this.ImportTab.Controls.Add(this.ImportControls);
             this.ImportTab.Controls.Add(this.ImportZone);
+            this.ImportTab.Controls.Add(this.ImportControls);
             this.ImportTab.Location = new System.Drawing.Point(4, 38);
             this.ImportTab.Name = "ImportTab";
             this.ImportTab.Padding = new System.Windows.Forms.Padding(3);
@@ -192,14 +136,13 @@
             // 
             // ImportControls
             // 
-            this.ImportControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ImportControls.Controls.Add(this.AddChestCheck);
             this.ImportControls.Controls.Add(this.SendButton);
             this.ImportControls.Controls.Add(this.OpenButton);
-            this.ImportControls.Location = new System.Drawing.Point(7, 343);
+            this.ImportControls.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.ImportControls.Location = new System.Drawing.Point(3, 346);
             this.ImportControls.Name = "ImportControls";
-            this.ImportControls.Size = new System.Drawing.Size(770, 61);
+            this.ImportControls.Size = new System.Drawing.Size(779, 61);
             this.ImportControls.TabIndex = 4;
             // 
             // AddChestCheck
@@ -242,15 +185,13 @@
             // ImportZone
             // 
             this.ImportZone.AllowDrop = true;
-            this.ImportZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ImportZone.AutoScroll = true;
             this.ImportZone.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.ImportZone.Location = new System.Drawing.Point(7, 5);
+            this.ImportZone.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ImportZone.Location = new System.Drawing.Point(3, 3);
             this.ImportZone.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.ImportZone.Name = "ImportZone";
-            this.ImportZone.Size = new System.Drawing.Size(771, 333);
+            this.ImportZone.Size = new System.Drawing.Size(779, 343);
             this.ImportZone.TabIndex = 3;
             this.ImportZone.DragDrop += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragDrop);
             this.ImportZone.DragEnter += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragEnter);
@@ -269,30 +210,113 @@
             this.MapView.Size = new System.Drawing.Size(793, 452);
             this.MapView.TabIndex = 16;
             // 
-            // SelectAllCheck
-            // 
-            this.SelectAllCheck.AutoSize = true;
-            this.SelectAllCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.SelectAllCheck.Location = new System.Drawing.Point(321, 7);
-            this.SelectAllCheck.Name = "SelectAllCheck";
-            this.SelectAllCheck.Size = new System.Drawing.Size(102, 24);
-            this.SelectAllCheck.TabIndex = 5;
-            this.SelectAllCheck.Text = "Select All";
-            this.SelectAllCheck.UseVisualStyleBackColor = true;
-            this.SelectAllCheck.CheckedChanged += new System.EventHandler(this.SelectAllCheck_CheckedChanged);
-            // 
             // MapViewZone
             // 
             this.MapViewZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.MapViewZone.Controls.Add(this.SelectAllCheck);
             this.MapViewZone.Controls.Add(this.MapView);
             this.MapViewZone.Location = new System.Drawing.Point(175, 12);
             this.MapViewZone.Name = "MapViewZone";
             this.MapViewZone.Size = new System.Drawing.Size(793, 452);
             this.MapViewZone.TabIndex = 5;
             this.MapViewZone.Visible = false;
+            // 
+            // ImportContextMenu
+            // 
+            this.ImportContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.ImportContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ImportContextSend,
+            this.ImportContextChangeID,
+            this.ImportContextDiscard,
+            this.ImportContextSelectAll});
+            this.ImportContextMenu.Name = "ImportContextMenu";
+            this.ImportContextMenu.Size = new System.Drawing.Size(172, 100);
+            this.ImportContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.ImportContextMenu_Opening);
+            // 
+            // ImportContextSend
+            // 
+            this.ImportContextSend.Name = "ImportContextSend";
+            this.ImportContextSend.Size = new System.Drawing.Size(171, 24);
+            this.ImportContextSend.Text = "Send to world";
+            this.ImportContextSend.Click += new System.EventHandler(this.ImportContextSend_Click);
+            // 
+            // ImportContextChangeID
+            // 
+            this.ImportContextChangeID.Name = "ImportContextChangeID";
+            this.ImportContextChangeID.Size = new System.Drawing.Size(171, 24);
+            this.ImportContextChangeID.Text = "Change ID";
+            this.ImportContextChangeID.Click += new System.EventHandler(this.ImportContextChangeID_Click);
+            // 
+            // ImportContextDiscard
+            // 
+            this.ImportContextDiscard.Name = "ImportContextDiscard";
+            this.ImportContextDiscard.Size = new System.Drawing.Size(171, 24);
+            this.ImportContextDiscard.Text = "Discard";
+            this.ImportContextDiscard.Click += new System.EventHandler(this.ImportContextDiscard_Click);
+            // 
+            // ImportContextSelectAll
+            // 
+            this.ImportContextSelectAll.Name = "ImportContextSelectAll";
+            this.ImportContextSelectAll.Size = new System.Drawing.Size(171, 24);
+            this.ImportContextSelectAll.Text = "Select all";
+            this.ImportContextSelectAll.Click += new System.EventHandler(this.ImportContextSelectAll_Click);
+            // 
+            // ExistingContextMenu
+            // 
+            this.ExistingContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.ExistingContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ExistingContextAdd,
+            this.ExistingContextChangeID,
+            this.ExistingContextExport,
+            this.ExistingContextDelete,
+            this.ExistingContextSelectAll});
+            this.ExistingContextMenu.Name = "ImportContextMenu";
+            this.ExistingContextMenu.Size = new System.Drawing.Size(190, 124);
+            this.ExistingContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.ExistingContextMenu_Opening);
+            // 
+            // ExistingContextAdd
+            // 
+            this.ExistingContextAdd.Name = "ExistingContextAdd";
+            this.ExistingContextAdd.Size = new System.Drawing.Size(189, 24);
+            this.ExistingContextAdd.Text = "Add to inventory";
+            this.ExistingContextAdd.Click += new System.EventHandler(this.ExistingContextAdd_Click);
+            // 
+            // ExistingContextChangeID
+            // 
+            this.ExistingContextChangeID.Name = "ExistingContextChangeID";
+            this.ExistingContextChangeID.Size = new System.Drawing.Size(189, 24);
+            this.ExistingContextChangeID.Text = "Change ID";
+            this.ExistingContextChangeID.Click += new System.EventHandler(this.ExistingContextChangeID_Click);
+            // 
+            // ExistingContextExport
+            // 
+            this.ExistingContextExport.Name = "ExistingContextExport";
+            this.ExistingContextExport.Size = new System.Drawing.Size(189, 24);
+            this.ExistingContextExport.Text = "Export image";
+            this.ExistingContextExport.Click += new System.EventHandler(this.ExistingContextExport_Click);
+            // 
+            // ExistingContextDelete
+            // 
+            this.ExistingContextDelete.Name = "ExistingContextDelete";
+            this.ExistingContextDelete.Size = new System.Drawing.Size(189, 24);
+            this.ExistingContextDelete.Text = "Delete";
+            this.ExistingContextDelete.Click += new System.EventHandler(this.ExistingContextDelete_Click);
+            // 
+            // ExistingContextSelectAll
+            // 
+            this.ExistingContextSelectAll.Name = "ExistingContextSelectAll";
+            this.ExistingContextSelectAll.Size = new System.Drawing.Size(189, 24);
+            this.ExistingContextSelectAll.Text = "Select all";
+            this.ExistingContextSelectAll.Click += new System.EventHandler(this.ExistingContextSelectAll_Click);
+            // 
+            // ExistingControls
+            // 
+            this.ExistingControls.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.ExistingControls.Location = new System.Drawing.Point(3, 346);
+            this.ExistingControls.Name = "ExistingControls";
+            this.ExistingControls.Size = new System.Drawing.Size(779, 61);
+            this.ExistingControls.TabIndex = 5;
             // 
             // TheForm
             // 
@@ -313,13 +337,13 @@
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.Load += new System.EventHandler(this.TheForm_Load);
             this.ExistingTab.ResumeLayout(false);
-            this.ExistingControls.ResumeLayout(false);
             this.ImportTab.ResumeLayout(false);
             this.ImportControls.ResumeLayout(false);
             this.ImportControls.PerformLayout();
             this.MapView.ResumeLayout(false);
             this.MapViewZone.ResumeLayout(false);
-            this.MapViewZone.PerformLayout();
+            this.ImportContextMenu.ResumeLayout(false);
+            this.ExistingContextMenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -331,10 +355,6 @@
         public System.Windows.Forms.Label SelectWorldLabel;
         public System.Windows.Forms.Button BedrockWorldButton;
         public System.Windows.Forms.TabPage ExistingTab;
-        public System.Windows.Forms.Panel ExistingControls;
-        public System.Windows.Forms.Button DeleteButton;
-        public System.Windows.Forms.Button AddInventoryButton;
-        public System.Windows.Forms.Button ExportImageButton;
         public System.Windows.Forms.FlowLayoutPanel ExistingZone;
         public System.Windows.Forms.TabPage ImportTab;
         public System.Windows.Forms.Panel ImportControls;
@@ -342,10 +362,20 @@
         public System.Windows.Forms.Button OpenButton;
         public System.Windows.Forms.FlowLayoutPanel ImportZone;
         public System.Windows.Forms.TabControl MapView;
-        public System.Windows.Forms.ComboBox PlayerSelector;
         private System.Windows.Forms.CheckBox AddChestCheck;
-        private System.Windows.Forms.CheckBox SelectAllCheck;
         public System.Windows.Forms.Panel MapViewZone;
+        public System.Windows.Forms.ContextMenuStrip ImportContextMenu;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextSend;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextChangeID;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextDiscard;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextSelectAll;
+        public System.Windows.Forms.ContextMenuStrip ExistingContextMenu;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextAdd;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextChangeID;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextExport;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextDelete;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextSelectAll;
+        public System.Windows.Forms.Panel ExistingControls;
     }
 }
 

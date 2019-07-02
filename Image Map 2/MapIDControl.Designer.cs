@@ -36,7 +36,7 @@
             this.IDLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.IDLabel.AutoSize = true;
             this.IDLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F);
-            this.IDLabel.Location = new System.Drawing.Point(0, 130);
+            this.IDLabel.Location = new System.Drawing.Point(0, 132);
             this.IDLabel.Name = "IDLabel";
             this.IDLabel.Size = new System.Drawing.Size(46, 15);
             this.IDLabel.TabIndex = 0;
@@ -49,7 +49,7 @@
             this.BackColor = System.Drawing.SystemColors.Control;
             this.Controls.Add(this.IDLabel);
             this.Name = "MapIDControl";
-            this.Size = new System.Drawing.Size(128, 150);
+            this.Size = new System.Drawing.Size(140, 150);
             this.ResumeLayout(false);
             this.PerformLayout();
 

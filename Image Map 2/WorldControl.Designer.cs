@@ -1,6 +1,6 @@
 ﻿namespace Image_Map
 {
-    partial class BedrockWorldControl
+    partial class WorldControl
     {
         /// <summary> 
         /// Required designer variable.

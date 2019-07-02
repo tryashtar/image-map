@@ -1,6 +1,6 @@
 ﻿namespace Image_Map
 {
-    partial class BedrockWorldWindow
+    partial class WorldWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BedrockWorldWindow));
-            this.WorldZone = new System.Windows.Forms.FlowLayoutPanel();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorldWindow));
+            this.WorldZone = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.BrowseButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -41,6 +41,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.WorldZone.AutoScroll = true;
             this.WorldZone.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.WorldZone.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.WorldZone.Location = new System.Drawing.Point(0, 49);
             this.WorldZone.Name = "WorldZone";
             this.WorldZone.Size = new System.Drawing.Size(498, 502);
@@ -68,7 +69,7 @@
             this.BrowseButton.UseVisualStyleBackColor = true;
             this.BrowseButton.Click += new System.EventHandler(this.BrowseButton_Click);
             // 
-            // BedrockWorldWindow
+            // WorldWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -77,8 +78,8 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.WorldZone);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "BedrockWorldWindow";
-            this.Text = "Bedrock Worlds";
+            this.Name = "WorldWindow";
+            this.Text = "Worlds";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -86,7 +87,7 @@
 
         #endregion
 
-        private System.Windows.Forms.FlowLayoutPanel WorldZone;
+        private System.Windows.Forms.TableLayoutPanel WorldZone;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button BrowseButton;
     }

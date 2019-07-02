@@ -80,17 +80,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BedrockWorldControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="BedrockWorldControl.Designer.cs">
-      <DependentUpon>BedrockWorldControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="BedrockWorldWindow.cs">
+    <Compile Include="IDInputDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BedrockWorldWindow.Designer.cs">
-      <DependentUpon>BedrockWorldWindow.cs</DependentUpon>
+    <Compile Include="IDInputDialog.Designer.cs">
+      <DependentUpon>IDInputDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ReplaceOptionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ReplaceOptionDialog.Designer.cs">
+      <DependentUpon>ReplaceOptionDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WorldControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WorldControl.Designer.cs">
+      <DependentUpon>WorldControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WorldWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WorldWindow.Designer.cs">
+      <DependentUpon>WorldWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="CustomControls.cs">
       <SubType>Component</SubType>
@@ -117,11 +129,17 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewController.cs" />
-    <EmbeddedResource Include="BedrockWorldControl.resx">
-      <DependentUpon>BedrockWorldControl.cs</DependentUpon>
+    <EmbeddedResource Include="IDInputDialog.resx">
+      <DependentUpon>IDInputDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="BedrockWorldWindow.resx">
-      <DependentUpon>BedrockWorldWindow.cs</DependentUpon>
+    <EmbeddedResource Include="ReplaceOptionDialog.resx">
+      <DependentUpon>ReplaceOptionDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WorldControl.resx">
+      <DependentUpon>WorldControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WorldWindow.resx">
+      <DependentUpon>WorldWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ImportWindow.resx">
       <DependentUpon>ImportWindow.cs</DependentUpon>
