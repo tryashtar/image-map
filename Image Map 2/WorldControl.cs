@@ -27,8 +27,12 @@ namespace Image_Map
                 string leveldat = Path.Combine(worldfolder, "level.dat");
                 if (File.Exists(leveldat))
                 {
-                    var nbtfile = new fNbt.NbtFile(leveldat);
-                    name = nbtfile.RootTag["Data"]["LevelName"].StringValue;
+                    try
+                    {
+                        var nbtfile = new fNbt.NbtFile(leveldat);
+                        name = nbtfile.RootTag["Data"]?["LevelName"]?.StringValue;
+                    }
+                    catch { }
                 }
             }
             else
