@@ -54,9 +54,9 @@ namespace Image_Map
             AddChestCheck.Checked = Properties.Settings.Default.AddNewMaps;
             JavaSavesFolder = Properties.Settings.Default.JavaSavesFolder;
             BedrockSavesFolder = Properties.Settings.Default.BedrockSavesFolder;
-            if (String.IsNullOrEmpty(BedrockSavesFolder))
+            if (String.IsNullOrEmpty(BedrockSavesFolder) || !Directory.Exists(BedrockSavesFolder))
                 BedrockSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
-            if (String.IsNullOrEmpty(JavaSavesFolder))
+            if (String.IsNullOrEmpty(JavaSavesFolder) || !Directory.Exists(JavaSavesFolder))
                 JavaSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves");
         }
 
