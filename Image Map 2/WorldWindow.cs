@@ -31,6 +31,8 @@ namespace Image_Map
             SelectedWorldFolder = null;
             SavesFolder = savesfolder;
             WorldZone.Controls.Clear();
+            if (!Directory.Exists(savesfolder))
+                savesfolder = Directory.GetCurrentDirectory();
             foreach (string world in Directory.GetDirectories(savesfolder))
             {
                 try

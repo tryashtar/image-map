@@ -54,10 +54,6 @@ namespace Image_Map
             AddChestCheck.Checked = Properties.Settings.Default.AddNewMaps;
             JavaSavesFolder = Properties.Settings.Default.JavaSavesFolder;
             BedrockSavesFolder = Properties.Settings.Default.BedrockSavesFolder;
-            if (String.IsNullOrEmpty(BedrockSavesFolder))
-                BedrockSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
-            if (String.IsNullOrEmpty(JavaSavesFolder))
-                JavaSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves");
         }
 
         private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
@@ -79,6 +75,8 @@ namespace Image_Map
             // edition-specific world picking
             if (edition == Edition.Java)
             {
+                if (String.IsNullOrEmpty(JavaSavesFolder) || !Directory.Exists(JavaSavesFolder))
+                    JavaSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves");
                 JavaWorldDialog.SavesFolder = JavaSavesFolder;
                 JavaWorldDialog.Show(this);
                 if (!JavaWorldDialog.Confirmed)
@@ -88,6 +86,8 @@ namespace Image_Map
             }
             else if (edition == Edition.Bedrock)
             {
+                if (String.IsNullOrEmpty(BedrockSavesFolder) || !Directory.Exists(BedrockSavesFolder))
+                    BedrockSavesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
                 BedrockWorldDialog.SavesFolder = BedrockSavesFolder;
                 BedrockWorldDialog.Show(this);
                 if (!BedrockWorldDialog.Confirmed)

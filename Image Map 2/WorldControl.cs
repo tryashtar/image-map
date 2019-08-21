@@ -43,7 +43,16 @@ namespace Image_Map
                     name = File.ReadAllText(namepath);
             }
             if (File.Exists(icon))
-                WorldIcon.Image = Image.FromFile(icon);
+            {
+                try
+                {
+                    WorldIcon.Image = Image.FromFile(icon);
+                }
+                catch
+                {
+                    WorldIcon.Image = Properties.Resources.image_map_icon;
+                }
+            }
             WorldName.Text = name;
             FolderName.Text = Path.GetFileName(worldfolder);
         }
