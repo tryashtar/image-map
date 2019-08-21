@@ -166,7 +166,7 @@ namespace Image_Map
                 {
                     if (area == MapStatus.Existing)
                     {
-                        SelectedWorld.RemoveMap(box.ID);
+                        SelectedWorld.RemoveMaps(new[] { box.ID });
                         write.Add(box);
                     }
                     box.SetID(id);
@@ -227,8 +227,8 @@ namespace Image_Map
             foreach (var box in remove)
             {
                 RemoveFromZone(box, MapStatus.Existing);
-                SelectedWorld.RemoveMap(box.ID);
             }
+            SelectedWorld.RemoveMaps(remove.Select(x => x.ID));
             DetermineTransferConflicts();
         }
 

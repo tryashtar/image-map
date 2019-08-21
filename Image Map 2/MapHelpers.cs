@@ -537,7 +537,7 @@ namespace Image_Map
             Maps = LoadMaps();
         }
         public abstract void AddMaps(Dictionary<long, Map> maps);
-        public abstract void RemoveMap(long mapid);
+        public abstract void RemoveMaps(IEnumerable<long> mapids);
         public bool AddChestsLocalPlayer(IEnumerable<long> mapids)
         {
             return AddChests(mapids, LOCAL_IDENTIFIER);
@@ -628,9 +628,12 @@ namespace Image_Map
             }
         }
 
-        public override void RemoveMap(long mapid)
+        public override void RemoveMaps(IEnumerable<long> mapids)
         {
-            File.Delete(MapFileLocation(mapid));
+            foreach (var id in mapids)
+            {
+                File.Delete(MapFileLocation(id));
+            }
         }
 
         public override IEnumerable<string> GetPlayerIDs()
@@ -737,8 +740,18 @@ namespace Image_Map
 
         public BedrockWorld(string folder) : base(folder)
         {
-            BedrockDB = new LevelDB.DB(new LevelDB.Options() { CreateIfMissing = false }, Path.Combine(folder, "db"));
             Name = File.ReadAllText(Path.Combine(Folder, "levelname.txt"));
+        }
+
+        private void OpenDB()
+        {
+            BedrockDB = new LevelDB.DB(new LevelDB.Options() { CreateIfMissing = false }, Path.Combine(Folder, "db"));
+        }
+
+        private void CloseDB()
+        {
+            BedrockDB?.Close();
+            BedrockDB?.Dispose();
         }
 
         public override void AddMaps(Dictionary<long, Map> maps)
@@ -767,16 +780,24 @@ namespace Image_Map
                 byte[] bytes = file.SaveToBuffer(NbtCompression.None);
                 batch.Put(Encoding.Default.GetBytes($"map_{map.Key}"), bytes);
             }
+            OpenDB();
             BedrockDB.Write(batch);
+            CloseDB();
         }
 
-        public override void RemoveMap(long mapid)
+        public override void RemoveMaps(IEnumerable<long> mapids)
         {
-            BedrockDB.Delete(Encoding.Default.GetBytes($"map_{mapid}"));
+            OpenDB();
+            foreach (var id in mapids)
+            {
+                BedrockDB.Delete(Encoding.Default.GetBytes($"map_{id}"));
+            }
+            CloseDB();
         }
 
         public override bool AddChests(IEnumerable<long> mapids, string playerid)
         {
+            OpenDB();
             // acquire the file this player is stored in, and the tag that represents said player
             byte[] playeridbytes;
             if (playerid == LOCAL_IDENTIFIER)
@@ -793,19 +814,21 @@ namespace Image_Map
 
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
             BedrockDB.Put(playeridbytes, bytes);
+            CloseDB();
 
             return success;
         }
 
         public void Dispose()
         {
-            BedrockDB?.Close();
-            BedrockDB?.Dispose();
+            CloseDB();
         }
 
         protected override Dictionary<long, Map> LoadMaps()
         {
             var maps = new Dictionary<long, Map>();
+            OpenDB();
+            // if anyone has a faster way to find maps, I'd love to know
             foreach (var pair in BedrockDB)
             {
                 string name = Encoding.Default.GetString(pair.Key);
@@ -817,11 +840,13 @@ namespace Image_Map
                     maps.Add(number, new BedrockMap(nbtfile.RootTag["colors"].ByteArrayValue));
                 }
             }
+            CloseDB();
             return maps;
         }
 
         public override IEnumerable<string> GetPlayerIDs()
         {
+            OpenDB();
             foreach (var pair in BedrockDB)
             {
                 string name = Encoding.Default.GetString(pair.Key);
@@ -834,9 +859,10 @@ namespace Image_Map
                         yield return name;
                 }
             }
+            CloseDB();
         }
 
-        protected override IEnumerable<byte> GetFreeSlots(NbtList invtag)
+        protected  override IEnumerable<byte> GetFreeSlots(NbtList invtag)
         {
             List<byte> emptyslots = new List<byte>(35);
             for (byte i = 0; i < 35; i++)
