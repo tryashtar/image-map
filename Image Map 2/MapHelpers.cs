@@ -828,17 +828,27 @@ namespace Image_Map
         {
             var maps = new Dictionary<long, Map>();
             OpenDB();
-            // if anyone has a faster way to find maps, I'd love to know
-            foreach (var pair in BedrockDB)
+            // thank you A Cynodont for help with this section
+            const string MapKeyword = "map";
+            var iterator = BedrockDB.CreateIterator(new LevelDB.ReadOptions());
+            iterator.Seek(MapKeyword);
+            while (iterator.IsValid())
             {
-                string name = Encoding.Default.GetString(pair.Key);
-                if (MapString(name, out long number))
+                var name = iterator.KeyAsString();
+                if (name.StartsWith(MapKeyword))
                 {
-                    NbtFile nbtfile = new NbtFile();
-                    nbtfile.BigEndian = false;
-                    nbtfile.LoadFromBuffer(pair.Value, 0, pair.Value.Length, NbtCompression.AutoDetect);
-                    maps.Add(number, new BedrockMap(nbtfile.RootTag["colors"].ByteArrayValue));
+                    if (MapString(name, out long number))
+                    {
+                        NbtFile nbtfile = new NbtFile();
+                        nbtfile.BigEndian = false;
+                        byte[] data = iterator.Value();
+                        nbtfile.LoadFromBuffer(data, 0, data.Length, NbtCompression.AutoDetect);
+                        maps.Add(number, new BedrockMap(nbtfile.RootTag["colors"].ByteArrayValue));
+                    }
+                    iterator.Next();
                 }
+                else
+                    break;
             }
             CloseDB();
             return maps;
