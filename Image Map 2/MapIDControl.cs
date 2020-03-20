@@ -38,6 +38,8 @@ namespace Image_Map
             box.MouseDown += Box_MouseDown;
             Controls.Add(box);
             Map = box.Map;
+            this.Width = box.Width + 6;
+            this.Height = box.Height + IDLabel.Height + 6;
             box.Left = this.Width / 2 - box.Width / 2;
             box.Top = 3;
         }
