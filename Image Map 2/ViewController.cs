@@ -110,9 +110,10 @@ namespace Image_Map
                 {
                     var box = new MapIDControl(id);
                     boxes.Add(box);
-                    SendToZone(box, MapStatus.Importing);
+                    box.MouseDown += Box_MouseDown;
                     id++;
                 }
+                SendToZone(boxes, MapStatus.Importing);
                 var t = new Task<IEnumerable<Map>>(() =>
                 {
                     if (java)
@@ -332,82 +333,105 @@ namespace Image_Map
                 LastExistingSelected = box;
         }
 
-        private void ImportingBox_MouseDown(object sender, MouseEventArgs e)
+
+        private void Box_MouseDown(object sender, MouseEventArgs e)
         {
-            MapIDControl box = sender as MapIDControl;
+            var box = sender as MapIDControl;
+            var where = WhereIsBox(box) ?? MapStatus.Importing;
+            var previews = GetPreviews(where);
+            var context = GetContextMenu(where);
             if (e.Button == MouseButtons.Right)
             {
                 if (!box.Selected)
                 {
-                    foreach (var other in ImportingMapPreviews)
+                    foreach (var other in previews)
                     {
                         other.SetSelected(false);
                     }
                     box.SetSelected(true);
                 }
-                UI.ImportContextMenu.Show(box, new Point(e.X, e.Y));
+                context.Show(box, new Point(e.X, e.Y));
             }
             else
-                ClickSelect(box, MapStatus.Importing);
+                ClickSelect(box, where);
         }
 
-        private void ExistingBox_MouseDown(object sender, MouseEventArgs e)
+        private List<MapIDControl> GetPreviews(MapStatus location)
         {
-            MapIDControl box = sender as MapIDControl;
-            if (e.Button == MouseButtons.Right)
-            {
-                if (!box.Selected)
-                {
-                    foreach (var other in ExistingMapPreviews)
-                    {
-                        other.SetSelected(false);
-                    }
-                    box.SetSelected(true);
-                }
-                UI.ExistingContextMenu.Show(box, new Point(e.X, e.Y));
-            }
-            else
-                ClickSelect(box, MapStatus.Existing);
-        }
-
-        public void RemoveFromZone(MapIDControl box, MapStatus location)
-        {
-            box.SetSelected(false);
-            box.SetConflict(false);
-            if (box == LastImportSelected)
-                LastImportSelected = null;
-            if (box == LastExistingSelected)
-                LastExistingSelected = null;
             if (location == MapStatus.Importing)
-            {
-                UI.ImportZone.Controls.Remove(box);
-                ImportingMapPreviews.Remove(box);
-                box.MouseDown -= ImportingBox_MouseDown;
-            }
-            else if (location == MapStatus.Existing)
-            {
-                UI.ExistingZone.Controls.Remove(box);
-                ExistingMapPreviews.Remove(box);
-                box.MouseDown -= ExistingBox_MouseDown;
-            }
+                return ImportingMapPreviews;
+            if (location == MapStatus.Existing)
+                return ExistingMapPreviews;
+            throw new ArgumentException();
+        }
+
+        private ContextMenuStrip GetContextMenu(MapStatus location)
+        {
+            if (location == MapStatus.Importing)
+                return UI.ImportContextMenu;
+            if (location == MapStatus.Existing)
+                return UI.ExistingContextMenu;
+            throw new ArgumentException();
         }
 
         private void SendToZone(MapIDControl box, MapStatus location)
         {
+            SendToZone(new MapIDControl[] { box }, location);
+        }
+
+        public void RemoveFromZone(MapIDControl box, MapStatus location)
+        {
+            RemoveFromZone(new MapIDControl[] { box }, location);
+        }
+
+
+        public void RemoveFromZone(IEnumerable<MapIDControl> boxes, MapStatus location)
+        {
+            foreach (var box in boxes)
+            {
+                box.SetSelected(false);
+                box.SetConflict(false);
+                if (box == LastImportSelected)
+                    LastImportSelected = null;
+                if (box == LastExistingSelected)
+                    LastExistingSelected = null;
+                if (location == MapStatus.Importing)
+                {
+                    UI.ImportZone.Controls.Remove(box);
+                    ImportingMapPreviews.Remove(box);
+                }
+                else if (location == MapStatus.Existing)
+                {
+                    UI.ExistingZone.Controls.Remove(box);
+                    ExistingMapPreviews.Remove(box);
+                }
+            }
+        }
+
+        private void SendToZone(IEnumerable<MapIDControl> boxes, MapStatus location)
+        {
+            var array = boxes.ToArray();
             if (location == MapStatus.Importing)
             {
-                RemoveFromZone(box, MapStatus.Existing);
-                UI.ImportZone.Controls.Add(box);
-                ImportingMapPreviews.Add(box);
-                box.MouseDown += ImportingBox_MouseDown;
+                RemoveFromZone(boxes, MapStatus.Existing);
+                UI.ImportZone.Controls.AddRange(array);
+                ImportingMapPreviews.AddRange(array);
             }
             else if (location == MapStatus.Existing)
             {
-                RemoveFromZone(box, MapStatus.Importing);
-                UI.ExistingZone.Controls.Add(box);
-                ExistingMapPreviews.Add(box);
-                box.MouseDown += ExistingBox_MouseDown;
+                RemoveFromZone(boxes, MapStatus.Importing);
+                UI.ExistingZone.Controls.AddRange(array);
+                ExistingMapPreviews.AddRange(array);
             }
+        }
+
+        private MapStatus? WhereIsBox(MapIDControl box)
+        {
+            if (ImportingMapPreviews.Contains(box))
+                return MapStatus.Importing;
+            if (ExistingMapPreviews.Contains(box))
+                return MapStatus.Existing;
+            return null;
         }
 
         private void NewWorldOpened()
@@ -421,6 +445,7 @@ namespace Image_Map
             foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
             {
                 MapIDControl mapbox = new MapIDControl(map.Key, new MapPreviewBox(map.Value));
+                mapbox.MouseDown += Box_MouseDown;
                 SendToZone(mapbox, MapStatus.Existing);
             }
             UI.Text = "Image Map – " + SelectedWorld.Name;
