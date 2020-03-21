@@ -1,4 +1,4 @@
-﻿using fNbt;
+using fNbt;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -825,17 +825,29 @@ namespace ImageMap
         {
             var maps = new Dictionary<long, Map>();
             OpenDB();
-            // if anyone has a faster way to find maps, I'd love to know
-            foreach (var pair in (IEnumerable<KeyValuePair<string, byte[]>>)BedrockDB)
+            // thank you A Cynodont for help with this section
+            const string MapKeyword = "map";
+            var iterator = BedrockDB.CreateIterator();
+            iterator.Seek(MapKeyword);
+            while (iterator.IsValid())
             {
-                if (MapString(pair.Key, out long number))
+                var name = iterator.StringKey();
+                if (name.StartsWith(MapKeyword))
                 {
-                    NbtFile nbtfile = new NbtFile();
-                    nbtfile.BigEndian = false;
-                    nbtfile.LoadFromBuffer(pair.Value, 0, pair.Value.Length, NbtCompression.AutoDetect);
-                    maps.Add(number, new BedrockMap(nbtfile.RootTag["colors"].ByteArrayValue));
+                    if (MapString(name, out long number))
+                    {
+                        NbtFile nbtfile = new NbtFile();
+                        nbtfile.BigEndian = false;
+                        byte[] data = iterator.Value();
+                        nbtfile.LoadFromBuffer(data, 0, data.Length, NbtCompression.AutoDetect);
+                        maps.Add(number, new BedrockMap(nbtfile.RootTag["colors"].ByteArrayValue));
+                    }
+                    iterator.Next();
                 }
+                else
+                    break;
             }
+            iterator.Dispose();
             CloseDB();
             return maps;
         }

@@ -156,6 +156,11 @@ namespace LevelDBWrapper
             return new Snapshot(Interop.leveldb_create_snapshot(this.Handle), this);
         }
 
+        public Iterator CreateIterator()
+        {
+            return CreateIterator(new ReadOptions());
+        }
+
         public Iterator CreateIterator(ReadOptions options)
         {
             return new Iterator(Interop.leveldb_create_iterator(this.Handle, options.Handle));
@@ -260,6 +265,11 @@ namespace LevelDBWrapper
         {
             Interop.leveldb_writebatch_put(Handle, key, key.Length, value, value.Length);
             return this;
+        }
+
+        protected override void FreeUnManagedObjects()
+        {
+            Interop.leveldb_writebatch_destroy(this.Handle);
         }
     }
 

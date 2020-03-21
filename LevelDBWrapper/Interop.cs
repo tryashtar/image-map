@@ -65,5 +65,7 @@ namespace LevelDBWrapper
         public static extern void leveldb_options_set_compression(IntPtr options, int n);
         [DllImport("leveldb.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void leveldb_close(IntPtr db);
+        [DllImport("leveldb.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void leveldb_writebatch_destroy(IntPtr batch);
     }
 }
