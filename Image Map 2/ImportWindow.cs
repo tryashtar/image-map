@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Image_Map
+namespace ImageMap
 {
     public partial class ImportWindow : Form
     {

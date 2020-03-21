@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 
-namespace Image_Map
+namespace ImageMap
 {
     public partial class WorldWindow : Form
     {

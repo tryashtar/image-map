@@ -1,4 +1,4 @@
-﻿namespace Image_Map
+﻿namespace ImageMap
 {
     partial class TheForm
     {

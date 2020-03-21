@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
-namespace Image_Map
+namespace ImageMap
 {
     public partial class WorldControl : UserControl
     {

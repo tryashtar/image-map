@@ -5,7 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Image_Map
+namespace ImageMap
 {
     // a picture box that supports drawing with a certain interpolation
     public class InterpPictureBox : PictureBox

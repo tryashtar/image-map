@@ -9,8 +9,9 @@ using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
+using LevelDBWrapper;
 
-namespace Image_Map
+namespace ImageMap
 {
     public abstract class Map
     {
@@ -736,7 +737,7 @@ namespace Image_Map
 
     public class BedrockWorld : MinecraftWorld, IDisposable
     {
-        private LevelDB.DB BedrockDB;
+        private LevelDB BedrockDB;
 
         public BedrockWorld(string folder) : base(folder)
         {
@@ -745,18 +746,17 @@ namespace Image_Map
 
         private void OpenDB()
         {
-            BedrockDB = new LevelDB.DB(new LevelDB.Options() { CreateIfMissing = false }, Path.Combine(Folder, "db"));
+            BedrockDB = new LevelDB(Path.Combine(Folder, "db"));
         }
 
         private void CloseDB()
         {
             BedrockDB?.Close();
-            BedrockDB?.Dispose();
         }
 
         public override void AddMaps(Dictionary<long, Map> maps)
         {
-            var batch = new LevelDB.WriteBatch();
+            var batch = new WriteBatch();
             foreach (var map in maps)
             {
                 NbtCompound mapfile = new NbtCompound("map")
@@ -778,7 +778,7 @@ namespace Image_Map
                 NbtFile file = new NbtFile(mapfile);
                 file.BigEndian = false;
                 byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-                batch.Put(Encoding.Default.GetBytes($"map_{map.Key}"), bytes);
+                batch.Put($"map_{map.Key}", bytes);
             }
             OpenDB();
             BedrockDB.Write(batch);
@@ -790,7 +790,7 @@ namespace Image_Map
             OpenDB();
             foreach (var id in mapids)
             {
-                BedrockDB.Delete(Encoding.Default.GetBytes($"map_{id}"));
+                BedrockDB.Delete($"map_{id}");
             }
             CloseDB();
         }
@@ -799,12 +799,9 @@ namespace Image_Map
         {
             OpenDB();
             // acquire the file this player is stored in, and the tag that represents said player
-            byte[] playeridbytes;
             if (playerid == LOCAL_IDENTIFIER)
-                playeridbytes = Encoding.Default.GetBytes("~local_player");
-            else
-                playeridbytes = Encoding.Default.GetBytes(playerid);
-            byte[] playerdata = BedrockDB.Get(playeridbytes.ToArray());
+                playerid = "~local_player";
+            byte[] playerdata = BedrockDB.Get(playerid);
             var file = new NbtFile();
             file.BigEndian = false;
             file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
@@ -813,7 +810,7 @@ namespace Image_Map
             var success = PutChestsInInventory(invtag, mapids);
 
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            BedrockDB.Put(playeridbytes, bytes);
+            BedrockDB.Put(playerid, bytes);
             CloseDB();
 
             return success;
@@ -829,10 +826,9 @@ namespace Image_Map
             var maps = new Dictionary<long, Map>();
             OpenDB();
             // if anyone has a faster way to find maps, I'd love to know
-            foreach (var pair in BedrockDB)
+            foreach (var pair in (IEnumerable<KeyValuePair<string, byte[]>>)BedrockDB)
             {
-                string name = Encoding.Default.GetString(pair.Key);
-                if (MapString(name, out long number))
+                if (MapString(pair.Key, out long number))
                 {
                     NbtFile nbtfile = new NbtFile();
                     nbtfile.BigEndian = false;
@@ -847,22 +843,21 @@ namespace Image_Map
         public override IEnumerable<string> GetPlayerIDs()
         {
             OpenDB();
-            foreach (var pair in BedrockDB)
+            foreach (var pair in (IEnumerable<KeyValuePair<string, byte[]>>)BedrockDB)
             {
-                string name = Encoding.Default.GetString(pair.Key);
-                if (UuidString(name))
+                if (UuidString(pair.Key))
                 {
                     NbtFile nbtfile = new NbtFile();
                     nbtfile.BigEndian = false;
                     nbtfile.LoadFromBuffer(pair.Value, 0, pair.Value.Length, NbtCompression.AutoDetect);
                     if (nbtfile.RootTag["Inventory"] != null)
-                        yield return name;
+                        yield return pair.Key;
                 }
             }
             CloseDB();
         }
 
-        protected  override IEnumerable<byte> GetFreeSlots(NbtList invtag)
+        protected override IEnumerable<byte> GetFreeSlots(NbtList invtag)
         {
             List<byte> emptyslots = new List<byte>(35);
             for (byte i = 0; i < 35; i++)

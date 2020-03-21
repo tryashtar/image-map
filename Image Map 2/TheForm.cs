@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 
 
-namespace Image_Map
+namespace ImageMap
 {
     public partial class TheForm : Form
     {

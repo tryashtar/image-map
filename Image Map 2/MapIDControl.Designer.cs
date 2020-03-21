@@ -1,4 +1,4 @@
-﻿namespace Image_Map
+﻿namespace ImageMap
 {
     partial class MapIDControl
     {
@@ -47,7 +47,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.BackgroundImage = global::Image_Map.Properties.Resources.image_map_icon;
+            this.BackgroundImage = global::ImageMap.Properties.Resources.image_map_icon;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.Controls.Add(this.IDLabel);
             this.DoubleBuffered = true;

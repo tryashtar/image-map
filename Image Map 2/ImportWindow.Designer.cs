@@ -1,4 +1,4 @@
-﻿namespace Image_Map
+﻿namespace ImageMap
 {
     partial class ImportWindow
     {
@@ -40,7 +40,7 @@
             this.WidthInput = new System.Windows.Forms.NumericUpDown();
             this.InterpolationModeBox = new System.Windows.Forms.ComboBox();
             this.CurrentIndexLabel = new System.Windows.Forms.Label();
-            this.PreviewBox = new Image_Map.InterpPictureBox();
+            this.PreviewBox = new ImageMap.InterpPictureBox();
             this.PreviewPanel.SuspendLayout();
             this.ControlsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.HeightInput)).BeginInit();
