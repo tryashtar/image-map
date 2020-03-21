@@ -83,12 +83,15 @@
     <Compile Include="IDInputDialog.Designer.cs">
       <DependentUpon>IDInputDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="LockBitmap.cs" />
+    <Compile Include="Map.cs" />
     <Compile Include="ReplaceOptionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ReplaceOptionDialog.Designer.cs">
       <DependentUpon>ReplaceOptionDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="World.cs" />
     <Compile Include="WorldControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -110,7 +113,6 @@
     <Compile Include="ImportWindow.Designer.cs">
       <DependentUpon>ImportWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="MapHelpers.cs" />
     <Compile Include="MapIDControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

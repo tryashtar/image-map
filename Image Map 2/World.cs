@@ -69,14 +69,35 @@ namespace ImageMap
             }
             return false;
         }
+
         protected static bool MapString(string input, out long mapid)
         {
-            bool success = Regex.Match(input, @"^map_-?\d+$").Success;
-            if (success)
-                mapid = Int64.Parse(Regex.Match(input, @"-?\d+").Value);
+            var match = Regex.Match(input, @"^map_(-?\d+)$");
+            if (match.Success)
+            {
+                mapid = Int64.Parse(match.Groups[1].Value);
+                return true;
+            }
             else
+            {
                 mapid = 0;
-            return success;
+                return false;
+            }
+        }
+
+        protected static bool UuidString(string input, out string uuid)
+        {
+            var match = Regex.Match(input, @"^player_(server_)?([0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12})$");
+            if (match.Success)
+            {
+                uuid = match.Groups[2].Value;
+                return true;
+            }
+            else
+            {
+                uuid = null;
+                return false;
+            }
         }
     }
 
@@ -332,10 +353,10 @@ namespace ImageMap
                         if (!colors.All(x => x == 0))
                             maps.Add(number, new BedrockMap(colors));
                     }
-                    iterator.Next();
                 }
                 else
                     break;
+                iterator.Next();
             }
             iterator.Dispose();
             CloseDB();
@@ -345,18 +366,29 @@ namespace ImageMap
         public override IEnumerable<string> GetPlayerIDs()
         {
             OpenDB();
-            foreach (var pair in (IEnumerable<KeyValuePair<string, byte[]>>)BedrockDB)
+            var names = new List<string>();
+            const string PlayerKeyword = "player";
+            var iterator = BedrockDB.CreateIterator();
+            iterator.Seek(PlayerKeyword);
+            while (iterator.IsValid())
             {
-                if (UuidString(pair.Key))
+                var name = iterator.StringKey();
+                var value = iterator.Value();
+                if (UuidString(name, out string uuid))
                 {
                     NbtFile nbtfile = new NbtFile();
                     nbtfile.BigEndian = false;
-                    nbtfile.LoadFromBuffer(pair.Value, 0, pair.Value.Length, NbtCompression.AutoDetect);
+                    nbtfile.LoadFromBuffer(value, 0, value.Length, NbtCompression.AutoDetect);
                     if (nbtfile.RootTag["Inventory"] != null)
-                        yield return pair.Key;
+                        names.Add(uuid);
                 }
+                else
+                    break;
+                iterator.Next();
             }
+            iterator.Dispose();
             CloseDB();
+            return names;
         }
 
         protected override IEnumerable<byte> GetFreeSlots(NbtList invtag)
@@ -399,11 +431,6 @@ namespace ImageMap
                 new NbtCompound("tag") { chestcontents }
             };
             return chest;
-        }
-
-        private static bool UuidString(string input)
-        {
-            return Regex.Match(input, @"^[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}$").Success;
         }
     }
 }
