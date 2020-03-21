@@ -40,7 +40,7 @@ namespace ImageMap
             Width = 128;
             Height = 128;
             SizeMode = PictureBoxSizeMode.Zoom;
-            Image = Map.Image.GetImage();
+            Image = Map.Image;
             BackgroundImage = Properties.Resources.item_frame;
             MouseEnter += MapPreviewBox_MouseEnter;
             MouseLeave += MapPreviewBox_MouseLeave;
@@ -48,7 +48,7 @@ namespace ImageMap
 
         private void MapPreviewBox_MouseLeave(object sender, EventArgs e)
         {
-            Image = Map.Image.GetImage();
+            Image = Map.Image;
         }
 
         private void MapPreviewBox_MouseEnter(object sender, EventArgs e)

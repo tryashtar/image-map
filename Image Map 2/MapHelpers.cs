@@ -18,13 +18,13 @@ namespace ImageMap
         public const int MAP_WIDTH = 128;
         public const int MAP_HEIGHT = 128;
         public byte[] Colors { get; protected set; }
-        public LockBitmap Image { get; protected set; }
+        public Bitmap Image { get; protected set; }
         public Bitmap Original { get; protected set; }
 
         protected Map(Bitmap original, Bitmap converted, byte[] colors)
         {
             Original = original;
-            Image = new LockBitmap((Bitmap)converted.Clone());
+            Image = converted;
             Colors = colors;
         }
         public Map(byte[] colors)
@@ -194,21 +194,22 @@ namespace ImageMap
         {
             if (colors.Length != MAP_WIDTH * MAP_HEIGHT)
                 throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}");
-            Image = new LockBitmap(MAP_WIDTH, MAP_HEIGHT);
-            Image.LockBits();
+            var canvas = new LockBitmap(MAP_WIDTH, MAP_HEIGHT);
+            canvas.LockBits();
             for (int y = 0; y < MAP_HEIGHT; y++)
             {
                 for (int x = 0; x < MAP_WIDTH; x++)
                 {
                     byte color = colors[(MAP_WIDTH * y) + x];
                     if (ByteToColor.TryGetValue(color, out Color col))
-                        Image.SetPixel(x, y, col);
+                        canvas.SetPixel(x, y, col);
                     else
-                        Image.SetPixel(x, y, Color.Transparent);
+                        canvas.SetPixel(x, y, Color.Transparent);
                 }
             }
-            Image.UnlockBits();
-            Original = Image.GetImage();
+            canvas.UnlockBits();
+            Image = canvas.GetImage();
+            Original = Image;
         }
 
         #region map conversion helpers
@@ -506,18 +507,19 @@ namespace ImageMap
         {
             if (colors.Length != MAP_WIDTH * MAP_HEIGHT * 4)
                 throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}*4");
-            Image = new LockBitmap(MAP_WIDTH, MAP_HEIGHT);
-            Image.LockBits();
+            var canvas = new LockBitmap(MAP_WIDTH, MAP_HEIGHT);
+            canvas.LockBits();
             for (int y = 0; y < MAP_HEIGHT; y++)
             {
                 for (int x = 0; x < MAP_WIDTH; x++)
                 {
                     int byteindex = (MAP_WIDTH * 4 * y) + (4 * x);
-                    Image.SetPixel(x, y, Color.FromArgb(colors[byteindex + 3], colors[byteindex], colors[byteindex + 1], colors[byteindex + 2]));
+                    canvas.SetPixel(x, y, Color.FromArgb(colors[byteindex + 3], colors[byteindex], colors[byteindex + 1], colors[byteindex + 2]));
                 }
             }
-            Image.UnlockBits();
-            Original = Image.GetImage();
+            canvas.UnlockBits();
+            Image = canvas.GetImage();
+            Original = Image;
         }
     }
 
@@ -840,7 +842,10 @@ namespace ImageMap
                         nbtfile.BigEndian = false;
                         byte[] data = iterator.Value();
                         nbtfile.LoadFromBuffer(data, 0, data.Length, NbtCompression.AutoDetect);
-                        maps.Add(number, new BedrockMap(nbtfile.RootTag["colors"].ByteArrayValue));
+                        var colors = nbtfile.RootTag["colors"].ByteArrayValue;
+                        // skip completely blank maps (bedrock likes generating pointless parents)
+                        if (!colors.All(x => x == 0))
+                            maps.Add(number, new BedrockMap(colors));
                     }
                     iterator.Next();
                 }
@@ -949,7 +954,7 @@ namespace ImageMap
             Height = source.Height;
             int PixelCount = Width * Height;
             Rectangle rect = new Rectangle(0, 0, Width, Height);
-            Depth = System.Drawing.Bitmap.GetPixelFormatSize(source.PixelFormat);
+            Depth = Bitmap.GetPixelFormatSize(source.PixelFormat);
             if (Depth != 8 && Depth != 24 && Depth != 32)
             {
                 throw new ArgumentException("Only 8, 24 and 32 bpp images are supported.");

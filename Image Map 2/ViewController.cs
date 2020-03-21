@@ -218,7 +218,7 @@ namespace ImageMap
             Directory.CreateDirectory(folder);
             foreach (var box in maps)
             {
-                box.Map.Image.GetImage().Save(Path.Combine(folder, box.GetMapName() + ".png"));
+                box.Map.Image.Save(Path.Combine(folder, box.GetMapName() + ".png"));
             }
         }
 
@@ -235,7 +235,7 @@ namespace ImageMap
 
         public void SaveMap(MapIDControl map, string file)
         {
-            map.Map.Image.GetImage().Save(file);
+            map.Map.Image.Save(file);
         }
 
         public bool UnsavedChanges()
