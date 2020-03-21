@@ -53,13 +53,13 @@
             this.IDInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F);
             this.IDInput.Location = new System.Drawing.Point(88, 55);
             this.IDInput.Maximum = new decimal(new int[] {
-            999999,
-            0,
+            -1,
+            2147483647,
             0,
             0});
             this.IDInput.Minimum = new decimal(new int[] {
-            999999,
-            0,
+            -1,
+            2147483647,
             0,
             -2147483648});
             this.IDInput.Name = "IDInput";
