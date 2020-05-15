@@ -15,23 +15,12 @@ namespace ImageMap
         string JavaSavesFolder = "";
         string LastImgExportPath = "";
         string BedrockSavesFolder;
-        SaveFileDialog ExportDialog = new SaveFileDialog()
-        {
-            Title = "Export this map as a PNG",
-            Filter = "Image Files|*.png|All Files|*.*"
-        };
-        OpenFileDialog OpenDialog = new OpenFileDialog()
-        {
-            Title = "Import image files to turn into maps",
-            Multiselect = true,
-        };
         WorldWindow JavaWorldDialog = new WorldWindow(Edition.Java);
         WorldWindow BedrockWorldDialog = new WorldWindow(Edition.Bedrock);
         public TheForm()
         {
             InitializeComponent();
             Controller = new ViewController(this);
-            OpenDialog.Filter = GenerateFilter("Image Files", ImageExtensions);
         }
 
         private static string GenerateFilter(string description, string[] extensions)
@@ -113,11 +102,17 @@ namespace ImageMap
 
         private void OpenButton_Click(object sender, EventArgs e)
         {
-            OpenDialog.InitialDirectory = LastOpenPath;
-            if (OpenDialog.ShowDialog() == DialogResult.OK)
+            var open_dialog = new OpenFileDialog()
             {
-                LastOpenPath = Path.GetDirectoryName(OpenDialog.FileName);
-                Controller.ImportImages(OpenDialog.FileNames);
+                Title = "Import image files to turn into maps",
+                Multiselect = true,
+                Filter = GenerateFilter("Image Files", ImageExtensions)
+            };
+            open_dialog.InitialDirectory = LastOpenPath;
+            if (open_dialog.ShowDialog() == DialogResult.OK)
+            {
+                LastOpenPath = Path.GetDirectoryName(open_dialog.FileName);
+                Controller.ImportImages(open_dialog.FileNames);
             }
         }
 
@@ -270,18 +265,23 @@ namespace ImageMap
             var selected = Controller.GetSelectedMaps(MapStatus.Existing);
             // super epic way to check if there is exactly one item
             bool onlyone = selected.Take(2).Count() == 1;
-            if (onlyone)
-                ExportDialog.FileName = selected.First().GetMapName() + ".png";
-            else
-                ExportDialog.FileName = "";
-            ExportDialog.InitialDirectory = LastImgExportPath;
-            if (ExportDialog.ShowDialog() == DialogResult.OK)
+            var export_dialog = new SaveFileDialog()
             {
-                LastImgExportPath = Path.GetDirectoryName(ExportDialog.FileName);
+                Title = "Export this map as a PNG",
+                Filter = "Image Files|*.png|All Files|*.*"
+            };
+            if (onlyone)
+                export_dialog.FileName = selected.First().GetMapName() + ".png";
+            else
+                export_dialog.FileName = "";
+            export_dialog.InitialDirectory = LastImgExportPath;
+            if (export_dialog.ShowDialog() == DialogResult.OK)
+            {
+                LastImgExportPath = Path.GetDirectoryName(export_dialog.FileName);
                 if (onlyone)
-                    Controller.SaveMap(selected.First(), ExportDialog.FileName);
+                    Controller.SaveMap(selected.First(), export_dialog.FileName);
                 else
-                    Controller.SaveMaps(selected, Path.ChangeExtension(ExportDialog.FileName, ""));
+                    Controller.SaveMaps(selected, Path.ChangeExtension(export_dialog.FileName, ""));
             }
         }
 
@@ -294,9 +294,21 @@ namespace ImageMap
 
         private void ExistingContextPlayerName_Click(object sender, EventArgs e)
         {
-            bool success = Controller.AddChests(Controller.GetSelectedMaps(MapStatus.Existing).Select(x => x.ID), ((ToolStripMenuItem)sender).Text);
-            if (!success)
-                MessageBox.Show("There wasn't enough space to fit the chests in your inventory. One or more were not added.", "Chest alert!");
+            var playername = ((ToolStripMenuItem)sender).Text;
+            try
+            {
+                bool success = Controller.AddChests(Controller.GetSelectedMaps(MapStatus.Existing).Select(x => x.ID), playername);
+                if (!success)
+                    MessageBox.Show("There wasn't enough space to fit the chests in your inventory. One or more were not added.", "Chest alert!");
+            }
+            catch (FileNotFoundException ex)
+            {
+                MessageBox.Show($"Could not find any player in that world with name {playername}\n\nFull error: {ex.Message}", "Player not found");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unknown error happened: {ex.Message}", "Error!");
+            }
         }
 
         private void ExistingContextSelectAll_Click(object sender, EventArgs e)

@@ -13,7 +13,7 @@ using LevelDBWrapper;
 
 namespace ImageMap
 {
-    public abstract class Map
+    public abstract class Map : IDisposable
     {
         public const int MAP_WIDTH = 128;
         public const int MAP_HEIGHT = 128;
@@ -30,6 +30,12 @@ namespace ImageMap
         public Map(byte[] colors)
         {
             Colors = colors;
+        }
+
+        public void Dispose()
+        {
+            Image?.Dispose();
+            Original?.Dispose();
         }
 
         protected static int ByteClamp(int a, int b)

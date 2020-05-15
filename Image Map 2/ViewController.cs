@@ -59,8 +59,7 @@ namespace ImageMap
         {
             if (!bypass_mapwarning && ImportingMapPreviews.Any())
                 return ActionResult.MapsNotImported;
-            if (SelectedWorld is IDisposable disp)
-                disp.Dispose();
+            var oldworld = SelectedWorld;
             try
             {
                 if (edition == Edition.Java)
@@ -77,6 +76,9 @@ namespace ImageMap
             }
             SelectedWorld.Initialize();
             NewWorldOpened();
+            oldworld?.Dispose();
+            // that's right, I did it!
+            GC.Collect();
             PlayerDestinations = new List<string>();
             PlayerDestinations.Add(LOCAL_IDENTIFIER);
             foreach (var uuid in SelectedWorld.GetPlayerIDs())
@@ -416,6 +418,7 @@ namespace ImageMap
                 RemoveFromZone(boxes, MapStatus.Existing);
                 UI.ImportZone.Controls.AddRange(array);
                 ImportingMapPreviews.AddRange(array);
+                UI.ClickOpenLabel.Visible = false;
             }
             else if (location == MapStatus.Existing)
             {
@@ -441,6 +444,8 @@ namespace ImageMap
 
             UI.MapViewZone.Visible = true;
             UI.ImportZone.Controls.Clear();
+            UI.ImportZone.Controls.Add(UI.ClickOpenLabel);
+            UI.ClickOpenLabel.Visible = true;
             UI.ExistingZone.Controls.Clear();
             foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
             {

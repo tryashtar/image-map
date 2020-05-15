@@ -8,7 +8,7 @@ using LevelDBWrapper;
 
 namespace ImageMap
 {
-    public abstract class MinecraftWorld
+    public abstract class MinecraftWorld : IDisposable
     {
         protected Dictionary<long, Map> Maps;
         protected const string LOCAL_IDENTIFIER = "~local";
@@ -99,6 +99,19 @@ namespace ImageMap
                 return false;
             }
         }
+
+        protected static string UuidToKey(string uuid)
+        {
+            return $"player_server_{uuid}";
+        }
+
+        public virtual void Dispose()
+        {
+            foreach (var map in Maps.Values)
+            {
+                map.Dispose();
+            }
+        }
     }
 
     public class JavaWorld : MinecraftWorld
@@ -161,7 +174,7 @@ namespace ImageMap
             if (playerid == LOCAL_IDENTIFIER)
             {
                 if (!HasLocalPlayer)
-                    throw new InvalidOperationException("Requested local player but there is none for this world");
+                    throw new FileNotFoundException("Requested local player but there is none for this world");
                 activefile = LevelDat;
                 playertag = (NbtCompound)activefile.RootTag["Data"]["Player"];
             }
@@ -307,9 +320,14 @@ namespace ImageMap
         {
             OpenDB();
             // acquire the file this player is stored in, and the tag that represents said player
+            string file_identifier;
             if (playerid == LOCAL_IDENTIFIER)
-                playerid = "~local_player";
-            byte[] playerdata = BedrockDB.Get(playerid);
+                file_identifier = "~local_player";
+            else
+                file_identifier = UuidToKey(playerid);
+            byte[] playerdata = BedrockDB.Get(file_identifier);
+            if (playerdata == null)
+                throw new FileNotFoundException($"Player with UUID {playerid} not found");
             var file = new NbtFile();
             file.BigEndian = false;
             file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
@@ -318,15 +336,16 @@ namespace ImageMap
             var success = PutChestsInInventory(invtag, mapids);
 
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            BedrockDB.Put(playerid, bytes);
+            BedrockDB.Put(file_identifier, bytes);
             CloseDB();
 
             return success;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             CloseDB();
+            base.Dispose();
         }
 
         protected override Dictionary<long, Map> LoadMaps()
