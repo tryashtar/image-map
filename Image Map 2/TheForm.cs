@@ -45,6 +45,23 @@ namespace ImageMap
             BedrockSavesFolder = Properties.Settings.Default.BedrockSavesFolder;
         }
 
+        private bool IsProcessingMaps = false;
+        public void ProcessingMapsStart()
+        {
+            IsProcessingMaps = true;
+            OpenButton.Enabled = false;
+            SendButton.Enabled = false;
+            SendButton.Text = "Processing...";
+        }
+
+        public void ProcessingMapsDone()
+        {
+            IsProcessingMaps = false;
+            OpenButton.Enabled = true;
+            SendButton.Enabled = true;
+            SendButton.Text = "Send All to World";
+        }
+
         private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
         {
             int conflicts = Controller.SendMapsToWorld(maps, MapReplaceOption.Info, destination);
@@ -241,6 +258,7 @@ namespace ImageMap
             foreach (var box in selected)
             {
                 Controller.RemoveFromZone(box, MapStatus.Importing);
+                box.Map.Dispose();
             }
         }
 
@@ -325,6 +343,9 @@ namespace ImageMap
                 ImportContextSelectAll.Text = "Deselect all";
             else
                 ImportContextSelectAll.Text = "Select all";
+            ImportContextSend.Enabled = !IsProcessingMaps;
+            ImportContextDiscard.Enabled = !IsProcessingMaps;
+            ImportContextChangeID.Enabled = !IsProcessingMaps;
         }
 
         private void ExistingContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)

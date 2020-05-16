@@ -103,8 +103,7 @@ namespace ImageMap
             Properties.Settings.Default.Dither = import.DitherChecked;
             long id = GetSafeID();
             var tasks = new List<Task>();
-            UI.OpenButton.Enabled = false;
-            UI.SendButton.Enabled = false;
+            UI.ProcessingMapsStart();
             foreach (var settings in import.OutputSettings)
             {
                 var boxes = new List<MapIDControl>();
@@ -137,8 +136,7 @@ namespace ImageMap
             var done = Task.WhenAll(tasks);
             done.ContinueWith((t) =>
                 {
-                    UI.OpenButton.Enabled = true;
-                    UI.SendButton.Enabled = true;
+                    UI.ProcessingMapsDone();
                 }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
@@ -447,6 +445,7 @@ namespace ImageMap
             UI.ImportZone.Controls.Add(UI.ClickOpenLabel);
             UI.ClickOpenLabel.Visible = true;
             UI.ExistingZone.Controls.Clear();
+            UI.ProcessingMapsDone();
             foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
             {
                 MapIDControl mapbox = new MapIDControl(map.Key, new MapPreviewBox(map.Value));
