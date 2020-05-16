@@ -77,6 +77,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ColorCache.cs" />
     <Compile Include="IDInputDialog.cs">
       <SubType>Form</SubType>
     </Compile>

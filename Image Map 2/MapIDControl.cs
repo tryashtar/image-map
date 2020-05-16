@@ -26,6 +26,7 @@ namespace ImageMap
             SetSelected(false);
             SetID(id);
             SetConflict(false);
+            SetSize(128, 128);
         }
 
         public MapIDControl(long id, MapPreviewBox box) : this(id)
@@ -33,13 +34,18 @@ namespace ImageMap
             SetBox(box);
         }
 
+        private void SetSize(int width, int height)
+        {
+            this.Width = width + 6;
+            this.Height = height + IDLabel.Height + 6;
+        }
+
         public void SetBox(MapPreviewBox box)
         {
             box.MouseDown += Box_MouseDown;
             Controls.Add(box);
             Map = box.Map;
-            this.Width = box.Width + 6;
-            this.Height = box.Height + IDLabel.Height + 6;
+            SetSize(box.Width, box.Height);
             box.Left = this.Width / 2 - box.Width / 2;
             box.Top = 3;
         }

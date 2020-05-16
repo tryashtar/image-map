@@ -40,7 +40,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interop.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="LevelDB.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

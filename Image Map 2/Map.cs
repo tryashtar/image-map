@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 using LevelDBWrapper;
+using Microsoft.Win32.SafeHandles;
 
 namespace ImageMap
 {
@@ -75,13 +76,14 @@ namespace ImageMap
         }
     }
 
-    public class MapCreationSettings
+    public class MapCreationSettings : IDisposable
     {
         public Bitmap Original { get; private set; }
         public int SplitW { get; private set; }
         public int SplitH { get; private set; }
         public InterpolationMode InterpMode { get; private set; }
         public bool Dither { get; private set; }
+        public int NumberOfMaps => SplitW * SplitH;
 
         public MapCreationSettings(Bitmap original, int splitW, int splitH, InterpolationMode interpMode, bool dither)
         {
@@ -90,6 +92,11 @@ namespace ImageMap
             SplitH = splitH;
             InterpMode = interpMode;
             Dither = dither;
+        }
+
+        public void Dispose()
+        {
+            Original?.Dispose();
         }
     }
 
@@ -101,7 +108,7 @@ namespace ImageMap
             LockBitmap final = new LockBitmap((Bitmap)original.Clone());
             final.LockBits();
             // first index = which map this is
-            var colors = new byte[settings.SplitW * settings.SplitH][];
+            var colors = new byte[settings.NumberOfMaps][];
             for (int i = 0; i < colors.Length; i++)
             {
                 colors[i] = new byte[MAP_WIDTH * MAP_HEIGHT];
@@ -132,7 +139,7 @@ namespace ImageMap
                                     newpixel = mapcolor;
                                 }
                             }
-                            NearestColorCache[oldpixel] = newpixel;
+                            NearestColorCache.Set(oldpixel, newpixel);
                         }
                     }
                     final.SetPixel(x, y, newpixel);
@@ -219,10 +226,10 @@ namespace ImageMap
         }
 
         #region map conversion helpers
-        private static Dictionary<Color, byte> ColorToByte;
-        private static Dictionary<byte, Color> ByteToColor;
+        private static readonly Dictionary<Color, byte> ColorToByte;
+        private static readonly Dictionary<byte, Color> ByteToColor;
         // every time we learn the nearest palette entry for a color, store it here so we don't have to look it up again
-        private static Dictionary<Color, Color> NearestColorCache;
+        private static readonly ColorCache NearestColorCache = new ColorCache();
         static JavaMap()
         {
             // java's color map: stores the bytes and the RGB color they correspond to on a map
@@ -437,7 +444,6 @@ namespace ImageMap
                 #endregion
             };
             ByteToColor = ColorToByte.ToDictionary(x => x.Value, x => x.Key);
-            NearestColorCache = new Dictionary<Color, Color>();
         }
 
         // color distance algorithm I stole from https://stackoverflow.com/a/33782458
@@ -461,7 +467,7 @@ namespace ImageMap
             LockBitmap final = new LockBitmap((Bitmap)original.Clone());
             final.LockBits();
             // first index = which map this is
-            var colors = new byte[settings.SplitW * settings.SplitH][];
+            var colors = new byte[settings.NumberOfMaps][];
             for (int i = 0; i < colors.Length; i++)
             {
                 colors[i] = new byte[MAP_WIDTH * MAP_HEIGHT * 4];

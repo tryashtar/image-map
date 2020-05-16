@@ -90,6 +90,45 @@ namespace ImageMap
 
         public IEnumerable<string> GetPlayerDestinations() => PlayerDestinations;
 
+        private Task ImportFromSettings(long id, Edition edition, MapCreationSettings settings)
+        {
+            var number = settings.NumberOfMaps;
+            var boxes = new MapIDControl[number];
+            for (int i = 0; i < number; i++)
+            {
+                var box = new MapIDControl(id + i);
+                boxes[i] = box;
+                box.MouseDown += Box_MouseDown;
+            }
+            SendToZone(boxes, MapStatus.Importing);
+            Task<IEnumerable<Map>> t;
+            if (edition == Edition.Java)
+                t = new Task<IEnumerable<Map>>(() =>
+                {
+                    return JavaMap.FromSettings(settings);
+                });
+            else
+                t = new Task<IEnumerable<Map>>(() =>
+                {
+                    return BedrockMap.FromSettings(settings);
+                });
+            t.ContinueWith((prev) =>
+            {
+                settings.Dispose();
+                if (t.IsFaulted)
+                {
+                    MessageBox.Show($"Failed to create some maps for this reason: {ExceptionMessage(t.Exception)}", "Map load error!");
+                    RemoveFromZone(boxes, MapStatus.Importing);
+                }
+                var results = prev.Result.ToArray();
+                for (int i = 0; i < number; i++)
+                {
+                    boxes[i].SetBox(new MapPreviewBox(results[i]));
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+            return t;
+        }
+
         public void ImportImages(string[] imagepaths)
         {
             bool java = (SelectedWorld is JavaWorld);
@@ -97,47 +136,32 @@ namespace ImageMap
             import.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
             import.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
             import.DitherChecked = Properties.Settings.Default.Dither;
+            long id = GetSafeID();
+            var tasks = new List<Task>();
+            import.ImageReady += (s, settings) =>
+            {
+                var task = ImportFromSettings(id, java ? Edition.Java : Edition.Bedrock, settings);
+                tasks.Add(task);
+                task.Start();
+                id += settings.NumberOfMaps;
+            };
             import.StartImports(UI, imagepaths);
             Properties.Settings.Default.InterpIndex = import.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = import.ApplyAllCheck.Checked;
             Properties.Settings.Default.Dither = import.DitherChecked;
-            long id = GetSafeID();
-            var tasks = new List<Task>();
             UI.ProcessingMapsStart();
-            foreach (var settings in import.OutputSettings)
-            {
-                var boxes = new List<MapIDControl>();
-                for (int i = 0; i < settings.SplitH * settings.SplitW; i++)
-                {
-                    var box = new MapIDControl(id);
-                    boxes.Add(box);
-                    box.MouseDown += Box_MouseDown;
-                    id++;
-                }
-                SendToZone(boxes, MapStatus.Importing);
-                var t = new Task<IEnumerable<Map>>(() =>
-                {
-                    if (java)
-                        return JavaMap.FromSettings(settings);
-                    else
-                        return BedrockMap.FromSettings(settings);
-                });
-                t.Start();
-                t.ContinueWith((prev) =>
-                {
-                    var results = prev.Result.ToArray();
-                    for (int i = 0; i < settings.SplitH * settings.SplitW; i++)
-                    {
-                        boxes[i].SetBox(new MapPreviewBox(results[i]));
-                    }
-                }, TaskScheduler.FromCurrentSynchronizationContext());
-                tasks.Add(t);
-            }
             var done = Task.WhenAll(tasks);
             done.ContinueWith((t) =>
                 {
                     UI.ProcessingMapsDone();
                 }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private static string ExceptionMessage(Exception ex)
+        {
+            if (ex is AggregateException agg)
+                return String.Join("\n", agg.InnerExceptions.Select(x => x.Message));
+            return ex.Message;
         }
 
         // returns number of conflicts

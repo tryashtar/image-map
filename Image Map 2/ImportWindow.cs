@@ -21,7 +21,7 @@ namespace ImageMap
         private string[] InputPaths;
         private Bitmap CurrentImage;
         public bool DitherChecked { get { return DitherCheck.Checked; } set { DitherCheck.Checked = value; } }
-        public List<MapCreationSettings> OutputSettings = new List<MapCreationSettings>();
+        public event EventHandler<MapCreationSettings> ImageReady;
         RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
         public ImportWindow(bool allowdither)
         {
@@ -34,11 +34,10 @@ namespace ImageMap
         public void StartImports(Form parent, string[] inputpaths)
         {
             InputPaths = inputpaths;
-            OutputSettings.Clear();
             CurrentIndexLabel.Visible = (InputPaths.Length > 1);
             ApplyAllCheck.Visible = (InputPaths.Length > 1);
             EditingIndex = -1;
-            ProcessNextImage();
+            ProcessNextImage(false);
             if (!Finished) // don't try to show if all loaded images were skipped
                 ShowDialog(parent);
         }
@@ -53,37 +52,41 @@ namespace ImageMap
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void ProcessNextImage()
+        private void ProcessNextImage(bool invisible)
         {
             EditingIndex++;
             if (EditingIndex >= InputPaths.Length)
-                Finish();
-            else
             {
-                string filename = Path.GetFileName(InputPaths[EditingIndex]);
-                try
-                {
-                    CurrentImage = new Bitmap(InputPaths[EditingIndex]);
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show($"The image {filename} could not be loaded (probably not an image file)", "Bad image!");
-                    ProcessNextImage();
-                    return;
-                }
+                Finish();
+                return;
+            }
+            string filename = Path.GetFileName(InputPaths[EditingIndex]);
+            try
+            {
+                CurrentImage = new Bitmap(InputPaths[EditingIndex]);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"The image {filename} could not be loaded\n\nExact error message: {ex.Message}", "Bad image!");
+                ProcessNextImage(invisible);
+                return;
+            }
+            if (!invisible)
+            {
                 Rotation = RotateFlipType.RotateNoneFlipNone;
                 PreviewBox.Image = CurrentImage;
                 this.Text = "Import – " + filename;
                 PreviewBox.Interp = GetInterpolationMode();
-                CurrentImage.RotateFlip(Rotation);
                 CurrentIndexLabel.Text = $"{EditingIndex + 1} / {InputPaths.Length}";
             }
+            CurrentImage.RotateFlip(Rotation);
         }
 
         private void Finish()
         {
             Finished = true;
             InputPaths = null;
+            CurrentImage = null;
             this.Close();
         }
 
@@ -140,15 +143,15 @@ namespace ImageMap
             for (int i = index; i <= final; i++)
             {
                 if (i > index)
-                {
-                    CurrentImage = new Bitmap(InputPaths[i]);
-                    CurrentImage.RotateFlip(Rotation);
-                }
+                    ProcessNextImage(true);
+                if (CurrentImage == null)
+                    return;
                 bool dithered = AllowDither && DitherCheck.Checked;
-                OutputSettings.Add(new MapCreationSettings(CurrentImage, (int)WidthInput.Value, (int)HeightInput.Value, GetInterpolationMode(), dithered));
+                var settings = new MapCreationSettings(CurrentImage, (int)WidthInput.Value, (int)HeightInput.Value, GetInterpolationMode(), dithered);
+                ImageReady?.Invoke(this, settings);
             }
             EditingIndex = final;
-            ProcessNextImage();
+            ProcessNextImage(false);
         }
 
         private void CancelButton_Click(object sender, EventArgs e)
@@ -156,7 +159,7 @@ namespace ImageMap
             if (ApplyAllCheck.Checked)
                 Finish();
             else
-                ProcessNextImage();
+                ProcessNextImage(false);
         }
 
         private void RotateButton_Click(object sender, EventArgs e)

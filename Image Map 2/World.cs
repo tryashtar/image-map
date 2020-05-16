@@ -345,6 +345,7 @@ namespace ImageMap
         public override void Dispose()
         {
             CloseDB();
+            BedrockDB?.Dispose();
             base.Dispose();
         }
 

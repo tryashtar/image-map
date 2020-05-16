@@ -51,7 +51,7 @@ namespace LevelDBWrapper
             Console.WriteLine($"Opening {path}");
             IntPtr error;
             var options = new Options();
-            Handle = Interop.leveldb_open(options.Handle, path, out error);
+            Handle = NativeMethods.leveldb_open(options.Handle, path, out error);
             Throw(error);
         }
 
@@ -66,7 +66,7 @@ namespace LevelDBWrapper
                 }
                 finally
                 {
-                    Interop.leveldb_free(error);
+                    NativeMethods.leveldb_free(error);
                 }
             }
         }
@@ -75,26 +75,26 @@ namespace LevelDBWrapper
         {
             IntPtr error;
             var options = new WriteOptions();
-            Interop.leveldb_write(this.Handle, options.Handle, batch.Handle, out error);
+            NativeMethods.leveldb_write(this.Handle, options.Handle, batch.Handle, out error);
             Throw(error);
         }
 
         public void Delete(string key)
         {
-            Delete(Interop.Encoding.GetBytes(key));
+            Delete(NativeMethods.Encoding.GetBytes(key));
         }
 
         public void Delete(byte[] key)
         {
             IntPtr error;
             var options = new WriteOptions();
-            Interop.leveldb_delete(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out error);
+            NativeMethods.leveldb_delete(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out error);
             Throw(error);
         }
 
         public byte[] Get(string key)
         {
-            return Get(Interop.Encoding.GetBytes(key));
+            return Get(NativeMethods.Encoding.GetBytes(key));
         }
 
         public byte[] Get(byte[] key)
@@ -102,7 +102,7 @@ namespace LevelDBWrapper
             IntPtr error;
             IntPtr length;
             var options = new ReadOptions();
-            var v = Interop.leveldb_get(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out length, out error);
+            var v = NativeMethods.leveldb_get(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out length, out error);
             Throw(error);
 
             if (v != IntPtr.Zero)
@@ -115,7 +115,7 @@ namespace LevelDBWrapper
                 }
                 finally
                 {
-                    Interop.leveldb_free(v);
+                    NativeMethods.leveldb_free(v);
                 }
             }
             return null;
@@ -123,20 +123,20 @@ namespace LevelDBWrapper
 
         public void Put(string key, string value)
         {
-            this.Put(Interop.Encoding.GetBytes(key), Interop.Encoding.GetBytes(value));
+            this.Put(NativeMethods.Encoding.GetBytes(key), NativeMethods.Encoding.GetBytes(value));
         }
 
 
         public void Put(string key, byte[] value)
         {
-            this.Put(Interop.Encoding.GetBytes(key), value);
+            this.Put(NativeMethods.Encoding.GetBytes(key), value);
         }
 
         public void Put(byte[] key, byte[] value)
         {
             IntPtr error;
             var options = new WriteOptions();
-            Interop.leveldb_put(this.Handle, options.Handle, key, (IntPtr)key.LongLength, value, (IntPtr)value.LongLength, out error);
+            NativeMethods.leveldb_put(this.Handle, options.Handle, key, (IntPtr)key.LongLength, value, (IntPtr)value.LongLength, out error);
             Throw(error);
         }
 
@@ -148,12 +148,12 @@ namespace LevelDBWrapper
         protected override void FreeUnManagedObjects()
         {
             if (this.Handle != default(IntPtr))
-                Interop.leveldb_close(this.Handle);
+                NativeMethods.leveldb_close(this.Handle);
         }
 
         public Snapshot CreateSnapshot()
         {
-            return new Snapshot(Interop.leveldb_create_snapshot(this.Handle), this);
+            return new Snapshot(NativeMethods.leveldb_create_snapshot(this.Handle), this);
         }
 
         public Iterator CreateIterator()
@@ -163,7 +163,7 @@ namespace LevelDBWrapper
 
         public Iterator CreateIterator(ReadOptions options)
         {
-            return new Iterator(Interop.leveldb_create_iterator(this.Handle, options.Handle));
+            return new Iterator(NativeMethods.leveldb_create_iterator(this.Handle, options.Handle));
         }
 
         IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator()
@@ -218,8 +218,8 @@ namespace LevelDBWrapper
     {
         public Options()
         {
-            Handle = Interop.leveldb_options_create();
-            Interop.leveldb_options_set_compression(this.Handle, 4);
+            Handle = NativeMethods.leveldb_options_create();
+            NativeMethods.leveldb_options_set_compression(this.Handle, 4);
         }
     }
 
@@ -227,7 +227,7 @@ namespace LevelDBWrapper
     {
         public WriteOptions()
         {
-            Handle = Interop.leveldb_writeoptions_create();
+            Handle = NativeMethods.leveldb_writeoptions_create();
         }
     }
 
@@ -235,12 +235,12 @@ namespace LevelDBWrapper
     {
         public ReadOptions()
         {
-            Handle = Interop.leveldb_readoptions_create();
+            Handle = NativeMethods.leveldb_readoptions_create();
         }
 
         public Snapshot Snapshot
         {
-            set { Interop.leveldb_readoptions_set_snapshot(this.Handle, value.Handle); }
+            set { NativeMethods.leveldb_readoptions_set_snapshot(this.Handle, value.Handle); }
         }
     }
 
@@ -248,28 +248,28 @@ namespace LevelDBWrapper
     {
         public WriteBatch()
         {
-            Handle = Interop.leveldb_writebatch_create();
+            Handle = NativeMethods.leveldb_writebatch_create();
         }
 
         public WriteBatch Put(string key, string value)
         {
-            return Put(Interop.Encoding.GetBytes(key), Interop.Encoding.GetBytes(value));
+            return Put(NativeMethods.Encoding.GetBytes(key), NativeMethods.Encoding.GetBytes(value));
         }
 
         public WriteBatch Put(string key, byte[] value)
         {
-            return Put(Interop.Encoding.GetBytes(key), value);
+            return Put(NativeMethods.Encoding.GetBytes(key), value);
         }
 
         public WriteBatch Put(byte[] key, byte[] value)
         {
-            Interop.leveldb_writebatch_put(Handle, key, key.Length, value, value.Length);
+            NativeMethods.leveldb_writebatch_put(Handle, key, key.Length, value, value.Length);
             return this;
         }
 
         protected override void FreeUnManagedObjects()
         {
-            Interop.leveldb_writebatch_destroy(this.Handle);
+            NativeMethods.leveldb_writebatch_destroy(this.Handle);
         }
     }
 
@@ -295,7 +295,7 @@ namespace LevelDBWrapper
             {
                 var parent = Parent.Target as LevelDB;
                 if (parent != null)
-                    Interop.leveldb_release_snapshot(parent.Handle, this.Handle);
+                    NativeMethods.leveldb_release_snapshot(parent.Handle, this.Handle);
             }
         }
     }
@@ -309,49 +309,49 @@ namespace LevelDBWrapper
 
         public bool IsValid()
         {
-            return (int)Interop.leveldb_iter_valid(this.Handle) != 0;
+            return (int)NativeMethods.leveldb_iter_valid(this.Handle) != 0;
         }
 
         public void SeekToFirst()
         {
-            Interop.leveldb_iter_seek_to_first(this.Handle);
+            NativeMethods.leveldb_iter_seek_to_first(this.Handle);
         }
 
         public void SeekToLast()
         {
-            Interop.leveldb_iter_seek_to_last(this.Handle);
+            NativeMethods.leveldb_iter_seek_to_last(this.Handle);
         }
 
         public void Seek(byte[] key)
         {
-            Interop.leveldb_iter_seek(this.Handle, key, key.Length);
+            NativeMethods.leveldb_iter_seek(this.Handle, key, key.Length);
         }
 
         public void Seek(string key)
         {
-            Seek(Interop.Encoding.GetBytes(key));
+            Seek(NativeMethods.Encoding.GetBytes(key));
         }
 
         public void Next()
         {
-            Interop.leveldb_iter_next(this.Handle);
+            NativeMethods.leveldb_iter_next(this.Handle);
         }
 
         public void Prev()
         {
-            Interop.leveldb_iter_prev(this.Handle);
+            NativeMethods.leveldb_iter_prev(this.Handle);
         }
 
 
         public string StringKey()
         {
-            return Interop.Encoding.GetString(this.Key());
+            return NativeMethods.Encoding.GetString(this.Key());
         }
 
         public byte[] Key()
         {
             int length;
-            var key = Interop.leveldb_iter_key(this.Handle, out length);
+            var key = NativeMethods.leveldb_iter_key(this.Handle, out length);
 
             var bytes = new byte[length];
             Marshal.Copy(key, bytes, 0, length);
@@ -360,13 +360,13 @@ namespace LevelDBWrapper
 
         public string StringValue()
         {
-            return Interop.Encoding.GetString(this.Value());
+            return NativeMethods.Encoding.GetString(this.Value());
         }
 
         public byte[] Value()
         {
             int length;
-            var value = Interop.leveldb_iter_value(this.Handle, out length);
+            var value = NativeMethods.leveldb_iter_value(this.Handle, out length);
 
             var bytes = new byte[length];
             Marshal.Copy(value, bytes, 0, length);
@@ -375,7 +375,7 @@ namespace LevelDBWrapper
 
         protected override void FreeUnManagedObjects()
         {
-            Interop.leveldb_iter_destroy(this.Handle);
+            NativeMethods.leveldb_iter_destroy(this.Handle);
         }
     }
 }
