@@ -75,7 +75,29 @@ namespace ImageMap
                 Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
         }
 
-        private void OpenWorldWithMessage(Edition edition)
+        private void OpenWorld(Edition edition, string folder)
+        {
+            var result = Controller.OpenWorld(edition, folder);
+            if (result == ActionResult.MapsNotImported && MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                Controller.OpenWorld(edition, folder, bypass_mapwarning: true);
+        }
+
+        private void DraggedWorld(string folder)
+        {
+            if (!Directory.Exists(folder))
+            {
+                MessageBox.Show("Only world folders can be opened. Please don't drag ZIPs or MCWORLDs.\nIf you were trying to drag images, make sure to open a world first.", "Not a folder?");
+                return;
+            }
+            if (File.Exists(Path.Combine(folder, "db", "CURRENT")))
+                OpenWorld(Edition.Bedrock, folder);
+            else if (Directory.Exists(Path.Combine(folder, "region")))
+                OpenWorld(Edition.Java, folder);
+            else
+                MessageBox.Show("Couldn't tell what edition of Minecraft that world was.", "Not a world?");
+        }
+
+        private void SelectWorldWithMessage(Edition edition)
         {
             string folder = null;
             // edition-specific world picking
@@ -102,19 +124,17 @@ namespace ImageMap
                 BedrockSavesFolder = BedrockWorldDialog.SavesFolder;
             }
             // generic world opening and warning
-            var result = Controller.OpenWorld(edition, folder);
-            if (result == ActionResult.MapsNotImported && MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                Controller.OpenWorld(edition, folder, bypass_mapwarning: true);
+            OpenWorld(edition, folder);
         }
 
         private void JavaWorldButton_Click(object sender, EventArgs e)
         {
-            OpenWorldWithMessage(Edition.Java);
+            SelectWorldWithMessage(Edition.Java);
         }
 
         private void BedrockWorldButton_Click(object sender, EventArgs e)
         {
-            OpenWorldWithMessage(Edition.Bedrock);
+            SelectWorldWithMessage(Edition.Bedrock);
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
@@ -166,6 +186,18 @@ namespace ImageMap
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             Controller.ImportImages(files);
+        }
+
+        private void TheForm_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+        }
+
+        private void TheForm_DragDrop(object sender, DragEventArgs e)
+        {
+            string file = ((string[])e.Data.GetData(DataFormats.FileDrop)).First();
+            DraggedWorld(file);
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

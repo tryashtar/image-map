@@ -38,6 +38,7 @@
             this.ExistingControls = new System.Windows.Forms.Panel();
             this.ImportTab = new System.Windows.Forms.TabPage();
             this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
+            this.ClickOpenLabel = new System.Windows.Forms.Label();
             this.ImportControls = new System.Windows.Forms.Panel();
             this.AddChestCheck = new System.Windows.Forms.CheckBox();
             this.SendButton = new System.Windows.Forms.Button();
@@ -55,7 +56,6 @@
             this.ExistingContextExport = new System.Windows.Forms.ToolStripMenuItem();
             this.ExistingContextDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.ExistingContextSelectAll = new System.Windows.Forms.ToolStripMenuItem();
-            this.ClickOpenLabel = new System.Windows.Forms.Label();
             this.ExistingTab.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportZone.SuspendLayout();
@@ -86,9 +86,10 @@
             this.SelectWorldLabel.Location = new System.Drawing.Point(229, 29);
             this.SelectWorldLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.SelectWorldLabel.Name = "SelectWorldLabel";
-            this.SelectWorldLabel.Size = new System.Drawing.Size(366, 124);
+            this.SelectWorldLabel.Size = new System.Drawing.Size(461, 186);
             this.SelectWorldLabel.TabIndex = 17;
-            this.SelectWorldLabel.Text = "← Click Here!\r\n\r\nMaps will show up in this\r\narea once you select a world.";
+            this.SelectWorldLabel.Text = "← Click Here!\r\n\r\nMaps will show up in this\r\narea once you select a world.\r\n\r\nOr, " +
+    "just drag a world folder right here!";
             // 
             // BedrockWorldButton
             // 
@@ -163,6 +164,19 @@
             this.ImportZone.TabIndex = 3;
             this.ImportZone.DragDrop += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragDrop);
             this.ImportZone.DragEnter += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragEnter);
+            // 
+            // ClickOpenLabel
+            // 
+            this.ClickOpenLabel.AutoSize = true;
+            this.ClickOpenLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
+            this.ClickOpenLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
+            this.ClickOpenLabel.Location = new System.Drawing.Point(2, 0);
+            this.ClickOpenLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.ClickOpenLabel.Name = "ClickOpenLabel";
+            this.ClickOpenLabel.Size = new System.Drawing.Size(505, 155);
+            this.ClickOpenLabel.TabIndex = 22;
+            this.ClickOpenLabel.Text = "Click \"Open\" to import some images and convert them to maps!\r\n↓\r\n\r\nOr, just drag " +
+    "image files right here!";
             // 
             // ImportControls
             // 
@@ -330,18 +344,6 @@
             this.ExistingContextSelectAll.Text = "Select all";
             this.ExistingContextSelectAll.Click += new System.EventHandler(this.ExistingContextSelectAll_Click);
             // 
-            // ClickOpenLabel
-            // 
-            this.ClickOpenLabel.AutoSize = true;
-            this.ClickOpenLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F);
-            this.ClickOpenLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
-            this.ClickOpenLabel.Location = new System.Drawing.Point(2, 0);
-            this.ClickOpenLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.ClickOpenLabel.Name = "ClickOpenLabel";
-            this.ClickOpenLabel.Size = new System.Drawing.Size(505, 93);
-            this.ClickOpenLabel.TabIndex = 22;
-            this.ClickOpenLabel.Text = "Click \"Open\" to import some images and convert them to maps!\r\n↓";
-            // 
             // TheForm
             // 
             this.AllowDrop = true;
@@ -360,6 +362,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TheForm_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.Load += new System.EventHandler(this.TheForm_Load);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.TheForm_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.TheForm_DragEnter);
             this.ExistingTab.ResumeLayout(false);
             this.ImportTab.ResumeLayout(false);
             this.ImportZone.ResumeLayout(false);

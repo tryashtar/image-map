@@ -198,7 +198,8 @@ namespace ImageMap
                 }
                 id++;
             }
-            SendMapsToWorld(write, MapReplaceOption.ReplaceExisting);
+            if (write.Any())
+                SendMapsToWorld(write, MapReplaceOption.ReplaceExisting);
             DetermineTransferConflicts();
             return conflicts;
         }

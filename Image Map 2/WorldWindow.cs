@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
@@ -33,7 +34,7 @@ namespace ImageMap
             WorldZone.Controls.Clear();
             if (!Directory.Exists(savesfolder))
                 savesfolder = Directory.GetCurrentDirectory();
-            foreach (string world in Directory.GetDirectories(savesfolder))
+            foreach (string world in Directory.GetDirectories(savesfolder).OrderByDescending(x => Directory.GetLastWriteTime(x)))
             {
                 try
                 {

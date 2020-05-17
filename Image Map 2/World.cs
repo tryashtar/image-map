@@ -117,11 +117,16 @@ namespace ImageMap
     public class JavaWorld : MinecraftWorld
     {
         private NbtFile LevelDat;
-        private readonly bool HasLocalPlayer;
+        private bool HasLocalPlayer;
 
         public JavaWorld(string folder) : base(folder)
         {
-            LevelDat = new NbtFile(Path.Combine(folder, "level.dat"));
+            ReloadLevelDat();
+        }
+
+        private void ReloadLevelDat()
+        {
+            LevelDat = new NbtFile(Path.Combine(Folder, "level.dat"));
             Name = LevelDat.RootTag["Data"]["LevelName"].StringValue;
             HasLocalPlayer = (LevelDat.RootTag["Data"]["Player"] != null);
         }
@@ -148,6 +153,23 @@ namespace ImageMap
                 };
                 new NbtFile(mapfile).SaveToFile(MapFileLocation(map.Key), NbtCompression.GZip);
             }
+            long biggest_id = maps.Keys.Max();
+            IncreaseMapIdCount((int)biggest_id);
+        }
+
+        private void IncreaseMapIdCount(int id)
+        {
+            NbtFile idcounts;
+            string path = Path.Combine(Folder, "data", "idcounts.dat");
+            if (File.Exists(path))
+            {
+                idcounts = new NbtFile(Path.Combine(Folder, "data", "idcounts.dat"));
+                int existing = idcounts.RootTag["data"]["map"].IntValue;
+                idcounts.RootTag["data"]["map"] = new NbtInt("map", Math.Max(existing, id));
+            }
+            else
+                idcounts = new NbtFile(new NbtCompound("") { new NbtCompound("data") { new NbtInt("map", id) } });
+            idcounts.SaveToFile(path, NbtCompression.GZip);
         }
 
         public override void RemoveMaps(IEnumerable<long> mapids)
@@ -169,6 +191,7 @@ namespace ImageMap
         public override bool AddChests(IEnumerable<long> mapids, string playerid)
         {
             // acquire the file this player is stored in, and the tag that represents said player
+            ReloadLevelDat();
             NbtCompound playertag;
             NbtFile activefile;
             if (playerid == LOCAL_IDENTIFIER)
