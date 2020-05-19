@@ -50,9 +50,29 @@ namespace ImageMap
             return img.Clone(cropArea, PixelFormat.DontCare);
         }
 
-        protected static Bitmap ResizeImg(Image image, int width, int height, InterpolationMode mode)
+        protected static Bitmap ResizeImg(Image image, int width, int height, InterpolationMode mode, bool maintain_aspect_ratio)
         {
-            var destRect = new Rectangle(0, 0, width, height);
+            int draw_height, draw_width, pos_x, pos_y;
+
+            if (maintain_aspect_ratio)
+            {
+                double ratioX = (double)width / (double)image.Width;
+                double ratioY = (double)height / (double)image.Height;
+                double ratio = Math.Min(ratioX, ratioY);
+                draw_height = (int)(image.Height * ratio);
+                draw_width = (int)(image.Width * ratio);
+                pos_x = (int)((width - (image.Width * ratio)) / 2);
+                pos_y = (int)((height - (image.Height * ratio)) / 2);
+            }
+            else
+            {
+                draw_height = height;
+                draw_width = width;
+                pos_x = 0;
+                pos_y = 0;
+            }
+
+            var destRect = new Rectangle(pos_x, pos_y, draw_width, draw_height);
             var destImage = new Bitmap(width, height);
 
             destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
@@ -74,24 +94,36 @@ namespace ImageMap
 
             return destImage;
         }
+
+        protected static bool IsEmpty(Bitmap image)
+        {
+            var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
+                ImageLockMode.ReadOnly, image.PixelFormat);
+            var bytes = new byte[data.Height * data.Stride];
+            Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
+            image.UnlockBits(data);
+            return bytes.All(x => x == 0);
+        }
     }
 
     public class MapCreationSettings : IDisposable
     {
-        public Bitmap Original { get; private set; }
-        public int SplitW { get; private set; }
-        public int SplitH { get; private set; }
-        public InterpolationMode InterpMode { get; private set; }
-        public bool Dither { get; private set; }
+        public readonly Bitmap Original;
+        public readonly int SplitW;
+        public readonly int SplitH;
+        public readonly InterpolationMode InterpMode;
+        public readonly bool Dither;
+        public readonly bool Stretch;
         public int NumberOfMaps => SplitW * SplitH;
 
-        public MapCreationSettings(Bitmap original, int splitW, int splitH, InterpolationMode interpMode, bool dither)
+        public MapCreationSettings(Bitmap original, int splitW, int splitH, InterpolationMode interpMode, bool dither, bool stretch)
         {
             Original = original;
             SplitW = splitW;
             SplitH = splitH;
             InterpMode = interpMode;
             Dither = dither;
+            Stretch = stretch;
         }
 
         public void Dispose()
@@ -104,7 +136,7 @@ namespace ImageMap
     {
         public static IEnumerable<JavaMap> FromSettings(MapCreationSettings settings)
         {
-            Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode);
+            Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode, !settings.Stretch);
             LockBitmap final = new LockBitmap((Bitmap)original.Clone());
             final.LockBits();
             // first index = which map this is
@@ -177,9 +209,13 @@ namespace ImageMap
                         y * original.Height / settings.SplitH,
                         original.Width / settings.SplitW,
                         original.Height / settings.SplitH);
+                    var map_image = CropImage(final.GetImage(), crop);
+                    // if (!IsEmpty(map_image))
+                    // currently commented out because the user can pretty easily check if there are going to be empty maps
+                    // also it breaks the temporary loading maps that assume exactly width*height outputs
                     maps.Add(new JavaMap(
                         CropImage(original, crop),
-                        CropImage(final.GetImage(), crop),
+                        map_image,
                         colors[settings.SplitW * y + x]));
                 }
             }
@@ -463,7 +499,7 @@ namespace ImageMap
     {
         public static IEnumerable<BedrockMap> FromSettings(MapCreationSettings settings)
         {
-            Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode);
+            Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode, !settings.Stretch);
             LockBitmap final = new LockBitmap((Bitmap)original.Clone());
             final.LockBits();
             // first index = which map this is
@@ -504,9 +540,11 @@ namespace ImageMap
                         y * original.Height / settings.SplitH,
                         original.Width / settings.SplitW,
                         original.Height / settings.SplitH);
+                    var map_image = CropImage(final.GetImage(), crop);
+                    //if (!IsEmpty(map_image))
                     maps.Add(new BedrockMap(
                         CropImage(original, crop),
-                        CropImage(final.GetImage(), crop),
+                        map_image,
                         colors[settings.SplitW * y + x]));
                 }
             }

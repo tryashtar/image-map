@@ -136,6 +136,7 @@ namespace ImageMap
             import.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
             import.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
             import.DitherChecked = Properties.Settings.Default.Dither;
+            import.StretchChecked = Properties.Settings.Default.Stretch;
             long id = GetSafeID();
             var tasks = new List<Task>();
             import.ImageReady += (s, settings) =>
@@ -149,6 +150,7 @@ namespace ImageMap
             Properties.Settings.Default.InterpIndex = import.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = import.ApplyAllCheck.Checked;
             Properties.Settings.Default.Dither = import.DitherChecked;
+            Properties.Settings.Default.Stretch = import.StretchChecked;
             UI.ProcessingMapsStart();
             var done = Task.WhenAll(tasks);
             done.ContinueWith((t) =>

@@ -21,6 +21,7 @@ namespace ImageMap
         private string[] InputPaths;
         private Bitmap CurrentImage;
         public bool DitherChecked { get { return DitherCheck.Checked; } set { DitherCheck.Checked = value; } }
+        public bool StretchChecked { get { return StretchCheck.Checked; } set { StretchCheck.Checked = value; } }
         public event EventHandler<MapCreationSettings> ImageReady;
         RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
         public ImportWindow(bool allowdither)
@@ -96,6 +97,11 @@ namespace ImageMap
             PreviewBox.Refresh();
         }
 
+        private void StretchCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            ProportionPreview();
+        }
+
         private void ImportWindow_Layout(object sender, LayoutEventArgs e)
         {
             ProportionPreview();
@@ -146,8 +152,8 @@ namespace ImageMap
                     ProcessNextImage(true);
                 if (CurrentImage == null)
                     return;
-                bool dithered = AllowDither && DitherCheck.Checked;
-                var settings = new MapCreationSettings(CurrentImage, (int)WidthInput.Value, (int)HeightInput.Value, GetInterpolationMode(), dithered);
+                bool dithered = AllowDither && DitherChecked;
+                var settings = new MapCreationSettings(CurrentImage, (int)WidthInput.Value, (int)HeightInput.Value, GetInterpolationMode(), dithered, StretchChecked);
                 ImageReady?.Invoke(this, settings);
             }
             EditingIndex = final;
@@ -179,6 +185,7 @@ namespace ImageMap
         private void ProportionPreview()
         {
             double ideal = (double)HeightInput.Value / (double)WidthInput.Value;
+            PreviewBox.SizeMode = StretchChecked ? PictureBoxSizeMode.StretchImage : PictureBoxSizeMode.Zoom;
             PreviewBox.Height = (int)Math.Min(PreviewPanel.Height, ideal * PreviewPanel.Width);
             PreviewBox.Width = (int)Math.Min(PreviewPanel.Width, PreviewPanel.Height / ideal);
             PreviewBox.Left = PreviewPanel.Width / 2 - (PreviewBox.Width / 2);
