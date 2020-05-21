@@ -108,7 +108,7 @@ namespace ImageMap
 
     public class MapCreationSettings : IDisposable
     {
-        public readonly Bitmap Original;
+        public readonly Image Original;
         public readonly int SplitW;
         public readonly int SplitH;
         public readonly InterpolationMode InterpMode;
@@ -116,7 +116,7 @@ namespace ImageMap
         public readonly bool Stretch;
         public int NumberOfMaps => SplitW * SplitH;
 
-        public MapCreationSettings(Bitmap original, int splitW, int splitH, InterpolationMode interpMode, bool dither, bool stretch)
+        public MapCreationSettings(Image original, int splitW, int splitH, InterpolationMode interpMode, bool dither, bool stretch)
         {
             Original = original;
             SplitW = splitW;

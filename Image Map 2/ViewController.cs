@@ -129,7 +129,7 @@ namespace ImageMap
             return t;
         }
 
-        public void ImportImages(string[] imagepaths)
+        private Tuple<ImportWindow, List<Task>> BeforeImports()
         {
             bool java = (SelectedWorld is JavaWorld);
             var import = new ImportWindow(java);
@@ -146,7 +146,11 @@ namespace ImageMap
                 task.Start();
                 id += settings.NumberOfMaps;
             };
-            import.StartImports(UI, imagepaths);
+            return Tuple.Create(import, tasks);
+        }
+
+        private void AfterImports(ImportWindow import, IEnumerable<Task> tasks)
+        {
             Properties.Settings.Default.InterpIndex = import.InterpolationModeBox.SelectedIndex;
             Properties.Settings.Default.ApplyAllCheck = import.ApplyAllCheck.Checked;
             Properties.Settings.Default.Dither = import.DitherChecked;
@@ -154,9 +158,23 @@ namespace ImageMap
             UI.ProcessingMapsStart();
             var done = Task.WhenAll(tasks);
             done.ContinueWith((t) =>
-                {
-                    UI.ProcessingMapsDone();
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+            {
+                UI.ProcessingMapsDone();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        public void ImportImages(string[] imagepaths)
+        {
+            var result = BeforeImports();
+            result.Item1.StartImports(UI, imagepaths);
+            AfterImports(result.Item1, result.Item2);
+        }
+
+        public void ImportImages(Image imagedata)
+        {
+            var result = BeforeImports();
+            result.Item1.StartImports(UI, imagedata);
+            AfterImports(result.Item1, result.Item2);
         }
 
         private static string ExceptionMessage(Exception ex)

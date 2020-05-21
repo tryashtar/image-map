@@ -18,8 +18,9 @@ namespace ImageMap
         private bool AllowDither = false;
         private bool Finished = false;
         private int EditingIndex = 0;
+        private bool SingleImage = false;
         private string[] InputPaths;
-        private Bitmap CurrentImage;
+        private Image CurrentImage;
         public bool DitherChecked { get { return DitherCheck.Checked; } set { DitherCheck.Checked = value; } }
         public bool StretchChecked { get { return StretchCheck.Checked; } set { StretchCheck.Checked = value; } }
         public event EventHandler<MapCreationSettings> ImageReady;
@@ -43,6 +44,12 @@ namespace ImageMap
                 ShowDialog(parent);
         }
 
+        public void StartImports(Form parent, Image imagedata)
+        {
+            ProcessImage(imagedata);
+            ShowDialog(parent);
+        }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Enter)
@@ -53,10 +60,23 @@ namespace ImageMap
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
+        private void ProcessImage(Image image)
+        {
+            SingleImage = true;
+            CurrentImage = image;
+            CurrentIndexLabel.Visible = false;
+            ApplyAllCheck.Visible = false;
+            Rotation = RotateFlipType.RotateNoneFlipNone;
+            PreviewBox.Image = image;
+            this.Text = "Import image data";
+            PreviewBox.Interp = GetInterpolationMode();
+            image.RotateFlip(Rotation);
+        }
+
         private void ProcessNextImage(bool invisible)
         {
             EditingIndex++;
-            if (EditingIndex >= InputPaths.Length)
+            if (SingleImage || EditingIndex >= InputPaths.Length)
             {
                 Finish();
                 return;
@@ -145,7 +165,11 @@ namespace ImageMap
         private void ConfirmButton_Click(object sender, EventArgs e)
         {
             int index = EditingIndex;
-            int final = ApplyAllCheck.Checked ? InputPaths.Length - 1 : EditingIndex;
+            int final;
+            if (SingleImage)
+                final = index;
+            else
+                final = ApplyAllCheck.Checked ? InputPaths.Length - 1 : EditingIndex;
             for (int i = index; i <= final; i++)
             {
                 if (i > index)

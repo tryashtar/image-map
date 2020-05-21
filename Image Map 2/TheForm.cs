@@ -191,7 +191,7 @@ namespace ImageMap
 
         private void ImportZone_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent(DataFormats.Html))
                 e.Effect = DragDropEffects.Copy;
         }
 
@@ -227,6 +227,11 @@ namespace ImageMap
                             string[] array = new string[files.Count];
                             files.CopyTo(array, 0);
                             Controller.ImportImages(array);
+                        }
+                        else if (Clipboard.ContainsImage())
+                        {
+                            var image = Clipboard.GetImage();
+                            Controller.ImportImages(image);
                         }
                         return true;
                     }
