@@ -146,10 +146,23 @@ namespace ImageMap
                 Filter = GenerateFilter("Image Files", ImageExtensions)
             };
             open_dialog.InitialDirectory = LastOpenPath;
-            if (open_dialog.ShowDialog() == DialogResult.OK)
+            if (ShowCompatibleOpenDialog(open_dialog) == DialogResult.OK)
             {
                 LastOpenPath = Path.GetDirectoryName(open_dialog.FileName);
                 Controller.ImportImages(open_dialog.FileNames);
+            }
+        }
+
+        private static DialogResult ShowCompatibleOpenDialog(OpenFileDialog d)
+        {
+            try
+            {
+                return d.ShowDialog();
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                d.AutoUpgradeEnabled = false;
+                return d.ShowDialog();
             }
         }
 

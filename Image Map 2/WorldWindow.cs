@@ -14,11 +14,6 @@ namespace ImageMap
         public string SelectedWorldFolder { get; private set; }
         public string SavesFolder { get; set; }
         public Edition Edition { get; private set; }
-        CommonOpenFileDialog SavesDialog = new CommonOpenFileDialog()
-        {
-            Title = "Select your world saves location",
-            IsFolderPicker = true,
-        };
 
         public WorldWindow(Edition edition)
         {
@@ -76,10 +71,9 @@ namespace ImageMap
 
         private void BrowseButton_Click(object sender, EventArgs e)
         {
-            SavesDialog.InitialDirectory = SavesFolder;
-            if (SavesDialog.ShowDialog() != CommonFileDialogResult.Ok)
-                return;
-            LoadWorlds(SavesDialog.FileName);
+            var picker = new FolderPicker("Select your world saves location", SavesFolder);
+            if (picker.ShowDialog() == DialogResult.OK)
+                LoadWorlds(picker.SelectedFolder);
         }
 
         // press ESC to close window
@@ -91,6 +85,48 @@ namespace ImageMap
                 return true;
             }
             return base.ProcessDialogKey(keyData);
+        }
+    }
+
+    // fall back to crappy folder picker if unsupported
+    public class FolderPicker
+    {
+        public readonly string Title;
+        public readonly string InitialFolder;
+        public string SelectedFolder { get; private set; } = null;
+        public FolderPicker(string title, string initial_folder)
+        {
+            Title = title;
+            InitialFolder = initial_folder;
+        }
+
+        public DialogResult ShowDialog()
+        {
+            var good_browser = new CommonOpenFileDialog()
+            {
+                Title = this.Title,
+                InitialDirectory = this.InitialFolder,
+                IsFolderPicker = true
+            };
+            try
+            {
+                var result = good_browser.ShowDialog() == CommonFileDialogResult.Ok ? DialogResult.OK : DialogResult.Cancel;
+                if (result == DialogResult.OK)
+                    SelectedFolder = good_browser.FileName;
+                return result;
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                var crappy_browser = new FolderBrowserDialog()
+                {
+                    Description = this.Title,
+                    SelectedPath = this.InitialFolder
+                };
+                var result = crappy_browser.ShowDialog();
+                if (result == DialogResult.OK)
+                    SelectedFolder = crappy_browser.SelectedPath;
+                return result;
+            }
         }
     }
 }
