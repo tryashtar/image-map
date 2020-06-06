@@ -71,7 +71,7 @@ namespace ImageMap
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Could not open this world. Perhaps it's the wrong edition, or is missing some important files.\n\n" + ex.Message, "Failed to open world!");
+                MessageBox.Show("Could not open this world. Perhaps it's the wrong edition, or is missing some important files.\n\nExact error: " + ex.Message, "Failed to open world!");
                 return ActionResult.Failure;
             }
             SelectedWorld.Initialize();
