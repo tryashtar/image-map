@@ -33,6 +33,8 @@
             this.SelectWorldLabel = new System.Windows.Forms.Label();
             this.BedrockWorldButton = new System.Windows.Forms.Button();
             this.MapViewZone = new System.Windows.Forms.Panel();
+            this.WorldView = new ImageMap.WorldView();
+            this.MapViewZone.SuspendLayout();
             this.SuspendLayout();
             // 
             // JavaWorldButton
@@ -77,12 +79,21 @@
             this.MapViewZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.MapViewZone.Controls.Add(this.WorldView);
             this.MapViewZone.Location = new System.Drawing.Point(131, 10);
             this.MapViewZone.Margin = new System.Windows.Forms.Padding(2);
             this.MapViewZone.Name = "MapViewZone";
             this.MapViewZone.Size = new System.Drawing.Size(595, 367);
             this.MapViewZone.TabIndex = 5;
             this.MapViewZone.Visible = false;
+            // 
+            // WorldView
+            // 
+            this.WorldView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.WorldView.Location = new System.Drawing.Point(0, 0);
+            this.WorldView.Name = "WorldView";
+            this.WorldView.Size = new System.Drawing.Size(595, 367);
+            this.WorldView.TabIndex = 22;
             // 
             // TheForm
             // 
@@ -103,6 +114,7 @@
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TheForm_FormClosed);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.TheForm_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.TheForm_DragEnter);
+            this.MapViewZone.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -114,6 +126,7 @@
         public System.Windows.Forms.Label SelectWorldLabel;
         public System.Windows.Forms.Button BedrockWorldButton;
         public System.Windows.Forms.Panel MapViewZone;
+        private WorldView WorldView;
     }
 }
 

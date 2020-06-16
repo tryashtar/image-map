@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
-
+using System.Drawing;
 
 namespace ImageMap
 {
@@ -31,6 +31,15 @@ namespace ImageMap
             BrowseForWorld(BedrockEditionProperties.Instance);
         }
 
+        private void OpenWorld(MinecraftWorld world)
+        {
+            if (!WorldView.HasUnsavedChanges() || MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                OpenedWorld = world;
+                WorldView.SetWorld(OpenedWorld);
+            }
+        }
+
         private void BrowseForWorld(EditionProperties edition)
         {
             if (String.IsNullOrEmpty(edition.SavesFolder) || !Directory.Exists(edition.SavesFolder))
@@ -40,10 +49,11 @@ namespace ImageMap
             if (!edition.BrowseDialog.Confirmed)
                 return;
             edition.SavesFolder = edition.BrowseDialog.SavesFolder;
-            OpenedWorld = edition.OpenWorld(edition.BrowseDialog.SavesFolder);
-            //WorldView.SetWorld(OpenedWorld);
+            var world = edition.OpenWorld(edition.BrowseDialog.SavesFolder);
+            OpenWorld(world);
         }
 
+        // drag and drop worlds
         private void TheForm_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -56,45 +66,28 @@ namespace ImageMap
             DraggedWorld(file);
         }
 
-        private void TheForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //if (WorldView.HasUnsavedChanges() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you exit now, these maps will disappear.\n\nWould you like to exit anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
-            //    e.Cancel = true;
-        }
-
-        private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
-        {
-            //int conflicts = Controller.SendMapsToWorld(maps, MapReplaceOption.Info, destination);
-            //if (conflicts > 0)
-            //{
-            //    var option = new ReplaceOptionDialog(conflicts);
-            //    option.ShowDialog(this);
-            //    Controller.SendMapsToWorld(maps, option.SelectedOption, destination);
-            //}
-            //else
-            //    Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
-        }
-
-        private void OpenWorld(Edition edition, string folder)
-        {
-            //var result = Controller.OpenWorld(edition, folder);
-            //if (result == ActionResult.MapsNotImported && MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            //    Controller.OpenWorld(edition, folder, bypass_mapwarning: true);
-        }
-
         private void DraggedWorld(string folder)
         {
-            if (!Directory.Exists(folder))
+            if (Directory.Exists(folder))
             {
-                MessageBox.Show("Only world folders can be opened. Please don't drag ZIPs or MCWORLDs.\nIf you were trying to drag images, make sure to open a world first.", "Not a folder?");
-                return;
+                try
+                {
+                    OpenedWorld = EditionProperties.AutoOpenWorld(folder);
+                    WorldView.SetWorld(OpenedWorld);
+                }
+                catch (FileNotFoundException)
+                {
+                    MessageBox.Show("Couldn't tell what edition of Minecraft that world was.", "Not a world?");
+                }
             }
-            if (File.Exists(Path.Combine(folder, "db", "CURRENT")))
-                OpenWorld(Edition.Bedrock, folder);
-            else if (Directory.Exists(Path.Combine(folder, "region")))
-                OpenWorld(Edition.Java, folder);
             else
-                MessageBox.Show("Couldn't tell what edition of Minecraft that world was.", "Not a world?");
+                MessageBox.Show("Only world folders can be opened. Please don't drag ZIPs or MCWORLDs.\nIf you were trying to drag images, make sure to open a world first.", "Not a folder?");
+        }
+
+        private void TheForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (WorldView.HasUnsavedChanges() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you exit now, these maps will disappear.\n\nWould you like to exit anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
+                e.Cancel = true;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -151,29 +144,6 @@ namespace ImageMap
             //    return true;
             //}
             return base.ProcessCmdKey(ref msg, keyData);
-        }
-
-        private void ChangeMapIDs(IEnumerable<MapIDControl> boxes, MapStatus area)
-        {
-            //var input = new IDInputDialog(boxes.First().ID);
-            //input.ShowDialog(this);
-            //if (input.Confirmed)
-            //{
-            //    long firstid;
-            //    if (input.WantsAuto)
-            //        firstid = Controller.GetSafeID();
-            //    else
-            //        firstid = input.SelectedID;
-            //    int count = Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Info);
-            //    if (count > 0)
-            //    {
-            //        var picker = new ReplaceOptionDialog(count);
-            //        picker.ShowDialog(this);
-            //        Controller.ChangeMapIDs(boxes, firstid, area, picker.SelectedOption);
-            //    }
-            //    else
-            //        Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
-            //}
         }
     }
 }

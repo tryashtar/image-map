@@ -139,6 +139,29 @@ namespace ImageMap
             //return taken.Max() + 1;
         }
 
+        private void ChangeMapIDs(IEnumerable<MapIDControl> boxes, MapStatus area)
+        {
+            //var input = new IDInputDialog(boxes.First().ID);
+            //input.ShowDialog(this);
+            //if (input.Confirmed)
+            //{
+            //    long firstid;
+            //    if (input.WantsAuto)
+            //        firstid = Controller.GetSafeID();
+            //    else
+            //        firstid = input.SelectedID;
+            //    int count = Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Info);
+            //    if (count > 0)
+            //    {
+            //        var picker = new ReplaceOptionDialog(count);
+            //        picker.ShowDialog(this);
+            //        Controller.ChangeMapIDs(boxes, firstid, area, picker.SelectedOption);
+            //    }
+            //    else
+            //        Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
+            //}
+        }
+
         private void World_MapsChanged(object sender, EventArgs e)
         {
             ExistingZone.Controls.Clear();
@@ -297,6 +320,19 @@ namespace ImageMap
             //    Controller.DeselectAll(MapStatus.Existing);
             //else
             //    Controller.SelectAll(MapStatus.Existing);
+        }
+
+        private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
+        {
+            //int conflicts = Controller.SendMapsToWorld(maps, MapReplaceOption.Info, destination);
+            //if (conflicts > 0)
+            //{
+            //    var option = new ReplaceOptionDialog(conflicts);
+            //    option.ShowDialog(this);
+            //    Controller.SendMapsToWorld(maps, option.SelectedOption, destination);
+            //}
+            //else
+            //    Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
         }
     }
 }
