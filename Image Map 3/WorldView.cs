@@ -48,7 +48,7 @@ namespace ImageMap
 
         public bool HasUnsavedChanges()
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         private ImportWindow PrepareImportWindow()
@@ -160,6 +160,62 @@ namespace ImageMap
             //    else
             //        Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
             //}
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            //if (MapViewZone.Visible)
+            //{
+            //    if (MapView.SelectedTab == ImportTab)
+            //    {
+            //        if (keyData == (Keys.V | Keys.Control))
+            //        {
+            //            if (Clipboard.ContainsFileDropList())
+            //            {
+            //                var files = Clipboard.GetFileDropList();
+            //                string[] array = new string[files.Count];
+            //                files.CopyTo(array, 0);
+            //                Controller.ImportImages(array);
+            //            }
+            //            else if (Clipboard.ContainsImage())
+            //            {
+            //                var image = Clipboard.GetImage();
+            //                Controller.ImportImages(image);
+            //            }
+            //            return true;
+            //        }
+            //        else if (keyData == Keys.Delete)
+            //        {
+            //            ImportContextDiscard_Click(this, new EventArgs());
+            //            return true;
+            //        }
+            //    }
+            //    else if (MapView.SelectedTab == ExistingTab)
+            //    {
+            //        if (keyData == Keys.Delete)
+            //        {
+            //            ExistingContextDelete_Click(this, new EventArgs());
+            //            return true;
+            //        }
+            //    }
+            //}
+            //if (keyData == (Keys.A | Keys.Control))
+            //{
+            //    if (MapView.SelectedTab == ImportTab)
+            //        Controller.SelectAll(MapStatus.Importing);
+            //    else if (MapView.SelectedTab == ExistingTab)
+            //        Controller.SelectAll(MapStatus.Existing);
+            //    return true;
+            //}
+            //else if (keyData == (Keys.D | Keys.Control))
+            //{
+            //    if (MapView.SelectedTab == ImportTab)
+            //        Controller.DeselectAll(MapStatus.Importing);
+            //    else if (MapView.SelectedTab == ExistingTab)
+            //        Controller.DeselectAll(MapStatus.Existing);
+            //    return true;
+            //}
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void World_MapsChanged(object sender, EventArgs e)
