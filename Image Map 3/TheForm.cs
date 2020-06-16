@@ -9,26 +9,11 @@ namespace ImageMap
 {
     public partial class TheForm : Form
     {
-        private readonly EditionProperties Java = new JavaEditionProperties();
-        private readonly EditionProperties Bedrock = new BedrockEditionProperties();
-        private EditionProperties ActiveEdition => OpenedWorld.Edition == Edition.Java ? Java : Bedrock;
+        private EditionProperties ActiveEdition => EditionProperties.FromEdition(OpenedWorld.Edition);
         private MinecraftWorld OpenedWorld;
         public TheForm()
         {
             InitializeComponent();
-        }
-
-        private void TheForm_Load(object sender, EventArgs e)
-        {
-            // load settings
-            AddChestCheck.Checked = Properties.Settings.Default.AddNewMaps;
-        }
-
-        private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            // save settings
-            Properties.Settings.Default.AddNewMaps = AddChestCheck.Checked;
-            Properties.Settings.Default.Save();
         }
 
         private void JavaWorldButton_Click(object sender, EventArgs e)
@@ -51,27 +36,7 @@ namespace ImageMap
                 return;
             edition.SavesFolder = edition.BrowseDialog.SavesFolder;
             OpenedWorld = edition.OpenWorld(edition.BrowseDialog.SavesFolder);
-        }
-
-        private void ImportImages(string[] paths)
-        {
-
-        }
-
-        private void OpenButton_Click(object sender, EventArgs e)
-        {
-            var open_dialog = new OpenFileDialog()
-            {
-                Title = "Import image files to turn into maps",
-                Multiselect = true,
-                Filter = Util.GenerateFilter("Image Files", Util.ImageExtensions)
-            };
-            open_dialog.InitialDirectory = Properties.Settings.Default.LastOpenPath;
-            if (Util.ShowCompatibleOpenDialog(open_dialog) == DialogResult.OK)
-            {
-                Properties.Settings.Default.LastOpenPath = Path.GetDirectoryName(open_dialog.FileName);
-                ImportImages(open_dialog.FileNames);
-            }
+            WorldView.SetWorld(OpenedWorld);
         }
 
         private void SendButton_Click(object sender, EventArgs e)
@@ -80,17 +45,7 @@ namespace ImageMap
         }
 
         #region drag and drop
-        private void ImportZone_DragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent(DataFormats.Html))
-                e.Effect = DragDropEffects.Copy;
-        }
 
-        private void ImportZone_DragDrop(object sender, DragEventArgs e)
-        {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            Controller.ImportImages(files);
-        }
 
         private void TheForm_DragEnter(object sender, DragEventArgs e)
         {

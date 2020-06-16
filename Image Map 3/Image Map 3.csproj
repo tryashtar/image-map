@@ -117,6 +117,12 @@
     <Compile Include="WorldControl.Designer.cs">
       <DependentUpon>WorldControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="WorldView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WorldView.Designer.cs">
+      <DependentUpon>WorldView.cs</DependentUpon>
+    </Compile>
     <Compile Include="WorldWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -155,6 +161,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WorldControl.resx">
       <DependentUpon>WorldControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WorldView.resx">
+      <DependentUpon>WorldView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WorldWindow.resx">
       <DependentUpon>WorldWindow.cs</DependentUpon>

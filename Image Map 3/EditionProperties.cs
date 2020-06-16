@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ImageMap
 {
@@ -12,14 +9,25 @@ namespace ImageMap
         public abstract string SavesFolder { get; set; }
         public abstract WorldWindow BrowseDialog { get; }
         public abstract string DefaultSavesFolder();
+        public abstract ImportWindow CreateImportWindow();
         public abstract MinecraftWorld OpenWorld(string folder);
+
+        private static readonly Dictionary<Edition, EditionProperties> InstanceMap = new Dictionary<Edition, EditionProperties>();
+        public Edition Edition { get; private set; }
+        protected EditionProperties(Edition edition)
+        {
+            Edition = edition;
+            InstanceMap[edition] = this;
+        }
+        public static EditionProperties FromEdition(Edition edition) => InstanceMap[edition];
     }
 
     public class JavaEditionProperties : EditionProperties
     {
+        public static JavaEditionProperties Instance = new JavaEditionProperties();
         private readonly WorldWindow Dialog;
         public override WorldWindow BrowseDialog => Dialog;
-        public JavaEditionProperties()
+        private JavaEditionProperties() : base(Edition.Java)
         {
             Dialog = new JavaWorldWindow();
         }
@@ -32,6 +40,10 @@ namespace ImageMap
         {
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves");
         }
+        public override ImportWindow CreateImportWindow()
+        {
+            return new ImportWindow(true);
+        }
         public override MinecraftWorld OpenWorld(string folder)
         {
             var world = new JavaWorld(folder);
@@ -42,9 +54,10 @@ namespace ImageMap
 
     public class BedrockEditionProperties : EditionProperties
     {
+        public static BedrockEditionProperties Instance = new BedrockEditionProperties();
         private readonly WorldWindow Dialog;
         public override WorldWindow BrowseDialog => Dialog;
-        public BedrockEditionProperties()
+        private BedrockEditionProperties() : base(Edition.Bedrock)
         {
             Dialog = new BedrockWorldWindow();
         }
@@ -56,6 +69,10 @@ namespace ImageMap
         public override string DefaultSavesFolder()
         {
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds");
+        }
+        public override ImportWindow CreateImportWindow()
+        {
+            return new ImportWindow(false);
         }
         public override MinecraftWorld OpenWorld(string folder)
         {
