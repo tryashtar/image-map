@@ -11,8 +11,8 @@ B. leveldb
    2. copy everything to leveldb-mcpe folder
    3. open leveldb.vcxproj and find/replace "SolutionDir" to "ProjectDir"
    4. add leveldb-mcpe/leveldb.vcxproj project to solution
-   5. in the property manager window, right click leveldb -> add existing property sheet, save as properties.prop
-   6. add a user macro with name "ZlibLibPath" and value "..\zlib\zlib\libz\Debug\libz.lib"
+   5. in the property manager window, right click leveldb -> add new project property sheet, save as properties.props
+   6. add a user macro with name "ZlibLibPath" and value "..\zlib\zlib\libz\($Configuration)\libz.lib"
    7. add a user macro with name "ZlibIncludePath" and value "..\zlib"
    8. leveldb project properties -> change "output directory" for "all configurations" and "all platforms" to "$(ProjectDir)\$(Configuration)"
    9. build leveldb project in visual studio
