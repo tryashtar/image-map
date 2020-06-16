@@ -1,16 +1,10 @@
-﻿using fNbt;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
-using LevelDBWrapper;
-using Microsoft.Win32.SafeHandles;
 
 namespace ImageMap
 {

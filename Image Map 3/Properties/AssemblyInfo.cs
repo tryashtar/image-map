@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Image Map 2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Image Map 3")]
+[assembly: AssemblyDescription("Converts images to maps for Minecraft")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("HP Inc.")]
-[assembly: AssemblyProduct("Image Map 2")]
-[assembly: AssemblyCopyright("Copyright © HP Inc. 2018")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Image Map 3")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

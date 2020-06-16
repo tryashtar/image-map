@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace ImageMap
 {
@@ -30,7 +31,7 @@ namespace ImageMap
             {
                 return d.ShowDialog();
             }
-            catch (System.Runtime.InteropServices.COMException)
+            catch (COMException)
             {
                 d.AutoUpgradeEnabled = false;
                 return d.ShowDialog();
@@ -65,7 +66,7 @@ namespace ImageMap
                     SelectedFolder = good_browser.FileName;
                 return result;
             }
-            catch (System.Runtime.InteropServices.COMException)
+            catch (COMException)
             {
                 var crappy_browser = new FolderBrowserDialog()
                 {

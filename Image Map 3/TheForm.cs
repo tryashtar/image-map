@@ -20,8 +20,15 @@ namespace ImageMap
 
         private void TheForm_Load(object sender, EventArgs e)
         {
-            // load up saved settings
+            // load settings
             AddChestCheck.Checked = Properties.Settings.Default.AddNewMaps;
+        }
+
+        private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // save settings
+            Properties.Settings.Default.AddNewMaps = AddChestCheck.Checked;
+            Properties.Settings.Default.Save();
         }
 
         private void JavaWorldButton_Click(object sender, EventArgs e)
@@ -215,13 +222,6 @@ namespace ImageMap
                 Controller.SelectAll(MapStatus.Existing);
         }
         #endregion
-
-        private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            // save settings
-            Properties.Settings.Default.AddNewMaps = AddChestCheck.Checked;
-            Properties.Settings.Default.Save();
-        }
 
         private void TheForm_FormClosing(object sender, FormClosingEventArgs e)
         {

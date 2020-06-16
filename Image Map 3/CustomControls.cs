@@ -25,8 +25,8 @@ namespace ImageMap
 
     public class MapPreviewBox : PictureBox
     {
-        public Map Map { get; private set; }
-        private Image OriginalImage;
+        public readonly Map Map;
+        private readonly Image OriginalImage;
 
         public MapPreviewBox(Map map)
         {

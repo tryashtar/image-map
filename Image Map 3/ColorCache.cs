@@ -13,8 +13,8 @@ namespace ImageMap
     {
         private int MaxSize = 2000;
         private int CutSize = 1000;
-        private ConcurrentDictionary<Color, Color> Cache = new ConcurrentDictionary<Color, Color>();
-        private ConcurrentDictionary<Color, int> TimesUsed = new ConcurrentDictionary<Color, int>();
+        private readonly ConcurrentDictionary<Color, Color> Cache = new ConcurrentDictionary<Color, Color>();
+        private readonly ConcurrentDictionary<Color, int> TimesUsed = new ConcurrentDictionary<Color, int>();
         public ColorCache()
         { }
 
