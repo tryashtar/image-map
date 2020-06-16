@@ -49,9 +49,8 @@ namespace LevelDBWrapper
         public LevelDB(string path)
         {
             Console.WriteLine($"Opening {path}");
-            IntPtr error;
             var options = new Options();
-            Handle = NativeMethods.leveldb_open(options.Handle, path, out error);
+            Handle = NativeMethods.leveldb_open(options.Handle, path, out IntPtr error);
             Throw(error);
         }
 
@@ -73,9 +72,8 @@ namespace LevelDBWrapper
 
         public void Write(WriteBatch batch)
         {
-            IntPtr error;
             var options = new WriteOptions();
-            NativeMethods.leveldb_write(this.Handle, options.Handle, batch.Handle, out error);
+            NativeMethods.leveldb_write(this.Handle, options.Handle, batch.Handle, out IntPtr error);
             Throw(error);
         }
 
@@ -86,9 +84,8 @@ namespace LevelDBWrapper
 
         public void Delete(byte[] key)
         {
-            IntPtr error;
             var options = new WriteOptions();
-            NativeMethods.leveldb_delete(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out error);
+            NativeMethods.leveldb_delete(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out IntPtr error);
             Throw(error);
         }
 
@@ -99,10 +96,8 @@ namespace LevelDBWrapper
 
         public byte[] Get(byte[] key)
         {
-            IntPtr error;
-            IntPtr length;
             var options = new ReadOptions();
-            var v = NativeMethods.leveldb_get(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out length, out error);
+            var v = NativeMethods.leveldb_get(this.Handle, options.Handle, key, (IntPtr)key.LongLength, out IntPtr length, out IntPtr error);
             Throw(error);
 
             if (v != IntPtr.Zero)
@@ -134,9 +129,8 @@ namespace LevelDBWrapper
 
         public void Put(byte[] key, byte[] value)
         {
-            IntPtr error;
             var options = new WriteOptions();
-            NativeMethods.leveldb_put(this.Handle, options.Handle, key, (IntPtr)key.LongLength, value, (IntPtr)value.LongLength, out error);
+            NativeMethods.leveldb_put(this.Handle, options.Handle, key, (IntPtr)key.LongLength, value, (IntPtr)value.LongLength, out IntPtr error);
             Throw(error);
         }
 
@@ -147,7 +141,7 @@ namespace LevelDBWrapper
 
         protected override void FreeUnManagedObjects()
         {
-            if (this.Handle != default(IntPtr))
+            if (this.Handle != default)
                 NativeMethods.leveldb_close(this.Handle);
         }
 
@@ -293,8 +287,7 @@ namespace LevelDBWrapper
         {
             if (Parent.IsAlive)
             {
-                var parent = Parent.Target as LevelDB;
-                if (parent != null)
+                if (Parent.Target is LevelDB parent)
                     NativeMethods.leveldb_release_snapshot(parent.Handle, this.Handle);
             }
         }
@@ -350,8 +343,7 @@ namespace LevelDBWrapper
 
         public byte[] Key()
         {
-            int length;
-            var key = NativeMethods.leveldb_iter_key(this.Handle, out length);
+            var key = NativeMethods.leveldb_iter_key(this.Handle, out int length);
 
             var bytes = new byte[length];
             Marshal.Copy(key, bytes, 0, length);
@@ -365,8 +357,7 @@ namespace LevelDBWrapper
 
         public byte[] Value()
         {
-            int length;
-            var value = NativeMethods.leveldb_iter_value(this.Handle, out length);
+            var value = NativeMethods.leveldb_iter_value(this.Handle, out int length);
 
             var bytes = new byte[length];
             Marshal.Copy(value, bytes, 0, length);
