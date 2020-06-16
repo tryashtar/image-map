@@ -61,9 +61,6 @@
     <Reference Include="Colourful, Version=2.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Colourful.2.0.5\lib\net45\Colourful.dll</HintPath>
     </Reference>
-    <Reference Include="fNbt, Version=0.6.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\fNbt.0.6.4\lib\net35-client\fNbt.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAPICodePack.1.1.0\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
     </Reference>
@@ -209,6 +206,10 @@
     <None Include="Resources\item_frame.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\fNbt\fNbt.csproj">
+      <Project>{4488498d-976d-4da3-bf72-109531af0488}</Project>
+      <Name>fNbt</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LevelDBWrapper\LevelDBWrapper.csproj">
       <Project>{7f1ddeec-3933-4443-b537-b59b2dab7dad}</Project>
       <Name>LevelDBWrapper</Name>

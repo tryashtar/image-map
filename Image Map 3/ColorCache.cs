@@ -49,7 +49,9 @@ namespace ImageMap
 
         public void Prune(int size)
         {
-            var least_used = TimesUsed.OrderBy(x => x.Value).Take(size).ToList();
+            // thread-safe
+            var snapshot = TimesUsed.ToArray();
+            var least_used = snapshot.OrderBy(x => x.Value).Take(size).ToList();
             foreach (var item in least_used)
             {
                 Cache.TryRemove(item.Key, out _);
