@@ -20,6 +20,7 @@ namespace ImageMap
         public IReadOnlyDictionary<long, Map> WorldMaps => Maps;
         public string Folder { get; protected set; }
         public string Name { get; protected set; }
+        public event EventHandler MapsChanged;
         public abstract Edition Edition { get; }
         public MinecraftWorld(string folder)
         {
@@ -32,12 +33,8 @@ namespace ImageMap
         }
         public abstract void AddMaps(Dictionary<long, Map> maps);
         public abstract void RemoveMaps(IEnumerable<long> mapids);
-        public bool AddChestsLocalPlayer(IEnumerable<long> mapids)
-        {
-            return AddChests(mapids, LOCAL_IDENTIFIER);
-        }
-
         // returns whether there was enough room to fit the chests
+        public abstract bool AddChestsLocalPlayer(IEnumerable<long> mapids);
         public abstract bool AddChests(IEnumerable<long> mapids, string playerid);
         public abstract IEnumerable<string> GetPlayerIDs();
         protected abstract Dictionary<long, Map> LoadMaps();
@@ -195,29 +192,23 @@ namespace ImageMap
             }
         }
 
+        public override bool AddChestsLocalPlayer(IEnumerable<long> mapids)
+        {
+            ReloadLevelDat();
+            var playertag = (NbtCompound)LevelDat.RootTag["Data"]["Player"];
+            var invtag = (NbtList)playertag["Inventory"];
+            var success = PutChestsInInventory(invtag, mapids);
+            LevelDat.SaveToFile(LevelDat.FileName, LevelDat.FileCompression);
+            return success;
+        }
+
         public override bool AddChests(IEnumerable<long> mapids, string playerid)
         {
-            // acquire the file this player is stored in, and the tag that represents said player
-            ReloadLevelDat();
-            NbtCompound playertag;
-            NbtFile activefile;
-            if (playerid == LOCAL_IDENTIFIER)
-            {
-                if (!HasLocalPlayer)
-                    throw new FileNotFoundException("Requested local player but there is none for this world");
-                activefile = LevelDat;
-                playertag = (NbtCompound)activefile.RootTag["Data"]["Player"];
-            }
-            else
-            {
-                activefile = new NbtFile(PlayerFileLocation(playerid));
-                playertag = activefile.RootTag;
-            }
+            var activefile = new NbtFile(PlayerFileLocation(playerid));
+            var playertag = activefile.RootTag;
             var invtag = (NbtList)playertag["Inventory"];
-
             var success = PutChestsInInventory(invtag, mapids);
-
-            activefile.SaveToFile(activefile.FileName, NbtCompression.GZip);
+            activefile.SaveToFile(activefile.FileName, activefile.FileCompression);
             return success;
         }
 
@@ -347,18 +338,15 @@ namespace ImageMap
             CloseDB();
         }
 
-        public override bool AddChests(IEnumerable<long> mapids, string playerid)
+        public override bool AddChestsLocalPlayer(IEnumerable<long> mapids) => AddChestsExact(mapids, "~local_player");
+        public override bool AddChests(IEnumerable<long> mapids, string playerid) => AddChestsExact(mapids, UuidToKey(playerid));
+        private bool AddChestsExact(IEnumerable<long> mapids, string exact_playerid)
         {
             OpenDB();
             // acquire the file this player is stored in, and the tag that represents said player
-            string file_identifier;
-            if (playerid == LOCAL_IDENTIFIER)
-                file_identifier = "~local_player";
-            else
-                file_identifier = UuidToKey(playerid);
-            byte[] playerdata = BedrockDB.Get(file_identifier);
+            byte[] playerdata = BedrockDB.Get(exact_playerid);
             if (playerdata == null)
-                throw new FileNotFoundException($"Player with UUID {playerid} not found");
+                throw new FileNotFoundException($"Player with UUID {exact_playerid} not found");
             var file = new NbtFile();
             file.BigEndian = false;
             file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
@@ -367,7 +355,7 @@ namespace ImageMap
             var success = PutChestsInInventory(invtag, mapids);
 
             byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            BedrockDB.Put(file_identifier, bytes);
+            BedrockDB.Put(exact_playerid, bytes);
             CloseDB();
 
             return success;

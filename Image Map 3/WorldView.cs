@@ -46,6 +46,11 @@ namespace ImageMap
             CloseImportWindow(window);
         }
 
+        public bool HasUnsavedChanges()
+        {
+            throw new NotImplementedException();
+        }
+
         private ImportWindow PrepareImportWindow()
         {
             var window = ActiveEdition.CreateImportWindow();

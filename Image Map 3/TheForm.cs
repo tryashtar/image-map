@@ -16,6 +16,11 @@ namespace ImageMap
             InitializeComponent();
         }
 
+        private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Properties.Settings.Default.Save();
+        }
+
         private void JavaWorldButton_Click(object sender, EventArgs e)
         {
             BrowseForWorld(JavaEditionProperties.Instance);
@@ -59,22 +64,22 @@ namespace ImageMap
 
         private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
         {
-            int conflicts = Controller.SendMapsToWorld(maps, MapReplaceOption.Info, destination);
-            if (conflicts > 0)
-            {
-                var option = new ReplaceOptionDialog(conflicts);
-                option.ShowDialog(this);
-                Controller.SendMapsToWorld(maps, option.SelectedOption, destination);
-            }
-            else
-                Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
+            //int conflicts = Controller.SendMapsToWorld(maps, MapReplaceOption.Info, destination);
+            //if (conflicts > 0)
+            //{
+            //    var option = new ReplaceOptionDialog(conflicts);
+            //    option.ShowDialog(this);
+            //    Controller.SendMapsToWorld(maps, option.SelectedOption, destination);
+            //}
+            //else
+            //    Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
         }
 
         private void OpenWorld(Edition edition, string folder)
         {
-            var result = Controller.OpenWorld(edition, folder);
-            if (result == ActionResult.MapsNotImported && MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                Controller.OpenWorld(edition, folder, bypass_mapwarning: true);
+            //var result = Controller.OpenWorld(edition, folder);
+            //if (result == ActionResult.MapsNotImported && MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            //    Controller.OpenWorld(edition, folder, bypass_mapwarning: true);
         }
 
         private void DraggedWorld(string folder)
@@ -94,81 +99,81 @@ namespace ImageMap
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (MapViewZone.Visible)
-            {
-                if (MapView.SelectedTab == ImportTab)
-                {
-                    if (keyData == (Keys.V | Keys.Control))
-                    {
-                        if (Clipboard.ContainsFileDropList())
-                        {
-                            var files = Clipboard.GetFileDropList();
-                            string[] array = new string[files.Count];
-                            files.CopyTo(array, 0);
-                            Controller.ImportImages(array);
-                        }
-                        else if (Clipboard.ContainsImage())
-                        {
-                            var image = Clipboard.GetImage();
-                            Controller.ImportImages(image);
-                        }
-                        return true;
-                    }
-                    else if (keyData == Keys.Delete)
-                    {
-                        ImportContextDiscard_Click(this, new EventArgs());
-                        return true;
-                    }
-                }
-                else if (MapView.SelectedTab == ExistingTab)
-                {
-                    if (keyData == Keys.Delete)
-                    {
-                        ExistingContextDelete_Click(this, new EventArgs());
-                        return true;
-                    }
-                }
-            }
-            if (keyData == (Keys.A | Keys.Control))
-            {
-                if (MapView.SelectedTab == ImportTab)
-                    Controller.SelectAll(MapStatus.Importing);
-                else if (MapView.SelectedTab == ExistingTab)
-                    Controller.SelectAll(MapStatus.Existing);
-                return true;
-            }
-            else if (keyData == (Keys.D | Keys.Control))
-            {
-                if (MapView.SelectedTab == ImportTab)
-                    Controller.DeselectAll(MapStatus.Importing);
-                else if (MapView.SelectedTab == ExistingTab)
-                    Controller.DeselectAll(MapStatus.Existing);
-                return true;
-            }
+            //if (MapViewZone.Visible)
+            //{
+            //    if (MapView.SelectedTab == ImportTab)
+            //    {
+            //        if (keyData == (Keys.V | Keys.Control))
+            //        {
+            //            if (Clipboard.ContainsFileDropList())
+            //            {
+            //                var files = Clipboard.GetFileDropList();
+            //                string[] array = new string[files.Count];
+            //                files.CopyTo(array, 0);
+            //                Controller.ImportImages(array);
+            //            }
+            //            else if (Clipboard.ContainsImage())
+            //            {
+            //                var image = Clipboard.GetImage();
+            //                Controller.ImportImages(image);
+            //            }
+            //            return true;
+            //        }
+            //        else if (keyData == Keys.Delete)
+            //        {
+            //            ImportContextDiscard_Click(this, new EventArgs());
+            //            return true;
+            //        }
+            //    }
+            //    else if (MapView.SelectedTab == ExistingTab)
+            //    {
+            //        if (keyData == Keys.Delete)
+            //        {
+            //            ExistingContextDelete_Click(this, new EventArgs());
+            //            return true;
+            //        }
+            //    }
+            //}
+            //if (keyData == (Keys.A | Keys.Control))
+            //{
+            //    if (MapView.SelectedTab == ImportTab)
+            //        Controller.SelectAll(MapStatus.Importing);
+            //    else if (MapView.SelectedTab == ExistingTab)
+            //        Controller.SelectAll(MapStatus.Existing);
+            //    return true;
+            //}
+            //else if (keyData == (Keys.D | Keys.Control))
+            //{
+            //    if (MapView.SelectedTab == ImportTab)
+            //        Controller.DeselectAll(MapStatus.Importing);
+            //    else if (MapView.SelectedTab == ExistingTab)
+            //        Controller.DeselectAll(MapStatus.Existing);
+            //    return true;
+            //}
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void ChangeMapIDs(IEnumerable<MapIDControl> boxes, MapStatus area)
         {
-            var input = new IDInputDialog(boxes.First().ID);
-            input.ShowDialog(this);
-            if (input.Confirmed)
-            {
-                long firstid;
-                if (input.WantsAuto)
-                    firstid = Controller.GetSafeID();
-                else
-                    firstid = input.SelectedID;
-                int count = Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Info);
-                if (count > 0)
-                {
-                    var picker = new ReplaceOptionDialog(count);
-                    picker.ShowDialog(this);
-                    Controller.ChangeMapIDs(boxes, firstid, area, picker.SelectedOption);
-                }
-                else
-                    Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
-            }
+            //var input = new IDInputDialog(boxes.First().ID);
+            //input.ShowDialog(this);
+            //if (input.Confirmed)
+            //{
+            //    long firstid;
+            //    if (input.WantsAuto)
+            //        firstid = Controller.GetSafeID();
+            //    else
+            //        firstid = input.SelectedID;
+            //    int count = Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Info);
+            //    if (count > 0)
+            //    {
+            //        var picker = new ReplaceOptionDialog(count);
+            //        picker.ShowDialog(this);
+            //        Controller.ChangeMapIDs(boxes, firstid, area, picker.SelectedOption);
+            //    }
+            //    else
+            //        Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
+            //}
         }
     }
 }

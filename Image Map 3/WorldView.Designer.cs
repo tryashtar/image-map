@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.MapTabs = new System.Windows.Forms.TabControl();
             this.ImportTab = new System.Windows.Forms.TabPage();
             this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
@@ -39,11 +40,24 @@
             this.ExistingTab = new System.Windows.Forms.TabPage();
             this.ExistingZone = new System.Windows.Forms.FlowLayoutPanel();
             this.ExistingControls = new System.Windows.Forms.Panel();
+            this.ExistingContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ExistingContextAdd = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextChangeID = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextExport = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextDelete = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExistingContextSelectAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ImportContextSend = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportContextChangeID = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportContextDiscard = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportContextSelectAll = new System.Windows.Forms.ToolStripMenuItem();
             this.MapTabs.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportZone.SuspendLayout();
             this.ImportControls.SuspendLayout();
             this.ExistingTab.SuspendLayout();
+            this.ExistingContextMenu.SuspendLayout();
+            this.ImportContextMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // MapTabs
@@ -154,7 +168,7 @@
             this.ExistingTab.Margin = new System.Windows.Forms.Padding(2);
             this.ExistingTab.Name = "ExistingTab";
             this.ExistingTab.Padding = new System.Windows.Forms.Padding(2);
-            this.ExistingTab.Size = new System.Drawing.Size(587, 330);
+            this.ExistingTab.Size = new System.Drawing.Size(594, 319);
             this.ExistingTab.TabIndex = 0;
             this.ExistingTab.Text = "Existing Maps";
             this.ExistingTab.UseVisualStyleBackColor = true;
@@ -167,18 +181,95 @@
             this.ExistingZone.Location = new System.Drawing.Point(2, 2);
             this.ExistingZone.Margin = new System.Windows.Forms.Padding(2);
             this.ExistingZone.Name = "ExistingZone";
-            this.ExistingZone.Size = new System.Drawing.Size(583, 276);
+            this.ExistingZone.Size = new System.Drawing.Size(590, 265);
             this.ExistingZone.TabIndex = 2;
             // 
             // ExistingControls
             // 
             this.ExistingControls.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.ExistingControls.Location = new System.Drawing.Point(2, 278);
+            this.ExistingControls.Location = new System.Drawing.Point(2, 267);
             this.ExistingControls.Margin = new System.Windows.Forms.Padding(2);
             this.ExistingControls.Name = "ExistingControls";
-            this.ExistingControls.Size = new System.Drawing.Size(583, 50);
+            this.ExistingControls.Size = new System.Drawing.Size(590, 50);
             this.ExistingControls.TabIndex = 5;
             this.ExistingControls.Visible = false;
+            // 
+            // ExistingContextMenu
+            // 
+            this.ExistingContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.ExistingContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ExistingContextAdd,
+            this.ExistingContextChangeID,
+            this.ExistingContextExport,
+            this.ExistingContextDelete,
+            this.ExistingContextSelectAll});
+            this.ExistingContextMenu.Name = "ImportContextMenu";
+            this.ExistingContextMenu.Size = new System.Drawing.Size(181, 136);
+            // 
+            // ExistingContextAdd
+            // 
+            this.ExistingContextAdd.Name = "ExistingContextAdd";
+            this.ExistingContextAdd.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextAdd.Text = "Add to inventory";
+            // 
+            // ExistingContextChangeID
+            // 
+            this.ExistingContextChangeID.Name = "ExistingContextChangeID";
+            this.ExistingContextChangeID.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextChangeID.Text = "Change ID";
+            // 
+            // ExistingContextExport
+            // 
+            this.ExistingContextExport.Name = "ExistingContextExport";
+            this.ExistingContextExport.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextExport.Text = "Export image";
+            // 
+            // ExistingContextDelete
+            // 
+            this.ExistingContextDelete.Name = "ExistingContextDelete";
+            this.ExistingContextDelete.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextDelete.Text = "Delete";
+            // 
+            // ExistingContextSelectAll
+            // 
+            this.ExistingContextSelectAll.Name = "ExistingContextSelectAll";
+            this.ExistingContextSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextSelectAll.Text = "Select all";
+            // 
+            // ImportContextMenu
+            // 
+            this.ImportContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.ImportContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ImportContextSend,
+            this.ImportContextChangeID,
+            this.ImportContextDiscard,
+            this.ImportContextSelectAll});
+            this.ImportContextMenu.Name = "ImportContextMenu";
+            this.ImportContextMenu.Size = new System.Drawing.Size(181, 114);
+            // 
+            // ImportContextSend
+            // 
+            this.ImportContextSend.Name = "ImportContextSend";
+            this.ImportContextSend.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextSend.Text = "Send to world";
+            // 
+            // ImportContextChangeID
+            // 
+            this.ImportContextChangeID.Name = "ImportContextChangeID";
+            this.ImportContextChangeID.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextChangeID.Text = "Change ID";
+            // 
+            // ImportContextDiscard
+            // 
+            this.ImportContextDiscard.Name = "ImportContextDiscard";
+            this.ImportContextDiscard.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextDiscard.Text = "Discard";
+            // 
+            // ImportContextSelectAll
+            // 
+            this.ImportContextSelectAll.Name = "ImportContextSelectAll";
+            this.ImportContextSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextSelectAll.Text = "Select all";
             // 
             // WorldView
             // 
@@ -194,6 +285,8 @@
             this.ImportControls.ResumeLayout(false);
             this.ImportControls.PerformLayout();
             this.ExistingTab.ResumeLayout(false);
+            this.ExistingContextMenu.ResumeLayout(false);
+            this.ImportContextMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -211,5 +304,16 @@
         public System.Windows.Forms.TabPage ExistingTab;
         public System.Windows.Forms.FlowLayoutPanel ExistingZone;
         public System.Windows.Forms.Panel ExistingControls;
+        public System.Windows.Forms.ContextMenuStrip ExistingContextMenu;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextAdd;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextChangeID;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextExport;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextDelete;
+        private System.Windows.Forms.ToolStripMenuItem ExistingContextSelectAll;
+        public System.Windows.Forms.ContextMenuStrip ImportContextMenu;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextSend;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextChangeID;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextDiscard;
+        private System.Windows.Forms.ToolStripMenuItem ImportContextSelectAll;
     }
 }

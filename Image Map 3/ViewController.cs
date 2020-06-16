@@ -84,56 +84,6 @@ namespace ImageMap
 
         public IEnumerable<string> GetPlayerDestinations() => PlayerDestinations;
 
-        
-
-        private Tuple<ImportWindow, List<Task>> BeforeImports()
-        {
-            bool java = (SelectedWorld is JavaWorld);
-            var import = new ImportWindow(java);
-            import.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
-            import.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
-            import.DitherChecked = Properties.Settings.Default.Dither;
-            import.StretchChecked = Properties.Settings.Default.Stretch;
-            long id = GetSafeID();
-            var tasks = new List<Task>();
-            import.ImageReady += (s, settings) =>
-            {
-                var task = ImportFromSettings(id, java ? Edition.Java : Edition.Bedrock, settings);
-                tasks.Add(task);
-                task.Start();
-                id += settings.NumberOfMaps;
-            };
-            return Tuple.Create(import, tasks);
-        }
-
-        private void AfterImports(ImportWindow import, IEnumerable<Task> tasks)
-        {
-            Properties.Settings.Default.InterpIndex = import.InterpolationModeBox.SelectedIndex;
-            Properties.Settings.Default.ApplyAllCheck = import.ApplyAllCheck.Checked;
-            Properties.Settings.Default.Dither = import.DitherChecked;
-            Properties.Settings.Default.Stretch = import.StretchChecked;
-            UI.ProcessingMapsStart();
-            var done = Task.WhenAll(tasks);
-            done.ContinueWith((t) =>
-            {
-                UI.ProcessingMapsDone();
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        public void ImportImages(string[] imagepaths)
-        {
-            var result = BeforeImports();
-            result.Item1.StartImports(UI, imagepaths);
-            AfterImports(result.Item1, result.Item2);
-        }
-
-        public void ImportImages(Image imagedata)
-        {
-            var result = BeforeImports();
-            result.Item1.StartImports(UI, imagedata);
-            AfterImports(result.Item1, result.Item2);
-        }
-
         private static string ExceptionMessage(Exception ex)
         {
             if (ex is AggregateException agg)
@@ -338,24 +288,24 @@ namespace ImageMap
 
         private void Box_MouseDown(object sender, MouseEventArgs e)
         {
-            var box = sender as MapIDControl;
-            var where = WhereIsBox(box) ?? MapStatus.Importing;
-            var previews = GetPreviews(where);
-            var context = GetContextMenu(where);
-            if (e.Button == MouseButtons.Right)
-            {
-                if (!box.Selected)
-                {
-                    foreach (var other in previews)
-                    {
-                        other.SetSelected(false);
-                    }
-                    box.SetSelected(true);
-                }
-                context.Show(box, new Point(e.X, e.Y));
-            }
-            else
-                ClickSelect(box, where);
+            //var box = sender as MapIDControl;
+            //var where = WhereIsBox(box) ?? MapStatus.Importing;
+            //var previews = GetPreviews(where);
+            //var context = GetContextMenu(where);
+            //if (e.Button == MouseButtons.Right)
+            //{
+            //    if (!box.Selected)
+            //    {
+            //        foreach (var other in previews)
+            //        {
+            //            other.SetSelected(false);
+            //        }
+            //        box.SetSelected(true);
+            //    }
+            //    context.Show(box, new Point(e.X, e.Y));
+            //}
+            //else
+            //    ClickSelect(box, where);
         }
 
         private List<MapIDControl> GetPreviews(MapStatus location)
@@ -364,15 +314,6 @@ namespace ImageMap
                 return ImportingMapPreviews;
             if (location == MapStatus.Existing)
                 return ExistingMapPreviews;
-            throw new ArgumentException();
-        }
-
-        private ContextMenuStrip GetContextMenu(MapStatus location)
-        {
-            if (location == MapStatus.Importing)
-                return UI.ImportContextMenu;
-            if (location == MapStatus.Existing)
-                return UI.ExistingContextMenu;
             throw new ArgumentException();
         }
 
@@ -399,12 +340,12 @@ namespace ImageMap
                     LastExistingSelected = null;
                 if (location == MapStatus.Importing)
                 {
-                    UI.ImportZone.Controls.Remove(box);
+                    //UI.ImportZone.Controls.Remove(box);
                     ImportingMapPreviews.Remove(box);
                 }
                 else if (location == MapStatus.Existing)
                 {
-                    UI.ExistingZone.Controls.Remove(box);
+                    //UI.ExistingZone.Controls.Remove(box);
                     ExistingMapPreviews.Remove(box);
                 }
             }
@@ -412,20 +353,20 @@ namespace ImageMap
 
         private void SendToZone(IEnumerable<MapIDControl> boxes, MapStatus location)
         {
-            var array = boxes.ToArray();
-            if (location == MapStatus.Importing)
-            {
-                RemoveFromZone(boxes, MapStatus.Existing);
-                UI.ImportZone.Controls.AddRange(array);
-                ImportingMapPreviews.AddRange(array);
-                UI.ClickOpenLabel.Visible = false;
-            }
-            else if (location == MapStatus.Existing)
-            {
-                RemoveFromZone(boxes, MapStatus.Importing);
-                UI.ExistingZone.Controls.AddRange(array);
-                ExistingMapPreviews.AddRange(array);
-            }
+            //var array = boxes.ToArray();
+            //if (location == MapStatus.Importing)
+            //{
+            //    RemoveFromZone(boxes, MapStatus.Existing);
+            //    UI.ImportZone.Controls.AddRange(array);
+            //    ImportingMapPreviews.AddRange(array);
+            //    UI.ClickOpenLabel.Visible = false;
+            //}
+            //else if (location == MapStatus.Existing)
+            //{
+            //    RemoveFromZone(boxes, MapStatus.Importing);
+            //    UI.ExistingZone.Controls.AddRange(array);
+            //    ExistingMapPreviews.AddRange(array);
+            //}
         }
 
         private MapStatus? WhereIsBox(MapIDControl box)
@@ -439,22 +380,22 @@ namespace ImageMap
 
         private void NewWorldOpened()
         {
-            ImportingMapPreviews.Clear();
-            ExistingMapPreviews.Clear();
+            //ImportingMapPreviews.Clear();
+            //ExistingMapPreviews.Clear();
 
-            UI.MapViewZone.Visible = true;
-            UI.ImportZone.Controls.Clear();
-            UI.ImportZone.Controls.Add(UI.ClickOpenLabel);
-            UI.ClickOpenLabel.Visible = true;
-            UI.ExistingZone.Controls.Clear();
-            UI.ProcessingMapsDone();
-            foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
-            {
-                MapIDControl mapbox = new MapIDControl(map.Key, new MapPreviewBox(map.Value));
-                mapbox.MouseDown += Box_MouseDown;
-                SendToZone(mapbox, MapStatus.Existing);
-            }
-            UI.Text = "Image Map – " + SelectedWorld.Name;
+            //UI.MapViewZone.Visible = true;
+            //UI.ImportZone.Controls.Clear();
+            //UI.ImportZone.Controls.Add(UI.ClickOpenLabel);
+            //UI.ClickOpenLabel.Visible = true;
+            //UI.ExistingZone.Controls.Clear();
+            //UI.ProcessingMapsDone();
+            //foreach (var map in SelectedWorld.WorldMaps.OrderBy(x => x.Key))
+            //{
+            //    MapIDControl mapbox = new MapIDControl(map.Key, new MapPreviewBox(map.Value));
+            //    mapbox.MouseDown += Box_MouseDown;
+            //    SendToZone(mapbox, MapStatus.Existing);
+            //}
+            //UI.Text = "Image Map – " + SelectedWorld.Name;
         }
     }
 }
