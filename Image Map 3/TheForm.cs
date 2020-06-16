@@ -41,7 +41,7 @@ namespace ImageMap
                 return;
             edition.SavesFolder = edition.BrowseDialog.SavesFolder;
             OpenedWorld = edition.OpenWorld(edition.BrowseDialog.SavesFolder);
-            WorldView.SetWorld(OpenedWorld);
+            //WorldView.SetWorld(OpenedWorld);
         }
 
         private void TheForm_DragEnter(object sender, DragEventArgs e)
@@ -58,8 +58,8 @@ namespace ImageMap
 
         private void TheForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (WorldView.HasUnsavedChanges() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you exit now, these maps will disappear.\n\nWould you like to exit anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
-                e.Cancel = true;
+            //if (WorldView.HasUnsavedChanges() && MessageBox.Show("You imported some maps, but you haven't sent them over to the world yet. You need to press \"Send All to World\" to do that. If you exit now, these maps will disappear.\n\nWould you like to exit anyway?", "Wait a Minute!", MessageBoxButtons.YesNo) == DialogResult.No)
+            //    e.Cancel = true;
         }
 
         private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
