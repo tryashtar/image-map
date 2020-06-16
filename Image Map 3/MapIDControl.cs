@@ -13,9 +13,11 @@ namespace ImageMap
     public partial class MapIDControl : UserControl
     {
         public long ID { get; private set; }
-        public Map Map { get; private set; }
+        public Map Map => Box?.Map;
         public bool Selected { get; private set; }
         public bool Conflicted { get; private set; }
+        public bool HasBox => Box != null;
+        private MapPreviewBox Box;
         public event EventHandler<bool> SelectedChanged;
 
         // awaiting to receive a preview box
@@ -42,12 +44,15 @@ namespace ImageMap
 
         public void SetBox(MapPreviewBox box)
         {
-            box.MouseDown += Box_MouseDown;
-            Controls.Add(box);
-            Map = box.Map;
-            SetSize(box.Width, box.Height);
-            box.Left = this.Width / 2 - box.Width / 2;
-            box.Top = 3;
+            if (!HasBox)
+            {
+                Box = box;
+                box.MouseDown += Box_MouseDown;
+                Controls.Add(box);
+                SetSize(box.Width, box.Height);
+                box.Left = this.Width / 2 - box.Width / 2;
+                box.Top = 3;
+            }
         }
 
         public void SetID(long id)

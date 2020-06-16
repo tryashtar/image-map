@@ -51,6 +51,11 @@
             this.ImportContextChangeID = new System.Windows.Forms.ToolStripMenuItem();
             this.ImportContextDiscard = new System.Windows.Forms.ToolStripMenuItem();
             this.ImportContextSelectAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.Shortcuts = new System.Windows.Forms.MenuStrip();
+            this.PasteShortcut = new System.Windows.Forms.ToolStripMenuItem();
+            this.SelectAllShortcut = new System.Windows.Forms.ToolStripMenuItem();
+            this.DeselectAllShortcut = new System.Windows.Forms.ToolStripMenuItem();
+            this.DeleteShortcut = new System.Windows.Forms.ToolStripMenuItem();
             this.MapTabs.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportZone.SuspendLayout();
@@ -58,6 +63,7 @@
             this.ExistingTab.SuspendLayout();
             this.ExistingContextMenu.SuspendLayout();
             this.ImportContextMenu.SuspendLayout();
+            this.Shortcuts.SuspendLayout();
             this.SuspendLayout();
             // 
             // MapTabs
@@ -159,6 +165,7 @@
             this.OpenButton.TabIndex = 17;
             this.OpenButton.Text = "Open";
             this.OpenButton.UseVisualStyleBackColor = true;
+            this.OpenButton.Click += new System.EventHandler(this.OpenButton_Click);
             // 
             // ExistingTab
             // 
@@ -204,36 +211,36 @@
             this.ExistingContextDelete,
             this.ExistingContextSelectAll});
             this.ExistingContextMenu.Name = "ImportContextMenu";
-            this.ExistingContextMenu.Size = new System.Drawing.Size(181, 136);
+            this.ExistingContextMenu.Size = new System.Drawing.Size(164, 114);
             // 
             // ExistingContextAdd
             // 
             this.ExistingContextAdd.Name = "ExistingContextAdd";
-            this.ExistingContextAdd.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextAdd.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextAdd.Text = "Add to inventory";
             // 
             // ExistingContextChangeID
             // 
             this.ExistingContextChangeID.Name = "ExistingContextChangeID";
-            this.ExistingContextChangeID.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextChangeID.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextChangeID.Text = "Change ID";
             // 
             // ExistingContextExport
             // 
             this.ExistingContextExport.Name = "ExistingContextExport";
-            this.ExistingContextExport.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextExport.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextExport.Text = "Export image";
             // 
             // ExistingContextDelete
             // 
             this.ExistingContextDelete.Name = "ExistingContextDelete";
-            this.ExistingContextDelete.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextDelete.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextDelete.Text = "Delete";
             // 
             // ExistingContextSelectAll
             // 
             this.ExistingContextSelectAll.Name = "ExistingContextSelectAll";
-            this.ExistingContextSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextSelectAll.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextSelectAll.Text = "Select all";
             // 
             // ImportContextMenu
@@ -245,36 +252,83 @@
             this.ImportContextDiscard,
             this.ImportContextSelectAll});
             this.ImportContextMenu.Name = "ImportContextMenu";
-            this.ImportContextMenu.Size = new System.Drawing.Size(181, 114);
+            this.ImportContextMenu.Size = new System.Drawing.Size(148, 92);
             // 
             // ImportContextSend
             // 
             this.ImportContextSend.Name = "ImportContextSend";
-            this.ImportContextSend.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextSend.Size = new System.Drawing.Size(147, 22);
             this.ImportContextSend.Text = "Send to world";
             // 
             // ImportContextChangeID
             // 
             this.ImportContextChangeID.Name = "ImportContextChangeID";
-            this.ImportContextChangeID.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextChangeID.Size = new System.Drawing.Size(147, 22);
             this.ImportContextChangeID.Text = "Change ID";
             // 
             // ImportContextDiscard
             // 
             this.ImportContextDiscard.Name = "ImportContextDiscard";
-            this.ImportContextDiscard.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextDiscard.Size = new System.Drawing.Size(147, 22);
             this.ImportContextDiscard.Text = "Discard";
             // 
             // ImportContextSelectAll
             // 
             this.ImportContextSelectAll.Name = "ImportContextSelectAll";
-            this.ImportContextSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextSelectAll.Size = new System.Drawing.Size(147, 22);
             this.ImportContextSelectAll.Text = "Select all";
+            // 
+            // Shortcuts
+            // 
+            this.Shortcuts.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.PasteShortcut,
+            this.SelectAllShortcut,
+            this.DeselectAllShortcut,
+            this.DeleteShortcut});
+            this.Shortcuts.Location = new System.Drawing.Point(0, 0);
+            this.Shortcuts.Name = "Shortcuts";
+            this.Shortcuts.Size = new System.Drawing.Size(602, 24);
+            this.Shortcuts.TabIndex = 18;
+            this.Shortcuts.Text = "Shortcuts";
+            this.Shortcuts.Visible = false;
+            // 
+            // PasteShortcut
+            // 
+            this.PasteShortcut.Name = "PasteShortcut";
+            this.PasteShortcut.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.PasteShortcut.Size = new System.Drawing.Size(47, 20);
+            this.PasteShortcut.Text = "Paste";
+            this.PasteShortcut.Click += new System.EventHandler(this.PasteShortcut_Click);
+            // 
+            // SelectAllShortcut
+            // 
+            this.SelectAllShortcut.Name = "SelectAllShortcut";
+            this.SelectAllShortcut.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.SelectAllShortcut.Size = new System.Drawing.Size(67, 20);
+            this.SelectAllShortcut.Text = "Select All";
+            this.SelectAllShortcut.Click += new System.EventHandler(this.SelectAllShortcut_Click);
+            // 
+            // DeselectAllShortcut
+            // 
+            this.DeselectAllShortcut.Name = "DeselectAllShortcut";
+            this.DeselectAllShortcut.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
+            this.DeselectAllShortcut.Size = new System.Drawing.Size(80, 20);
+            this.DeselectAllShortcut.Text = "Deselect All";
+            this.DeselectAllShortcut.Click += new System.EventHandler(this.DeselectAllShortcut_Click);
+            // 
+            // DeleteShortcut
+            // 
+            this.DeleteShortcut.Name = "DeleteShortcut";
+            this.DeleteShortcut.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.DeleteShortcut.Size = new System.Drawing.Size(52, 20);
+            this.DeleteShortcut.Text = "Delete";
+            this.DeleteShortcut.Click += new System.EventHandler(this.DeleteShortcut_Click);
             // 
             // WorldView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.Shortcuts);
             this.Controls.Add(this.MapTabs);
             this.Name = "WorldView";
             this.Size = new System.Drawing.Size(602, 356);
@@ -287,7 +341,10 @@
             this.ExistingTab.ResumeLayout(false);
             this.ExistingContextMenu.ResumeLayout(false);
             this.ImportContextMenu.ResumeLayout(false);
+            this.Shortcuts.ResumeLayout(false);
+            this.Shortcuts.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -315,5 +372,10 @@
         private System.Windows.Forms.ToolStripMenuItem ImportContextChangeID;
         private System.Windows.Forms.ToolStripMenuItem ImportContextDiscard;
         private System.Windows.Forms.ToolStripMenuItem ImportContextSelectAll;
+        private System.Windows.Forms.MenuStrip Shortcuts;
+        private System.Windows.Forms.ToolStripMenuItem PasteShortcut;
+        private System.Windows.Forms.ToolStripMenuItem SelectAllShortcut;
+        private System.Windows.Forms.ToolStripMenuItem DeselectAllShortcut;
+        private System.Windows.Forms.ToolStripMenuItem DeleteShortcut;
     }
 }

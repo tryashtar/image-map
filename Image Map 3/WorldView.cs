@@ -8,12 +8,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Collections.Concurrent;
 
 namespace ImageMap
 {
     public partial class WorldView : UserControl
     {
-        private readonly List<Task> CurrentlyImporting = new List<Task>();
+        private readonly Dictionary<long, Map> ImportingMaps = new Dictionary<long, Map>();
+        // simulate a threadsafe set
+        private readonly ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID> ProcessingMaps = new ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID>();
         private MinecraftWorld World;
         private EditionProperties ActiveEdition => EditionProperties.FromEdition(World.Edition);
 
@@ -48,7 +51,7 @@ namespace ImageMap
 
         public bool HasUnsavedChanges()
         {
-            return false;
+            return ImportingMaps.Any() || ProcessingMaps.Any();
         }
 
         private ImportWindow PrepareImportWindow()
@@ -58,14 +61,39 @@ namespace ImageMap
             window.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
             window.DitherChecked = Properties.Settings.Default.Dither;
             window.StretchChecked = Properties.Settings.Default.Stretch;
-            long starting_id = GetSafeID();
-            window.ImageReady += (s, settings) =>
-            {
-                var task = ImportFromSettings(starting_id, settings);
-                AddImportingTask(task);
-                starting_id += settings.NumberOfMaps;
-            };
+            window.ImageReady += Window_ImageReady;
             return window;
+        }
+
+        private void Window_ImageReady(object sender, MapCreationSettings settings)
+        {
+            var pending = new PendingMapsWithID(GetSafeID(), settings, ActiveEdition);
+            CreateEmptyIDControls(pending);
+            pending.Finished += Pending_Finished;
+            ProcessingMaps.TryAdd(pending, pending);
+        }
+
+        private void Pending_Finished(object sender, EventArgs e)
+        {
+            var pending = (PendingMapsWithID)sender;
+            ProcessingMaps.TryRemove(pending, out _);
+            foreach (var item in pending.ResultMaps)
+            {
+                ImportingMaps[item.Key] = item.Value;
+            }
+            UpdateImportView();
+        }
+
+        private void UpdateImportView()
+        {
+            foreach (var control in ImportZone.Controls)
+            {
+                if (control is MapIDControl box)
+                {
+                    if (!box.HasBox && ImportingMaps.TryGetValue(box.ID, out var map))
+                        box.SetBox(new MapPreviewBox(map));
+                }
+            }
         }
 
         private void CloseImportWindow(ImportWindow window)
@@ -74,69 +102,33 @@ namespace ImageMap
             Properties.Settings.Default.ApplyAllCheck = window.ApplyAllCheck.Checked;
             Properties.Settings.Default.Dither = window.DitherChecked;
             Properties.Settings.Default.Stretch = window.StretchChecked;
-            var done = Task.WhenAll(CurrentlyImporting);
-            done.ContinueWith((t) =>
+        }
+
+        private IEnumerable<MapIDControl> CreateEmptyIDControls(PendingMapsWithID maps)
+        {
+            var boxes = new MapIDControl[maps.MapCount];
+            int i = -1;
+            foreach (var id in maps.IDs)
             {
-                ClearImportingTasks();
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        private void AddImportingTask(Task task)
-        {
-            CurrentlyImporting.Add(task);
-            task.Start();
-        }
-
-        private void ClearImportingTasks()
-        {
-            CurrentlyImporting.Clear();
-        }
-
-        private IEnumerable<MapIDControl> CreateEmptyIDControls(IEnumerable<long> ids)
-        {
-            var boxes = new List<MapIDControl>();
-            foreach (var id in ids)
-            {
+                i++;
                 var box = new MapIDControl(id);
                 box.MouseDown += Box_MouseDown;
+                boxes[i] = box;
             }
-            SendToZone(boxes, MapStatus.Importing);
+            ImportZone.Controls.AddRange(boxes);
             return boxes;
         }
 
-        private Task ImportFromSettings(long starting_id, MapCreationSettings settings)
-        {
-            var boxes = CreateEmptyIDControls(Util.CreateRange(starting_id, settings.NumberOfMaps)).ToList();
-            var t = new Task<IEnumerable<Map>>(() =>
-                {
-                    return ActiveEdition.MapFromSettings(settings);
-                });
-            t.ContinueWith((prev) =>
-             {
-                 settings.Dispose();
-                 if (t.IsFaulted)
-                 {
-                     MessageBox.Show($"Failed to create some maps for this reason: {Util.ExceptionMessage(t.Exception)}", "Map load error!");
-                     RemoveFromZone(boxes, MapStatus.Importing);
-                 }
-                 var results = prev.Result.ToArray();
-                 for (int i = 0; i < settings.NumberOfMaps; i++)
-                 {
-                     boxes[i].SetBox(new MapPreviewBox(results[i]));
-                 }
-             }, TaskScheduler.FromCurrentSynchronizationContext());
-            return t;
-        }
 
-        private void SendToZone(IEnumerable<MapIDControl> boxes, MapStatus place) => throw new NotImplementedException();
         private void RemoveFromZone(IEnumerable<MapIDControl> boxes, MapStatus place) => throw new NotImplementedException();
+        private void SelectAll(MapStatus place) => throw new NotImplementedException();
+        private void DeselectAll(MapStatus place) => throw new NotImplementedException();
 
         private long GetSafeID()
         {
-            throw new NotImplementedException();
-            //var taken = ImportingMapPreviews.Concat(ExistingMapPreviews).Select(x => x.ID).ToList();
-            //taken.Add(-1);
-            //return taken.Max() + 1;
+            var taken = ImportingMaps.Concat(World.WorldMaps).Select(x => x.Key).Concat(ProcessingMaps.SelectMany(x => x.Value.IDs)).ToList();
+            taken.Add(-1);
+            return taken.Max() + 1;
         }
 
         private void ChangeMapIDs(IEnumerable<MapIDControl> boxes, MapStatus area)
@@ -160,62 +152,6 @@ namespace ImageMap
             //    else
             //        Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
             //}
-        }
-
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            //if (MapViewZone.Visible)
-            //{
-            //    if (MapView.SelectedTab == ImportTab)
-            //    {
-            //        if (keyData == (Keys.V | Keys.Control))
-            //        {
-            //            if (Clipboard.ContainsFileDropList())
-            //            {
-            //                var files = Clipboard.GetFileDropList();
-            //                string[] array = new string[files.Count];
-            //                files.CopyTo(array, 0);
-            //                Controller.ImportImages(array);
-            //            }
-            //            else if (Clipboard.ContainsImage())
-            //            {
-            //                var image = Clipboard.GetImage();
-            //                Controller.ImportImages(image);
-            //            }
-            //            return true;
-            //        }
-            //        else if (keyData == Keys.Delete)
-            //        {
-            //            ImportContextDiscard_Click(this, new EventArgs());
-            //            return true;
-            //        }
-            //    }
-            //    else if (MapView.SelectedTab == ExistingTab)
-            //    {
-            //        if (keyData == Keys.Delete)
-            //        {
-            //            ExistingContextDelete_Click(this, new EventArgs());
-            //            return true;
-            //        }
-            //    }
-            //}
-            //if (keyData == (Keys.A | Keys.Control))
-            //{
-            //    if (MapView.SelectedTab == ImportTab)
-            //        Controller.SelectAll(MapStatus.Importing);
-            //    else if (MapView.SelectedTab == ExistingTab)
-            //        Controller.SelectAll(MapStatus.Existing);
-            //    return true;
-            //}
-            //else if (keyData == (Keys.D | Keys.Control))
-            //{
-            //    if (MapView.SelectedTab == ImportTab)
-            //        Controller.DeselectAll(MapStatus.Importing);
-            //    else if (MapView.SelectedTab == ExistingTab)
-            //        Controller.DeselectAll(MapStatus.Existing);
-            //    return true;
-            //}
-            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void World_MapsChanged(object sender, EventArgs e)
@@ -389,6 +325,49 @@ namespace ImageMap
             //}
             //else
             //    Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
+        }
+
+        private void PasteShortcut_Click(object sender, EventArgs e)
+        {
+            if (MapTabs.SelectedTab == ImportTab)
+            {
+                if (Clipboard.ContainsFileDropList())
+                {
+                    var files = Clipboard.GetFileDropList();
+                    string[] array = new string[files.Count];
+                    files.CopyTo(array, 0);
+                    Import(array);
+                }
+                else if (Clipboard.ContainsImage())
+                {
+                    var image = Clipboard.GetImage();
+                    Import(image);
+                }
+            }
+        }
+
+        private void SelectAllShortcut_Click(object sender, EventArgs e)
+        {
+            if (MapTabs.SelectedTab == ImportTab)
+                SelectAll(MapStatus.Importing);
+            else if (MapTabs.SelectedTab == ExistingTab)
+                SelectAll(MapStatus.Existing);
+        }
+
+        private void DeselectAllShortcut_Click(object sender, EventArgs e)
+        {
+            if (MapTabs.SelectedTab == ImportTab)
+                DeselectAll(MapStatus.Importing);
+            else if (MapTabs.SelectedTab == ExistingTab)
+                DeselectAll(MapStatus.Existing);
+        }
+
+        private void DeleteShortcut_Click(object sender, EventArgs e)
+        {
+            if (MapTabs.SelectedTab == ImportTab)
+                ImportContextDiscard_Click(this, EventArgs.Empty);
+            else if (MapTabs.SelectedTab == ExistingTab)
+                ExistingContextDelete_Click(this, EventArgs.Empty);
         }
     }
 }

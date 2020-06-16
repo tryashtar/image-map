@@ -100,34 +100,6 @@ namespace ImageMap
         }
     }
 
-    public class MapCreationSettings : IDisposable
-    {
-        public readonly Image Original;
-        public readonly int SplitW;
-        public readonly int SplitH;
-        public readonly InterpolationMode InterpMode;
-        public readonly bool Dither;
-        public readonly bool Stretch;
-        public readonly IColorAlgorithm Algorithm;
-        public int NumberOfMaps => SplitW * SplitH;
-
-        public MapCreationSettings(Image original, int splitW, int splitH, InterpolationMode interpMode, bool dither, bool stretch, IColorAlgorithm algorithm)
-        {
-            Original = original;
-            SplitW = splitW;
-            SplitH = splitH;
-            InterpMode = interpMode;
-            Dither = dither;
-            Stretch = stretch;
-            Algorithm = algorithm;
-        }
-
-        public void Dispose()
-        {
-            Original?.Dispose();
-        }
-    }
-
     public class JavaMap : Map
     {
         public static IEnumerable<JavaMap> FromSettings(MapCreationSettings settings)
