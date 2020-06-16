@@ -10,6 +10,7 @@ namespace ImageMap
         public abstract WorldWindow BrowseDialog { get; }
         public abstract string DefaultSavesFolder();
         public abstract ImportWindow CreateImportWindow();
+        public abstract IEnumerable<Map> MapFromSettings(MapCreationSettings settings);
         public abstract MinecraftWorld OpenWorld(string folder);
 
         private static readonly Dictionary<Edition, EditionProperties> InstanceMap = new Dictionary<Edition, EditionProperties>();
@@ -44,6 +45,10 @@ namespace ImageMap
         {
             return new ImportWindow(true);
         }
+        public override IEnumerable<Map> MapFromSettings(MapCreationSettings settings)
+        {
+            return JavaMap.FromSettings(settings);
+        }
         public override MinecraftWorld OpenWorld(string folder)
         {
             var world = new JavaWorld(folder);
@@ -73,6 +78,10 @@ namespace ImageMap
         public override ImportWindow CreateImportWindow()
         {
             return new ImportWindow(false);
+        }
+        public override IEnumerable<Map> MapFromSettings(MapCreationSettings settings)
+        {
+            return BedrockMap.FromSettings(settings);
         }
         public override MinecraftWorld OpenWorld(string folder)
         {

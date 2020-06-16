@@ -33,9 +33,9 @@ namespace ImageMap
             DitherCheck.Visible = allowdither;
         }
 
-        public void StartImports(Form parent, string[] inputpaths)
+        public void StartImports(Form parent, IEnumerable<string> inputpaths)
         {
-            InputPaths = inputpaths;
+            InputPaths = inputpaths.ToArray();
             CurrentIndexLabel.Visible = (InputPaths.Length > 1);
             ApplyAllCheck.Visible = (InputPaths.Length > 1);
             EditingIndex = -1;

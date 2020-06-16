@@ -84,44 +84,7 @@ namespace ImageMap
 
         public IEnumerable<string> GetPlayerDestinations() => PlayerDestinations;
 
-        private Task ImportFromSettings(long id, Edition edition, MapCreationSettings settings)
-        {
-            var number = settings.NumberOfMaps;
-            var boxes = new MapIDControl[number];
-            for (int i = 0; i < number; i++)
-            {
-                var box = new MapIDControl(id + i);
-                boxes[i] = box;
-                box.MouseDown += Box_MouseDown;
-            }
-            SendToZone(boxes, MapStatus.Importing);
-            Task<IEnumerable<Map>> t;
-            if (edition == Edition.Java)
-                t = new Task<IEnumerable<Map>>(() =>
-                {
-                    return JavaMap.FromSettings(settings);
-                });
-            else
-                t = new Task<IEnumerable<Map>>(() =>
-                {
-                    return BedrockMap.FromSettings(settings);
-                });
-            t.ContinueWith((prev) =>
-            {
-                settings.Dispose();
-                if (t.IsFaulted)
-                {
-                    MessageBox.Show($"Failed to create some maps for this reason: {ExceptionMessage(t.Exception)}", "Map load error!");
-                    RemoveFromZone(boxes, MapStatus.Importing);
-                }
-                var results = prev.Result.ToArray();
-                for (int i = 0; i < number; i++)
-                {
-                    boxes[i].SetBox(new MapPreviewBox(results[i]));
-                }
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-            return t;
-        }
+        
 
         private Tuple<ImportWindow, List<Task>> BeforeImports()
         {

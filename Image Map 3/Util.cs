@@ -24,6 +24,24 @@ namespace ImageMap
             return result;
         }
 
+        // Enumerable.Range() but for longs
+        public static IEnumerable<long> CreateRange(long start, long count)
+        {
+            var limit = start + count;
+            while (start < limit)
+            {
+                yield return start;
+                start++;
+            }
+        }
+
+        public static string ExceptionMessage(Exception ex)
+        {
+            if (ex is AggregateException agg)
+                return String.Join("\n", agg.InnerExceptions.Select(x => ExceptionMessage(x)));
+            return $"{ex.GetType().Name}: {ex.Message}";
+        }
+
         // fall back if unsupported
         public static DialogResult ShowCompatibleOpenDialog(OpenFileDialog d)
         {
