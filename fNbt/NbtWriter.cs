@@ -104,7 +104,7 @@ namespace fNbt {
             if (size < 0) {
                 throw new ArgumentOutOfRangeException("size", "List size may not be negative.");
             }
-            if (elementType < NbtTagType.Byte || elementType > NbtTagType.IntArray) {
+            if (elementType < NbtTagType.Byte || elementType > NbtTagType.LongArray) {
                 throw new ArgumentOutOfRangeException("elementType");
             }
             EnforceConstraints(null, NbtTagType.List);
@@ -129,7 +129,7 @@ namespace fNbt {
             if (size < 0) {
                 throw new ArgumentOutOfRangeException("size", "List size may not be negative.");
             }
-            if (elementType < NbtTagType.Byte || elementType > NbtTagType.IntArray) {
+            if (elementType < NbtTagType.Byte || elementType > NbtTagType.LongArray) {
                 throw new ArgumentOutOfRangeException("elementType");
             }
             EnforceConstraints(tagName, NbtTagType.List);

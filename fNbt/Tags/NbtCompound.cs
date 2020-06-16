@@ -291,6 +291,10 @@ namespace fNbt {
                         newTag = new NbtIntArray();
                         break;
 
+                    case NbtTagType.LongArray:
+                        newTag = new NbtLongArray();
+                        break;
+
                     default:
                         throw new NbtFormatException("Unsupported tag type found in NBT_Compound: " + nextTag);
                 }
@@ -356,6 +360,10 @@ namespace fNbt {
 
                     case NbtTagType.IntArray:
                         newTag = new NbtIntArray();
+                        break;
+
+                    case NbtTagType.LongArray:
+                        newTag = new NbtLongArray();
                         break;
 
                     default:

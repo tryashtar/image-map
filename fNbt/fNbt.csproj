@@ -70,6 +70,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NbtFile.cs" />
     <Compile Include="TagSelector.cs" />
+    <Compile Include="Tags\NbtLongArray.cs" />
     <Compile Include="Tags\NbtIntArray.cs" />
     <Compile Include="Tags\NbtByte.cs" />
     <Compile Include="Tags\NbtByteArray.cs" />

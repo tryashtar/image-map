@@ -26,7 +26,7 @@ namespace fNbt {
             int type = ReadByte();
             if (type < 0) {
                 throw new EndOfStreamException();
-            } else if (type > (int)NbtTagType.IntArray) {
+            } else if (type > (int)NbtTagType.LongArray) {
                 throw new NbtFormatException("NBT tag type out of range: " + type);
             }
             return (NbtTagType)type;
