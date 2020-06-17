@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace ImageMap
             return $"{ex.GetType().Name}: {ex.Message}";
         }
 
-        public static void SetCoSetControls<T>(ControlCollection source, IEnumerable<T> destination) where T : Control
+        public static void SetControls<T>(ControlCollection source, IEnumerable<T> destination) where T : Control
         {
             var typed = source.OfType<T>();
             var add = destination.Except(typed);

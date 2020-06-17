@@ -39,20 +39,26 @@ namespace ImageMap
         {
             World = world;
             if (ImportSide != null)
-                ImportSide.ControlsChanged -= Side_ControlsChanged;
+                ImportSide.ControlsChanged -= ImportSide_ControlsChanged;
             if (WorldSide != null)
-                WorldSide.ControlsChanged -= Side_ControlsChanged;
+                WorldSide.ControlsChanged -= WorldSide_ControlsChanged;
             ImportSide = new ImportPreview();
             WorldSide = new WorldPreview(world);
-            ImportSide.ControlsChanged += Side_ControlsChanged;
-            WorldSide.ControlsChanged += Side_ControlsChanged;
-            Side_ControlsChanged(this, EventArgs.Empty);
+            ImportSide.ControlsChanged += ImportSide_ControlsChanged;
+            WorldSide.ControlsChanged += WorldSide_ControlsChanged;
+            ImportSide_ControlsChanged(this, EventArgs.Empty);
+            WorldSide_ControlsChanged(this, EventArgs.Empty);
         }
 
-        private void Side_ControlsChanged(object sender, EventArgs e)
+        private void ImportSide_ControlsChanged(object sender, EventArgs e)
         {
-            Util.SetCoSetControls(ImportZone.Controls, ImportSide.MapIDControls);
+            Util.SetControls(ImportZone.Controls, ImportSide.MapIDControls);
             ClickOpenLabel.Visible = !ImportSide.MapIDControls.Any();
+        }
+
+        private void WorldSide_ControlsChanged(object sender, EventArgs e)
+        {
+            Util.SetControls(ExistingZone.Controls, WorldSide.MapIDControls);
         }
 
         public bool HasUnsavedChanges()

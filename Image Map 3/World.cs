@@ -5,6 +5,7 @@ using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
 using LevelDBWrapper;
+using System.Collections.Specialized;
 
 namespace ImageMap
 {
@@ -16,7 +17,7 @@ namespace ImageMap
 
     public abstract class MinecraftWorld : IDisposable
     {
-        protected Dictionary<long, Map> Maps;
+        private SortedDictionary<long, Map> Maps;
         public IReadOnlyDictionary<long, Map> WorldMaps => Maps;
         public string Folder { get; protected set; }
         public string Name { get; protected set; }
@@ -29,7 +30,7 @@ namespace ImageMap
         // user needs to call this
         public void Initialize()
         {
-            Maps = LoadMaps();
+            Maps = new SortedDictionary<long, Map>(LoadMaps());
         }
         public abstract void AddMaps(Dictionary<long, Map> maps);
         public abstract void RemoveMaps(IEnumerable<long> mapids);

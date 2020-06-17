@@ -70,7 +70,7 @@ namespace ImageMap
             return box;
         }
 
-        protected void Box_MouseDown(object sender, MouseEventArgs e)
+        private void Box_MouseDown(object sender, MouseEventArgs e)
         {
             var box = (MapIDControl)sender;
             if (e.Button == MouseButtons.Right)
@@ -83,8 +83,26 @@ namespace ImageMap
                 var context = GetContextMenu();
                 context.Show(box, new Point(e.X, e.Y));
             }
-            //else
-            //    ClickSelect(box, where);
+            else
+                ClickSelect(box);
+        }
+
+        private MapIDControl LastSelected;
+        private void ClickSelect(MapIDControl box)
+        {
+            var current = LastSelected;
+            box.ToggleSelected();
+            if (Control.ModifierKeys == Keys.Shift && current != null)
+            {
+                bool state = current.Selected;
+                int first = Controls.IndexOf(current);
+                int last = Controls.IndexOf(box);
+                for (int i = Math.Min(first, last); i < Math.Max(first, last); i++)
+                {
+                    Controls[i].SetSelected(state);
+                }
+            }
+            LastSelected = box;
         }
     }
 
@@ -168,6 +186,7 @@ namespace ImageMap
         {
             World = world;
             World.MapsChanged += World_MapsChanged;
+            UpdateControlsFromMaps();
         }
 
         private void World_MapsChanged(object sender, EventArgs e)
