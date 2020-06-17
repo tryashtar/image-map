@@ -44,17 +44,25 @@ namespace ImageMap
             ImportSide = new ImportPreview(this);
             WorldSide = new WorldPreview(this, world);
             ImportSide.ControlsChanged += Side_ControlsChanged;
-            WorldSide.ControlsChanged += WorldSide_ControlsChanged;
+            WorldSide.ControlsChanged += Side_ControlsChanged;
         }
 
         private void Side_ControlsChanged(object sender, EventArgs e)
         {
             var side = (HalfPreview)sender;
+            var add = side.MapIDControls.Except(ImportZone.Controls.OfType<MapIDControl>());
+            var remove = ImportZone.Controls.OfType<MapIDControl>().Except(side.MapIDControls);
+            foreach (var control in remove)
+            {
+                ImportZone.Controls.Remove(control);
+            }
+            ImportZone.Controls.AddRange(add.ToArray());
+            ClickOpenLabel.Visible = !ImportSide.MapIDControls.Any();
         }
 
         public bool HasUnsavedChanges()
         {
-            return ImportSide.HasAnyMaps();
+            return ImportSide?.HasAnyMaps() ?? false;
         }
 
         public void Import(IEnumerable<string> paths)
@@ -315,19 +323,19 @@ namespace ImageMap
 
         private void SelectAllShortcut_Click(object sender, EventArgs e)
         {
-            SelectAll(CurrentView);
+            ActivePreview.SelectAll();
         }
 
         private void DeselectAllShortcut_Click(object sender, EventArgs e)
         {
-            DeselectAll(CurrentView);
+            ActivePreview.DeselectAll();
         }
 
         private void DeleteShortcut_Click(object sender, EventArgs e)
         {
-            if (Curre)
+            if (ActivePreview == ImportSide)
                 ImportContextDiscard_Click(this, EventArgs.Empty);
-            else if (MapTabs.SelectedTab == ExistingTab)
+            else if (ActivePreview == WorldSide)
                 ExistingContextDelete_Click(this, EventArgs.Empty);
         }
     }

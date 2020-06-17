@@ -76,6 +76,9 @@ namespace ImageMap
         private readonly Dictionary<long, Map> ImportingMaps = new Dictionary<long, Map>();
         // simulate a threadsafe set
         private readonly ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID> ProcessingMaps = new ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID>();
+
+        public ImportPreview(ContainerControl parent) : base(parent) { }
+
         public override IReadOnlyDictionary<long, Map> GetMaps()
         {
             return ImportingMaps;
@@ -88,6 +91,10 @@ namespace ImageMap
         {
             return base.GetTakenIDs().Concat(ProcessingMaps.SelectMany(x => x.Key.IDs));
         }
+        public override ContextMenuStrip GetContextMenu()
+        {
+            throw new NotImplementedException();
+        }
 
         public void AddPending(PendingMapsWithID pending)
         {
@@ -99,14 +106,13 @@ namespace ImageMap
         private void CreateEmptyIDControls(IEnumerable<long> ids)
         {
             var boxes = new List<MapIDControl>();
-            int i = -1;
             foreach (var id in ids)
             {
-                i++;
                 var box = CreateMapIdControl(id);
-                boxes[i] = box;
+                boxes.Add(box);
             }
             Controls.AddRange(boxes.ToArray());
+            SignalControlsChanged();
         }
 
         private void Pending_Finished(object sender, EventArgs e)
@@ -143,6 +149,10 @@ namespace ImageMap
         public override IReadOnlyDictionary<long, Map> GetMaps()
         {
             return World.WorldMaps;
+        }
+        public override ContextMenuStrip GetContextMenu()
+        {
+            throw new NotImplementedException();
         }
     }
 }

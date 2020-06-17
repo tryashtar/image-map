@@ -101,6 +101,7 @@
     <Compile Include="LockBitmap.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="MapCreationSettings.cs" />
+    <Compile Include="Preview.cs" />
     <Compile Include="ReplaceOptionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
