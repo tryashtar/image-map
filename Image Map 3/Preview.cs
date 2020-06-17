@@ -19,6 +19,7 @@ namespace ImageMap
         public abstract ContextMenuStrip GetContextMenu();
         private readonly List<MapIDControl> Controls = new List<MapIDControl>();
         public IReadOnlyCollection<MapIDControl> MapIDControls => Controls.AsReadOnly();
+        protected IEnumerable<MapIDControl> SelectedControls => Controls.Where(x => x.IsSelected);
 
         public void SelectAll()
         {
@@ -75,7 +76,7 @@ namespace ImageMap
             var box = (MapIDControl)sender;
             if (e.Button == MouseButtons.Right)
             {
-                if (!box.Selected)
+                if (!box.IsSelected)
                 {
                     DeselectAll();
                     box.SetSelected(true);
@@ -94,7 +95,7 @@ namespace ImageMap
             box.ToggleSelected();
             if (Control.ModifierKeys == Keys.Shift && current != null)
             {
-                bool state = current.Selected;
+                bool state = current.IsSelected;
                 int first = Controls.IndexOf(current);
                 int last = Controls.IndexOf(box);
                 for (int i = Math.Min(first, last); i < Math.Max(first, last); i++)

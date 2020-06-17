@@ -297,6 +297,79 @@ namespace ImageMap
             //    Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
         }
 
+        //public int SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, string playerid)
+        //{
+        //var writemaps = maps.ToList();
+        //var conflictids = new List<long>();
+        //// check for  conflicts
+        //foreach (var map in maps)
+        //{
+        //    if (map.Conflicted)
+        //    {
+        //        conflictids.Add(map.ID);
+        //        if (option == MapReplaceOption.Skip)
+        //            writemaps.Remove(map);
+        //    }
+        //}
+        //if (option == MapReplaceOption.Info)
+        //    return conflictids.Count;
+        //if (option == MapReplaceOption.ChangeExisting)
+        //{
+        //    foreach (var conflict in conflictids)
+        //    {
+        //        var currentholder = GetMapByID(conflict, MapStatus.Existing);
+        //        currentholder.SetID(GetSafeID());
+        //        writemaps.Add(currentholder);
+        //    }
+        //}
+        //SelectedWorld.AddMaps(writemaps.ToDictionary(x => x.ID, x => x.Map));
+        //var ids = writemaps.Select(x => x.ID);
+        //AddChests(ids, playerid);
+        //foreach (var box in writemaps.ToArray())
+        //{
+        //    var exists = GetMapByID(box.ID, MapStatus.Existing);
+        //    if (exists != null && exists != box)
+        //        RemoveFromZone(exists, MapStatus.Existing);
+        //    SendToZone(box, MapStatus.Existing);
+        //}
+        //DetermineTransferConflicts();
+        //return conflictids.Count;
+        //}
+
+        private void DetermineTransferConflicts()
+        {
+            //foreach (var box in GetAllMaps(MapStatus.Importing))
+            //{
+            //    var counterpart = GetMapByID(box.ID, MapStatus.Existing);
+            //    box.SetConflict(counterpart != null);
+            //}
+        }
+
+        //public void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
+        //{
+        //    Directory.CreateDirectory(folder);
+        //    foreach (var box in maps)
+        //    {
+        //        box.Map.Image.Save(Path.Combine(folder, box.GetMapName() + ".png"));
+        //    }
+        //}
+
+        //public void DeleteMapsFromWorld(IEnumerable<MapIDControl> maps)
+        //{
+        //    var remove = maps.ToArray();
+        //    foreach (var box in remove)
+        //    {
+        //        RemoveFromZone(box, MapStatus.Existing);
+        //    }
+        //    SelectedWorld.RemoveMaps(remove.Select(x => x.ID));
+        //    DetermineTransferConflicts();
+        //}
+
+        //public void SaveMap(MapIDControl map, string file)
+        //{
+        //    map.Map.Image.Save(file);
+        //}
+
         private void PasteShortcut_Click(object sender, EventArgs e)
         {
             if (MapTabs.SelectedTab == ImportTab)
@@ -333,5 +406,11 @@ namespace ImageMap
             else if (ActivePreview == WorldSide)
                 ExistingContextDelete_Click(this, EventArgs.Empty);
         }
+    }
+
+    public enum MapStatus
+    {
+        Importing,
+        Existing
     }
 }

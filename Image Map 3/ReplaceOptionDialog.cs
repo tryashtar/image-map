@@ -17,7 +17,7 @@ namespace ImageMap
         public ReplaceOptionDialog(int count)
         {
             InitializeComponent();
-            DescriptionLabel.Text = $"{count} map(s) you selected will end up with an ID that's already taken. You can skip these maps, overwrite the old ones, or auto-pick new IDs for the old ones.";
+            DescriptionLabel.Text = $"{Util.Pluralize(count, "map")} you selected will end up with an ID that's already taken. You can skip these maps, overwrite the old ones, or auto-pick new IDs for the old ones.";
         }
 
         private void AutoButton_Click(object sender, EventArgs e)
@@ -37,5 +37,12 @@ namespace ImageMap
             SelectedOption = MapReplaceOption.Skip;
             this.Close();
         }
+    }
+
+    public enum MapReplaceOption
+    {
+        ChangeExisting,
+        ReplaceExisting,
+        Skip
     }
 }

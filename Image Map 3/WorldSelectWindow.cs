@@ -3,7 +3,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 
 namespace ImageMap
@@ -15,10 +14,12 @@ namespace ImageMap
         public string SavesFolder { get; set; }
 
         public abstract WorldIconControl NewWorldControl(string folder);
+        protected abstract string GetTitle();
 
         public WorldSelectWindow()
         {
             InitializeComponent();
+            this.Text = GetTitle();
         }
 
         private void LoadWorlds(string savesfolder)
@@ -34,15 +35,15 @@ namespace ImageMap
                 try
                 {
                     var control = NewWorldControl(world);
-                    control.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                     WorldZone.Controls.Add(control);
+                    control.Dock = DockStyle.Fill;
                     control.Click += World_Click;
                     control.DoubleClick += World_DoubleClick;
                 }
                 catch (IOException ex)
                 {
                     // if it couldn't get the world files it needed
-                    MessageBox.Show("There was an error loading worlds: " + ex.Message, "Error loading worlds");
+                    MessageBox.Show($"There was an error loading worlds:\n\n{Util.ExceptionMessage(ex)}", "Error loading worlds");
                 }
             }
         }
@@ -94,6 +95,7 @@ namespace ImageMap
         {
             return new JavaWorldControl(folder);
         }
+        protected override string GetTitle() => "Java Worlds";
     }
 
     public class BedrockWorldWindow : WorldSelectWindow
@@ -102,5 +104,6 @@ namespace ImageMap
         {
             return new BedrockWorldControl(folder);
         }
+        protected override string GetTitle() => "Bedrock Worlds";
     }
 }

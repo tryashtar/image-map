@@ -25,6 +25,14 @@ namespace ImageMap
             return result;
         }
 
+        public static string Pluralize(int amount, string singular, string plural)
+        {
+            if (amount == 1)
+                return $"1 {singular}";
+            return $"{amount} {plural}";
+        }
+        public static string Pluralize(int amount, string singular) => Pluralize(amount, singular, singular + "s");
+
         // Enumerable.Range() but for longs
         public static IEnumerable<long> CreateRange(long start, long count)
         {

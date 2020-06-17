@@ -151,7 +151,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewController.cs" />
     <EmbeddedResource Include="IDInputDialog.resx">
       <DependentUpon>IDInputDialog.cs</DependentUpon>
     </EmbeddedResource>

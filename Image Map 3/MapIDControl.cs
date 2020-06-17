@@ -14,7 +14,7 @@ namespace ImageMap
     {
         public long ID { get; private set; }
         public Map Map => Box?.Map;
-        public bool Selected { get; private set; }
+        public bool IsSelected { get; private set; }
         public bool Conflicted { get; private set; }
         public bool HasBox => Box != null;
         private MapPreviewBox Box;
@@ -69,15 +69,15 @@ namespace ImageMap
 
         public void ToggleSelected()
         {
-            SetSelected(!Selected);
+            SetSelected(!IsSelected);
         }
 
         public void SetSelected(bool selected)
         {
-            if (selected != Selected)
+            if (selected != IsSelected)
             {
-                Selected = selected;
-                SelectedChanged?.Invoke(this, Selected);
+                IsSelected = selected;
+                SelectedChanged?.Invoke(this, IsSelected);
                 UpdateColor();
             }
         }
@@ -89,7 +89,7 @@ namespace ImageMap
 
         private void UpdateColor()
         {
-            if (Selected)
+            if (IsSelected)
             {
                 if (Conflicted)
                     BackColor = Color.FromArgb(255, 173, 213);

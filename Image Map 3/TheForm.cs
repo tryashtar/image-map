@@ -33,15 +33,21 @@ namespace ImageMap
         {
             if (!WorldView.HasUnsavedChanges() || MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
+                MinecraftWorld world = null;
                 try
                 {
-                    OpenedWorld = getworld();
-                    WorldView.SetWorld(OpenedWorld);
-                    MapViewZone.Visible = true;
+                    world = getworld();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error opening that world:\n\n{Util.ExceptionMessage(ex)}", "World error!");
+                }
+                if (world != null)
+                {
+                    OpenedWorld = world;
+                    WorldView.SetWorld(OpenedWorld);
+                    MapViewZone.Visible = true;
+                    this.Text = "Image Map – " + OpenedWorld.Name;
                 }
             }
         }

@@ -32,10 +32,10 @@ namespace ImageMap
         {
             if (keyData == Keys.Enter)
             {
-                ConfirmButton_Click(this, new EventArgs());
+                ConfirmButton_Click(this, EventArgs.Empty);
                 return true;
             }
-            else if (Form.ModifierKeys == Keys.None && keyData == Keys.Escape)
+            else if (keyData == Keys.Escape)
             {
                 this.Close();
                 return true;
