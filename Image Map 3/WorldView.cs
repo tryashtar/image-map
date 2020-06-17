@@ -54,11 +54,13 @@ namespace ImageMap
         {
             Util.SetControls(ImportZone.Controls, ImportSide.MapIDControls);
             ClickOpenLabel.Visible = !ImportSide.MapIDControls.Any();
+            DetermineTransferConflicts();
         }
 
         private void WorldSide_ControlsChanged(object sender, EventArgs e)
         {
             Util.SetControls(ExistingZone.Controls, WorldSide.MapIDControls);
+            DetermineTransferConflicts();
         }
 
         public bool HasUnsavedChanges()
@@ -84,7 +86,7 @@ namespace ImageMap
         {
             var window = ActiveEdition.CreateImportWindow();
             window.InterpolationModeBox.SelectedIndex = Properties.Settings.Default.InterpIndex;
-            window.ApplyAllCheck.Checked = Properties.Settings.Default.ApplyAllCheck;
+            window.ColorAlgorithmBox.SelectedIndex = Properties.Settings.Default.AlgorithmIndex;
             window.DitherChecked = Properties.Settings.Default.Dither;
             window.StretchChecked = Properties.Settings.Default.Stretch;
             window.ImageReady += Window_ImageReady;
@@ -100,7 +102,7 @@ namespace ImageMap
         private void CloseImportWindow(ImportWindow window)
         {
             Properties.Settings.Default.InterpIndex = window.InterpolationModeBox.SelectedIndex;
-            Properties.Settings.Default.ApplyAllCheck = window.ApplyAllCheck.Checked;
+            Properties.Settings.Default.AlgorithmIndex = window.ColorAlgorithmBox.SelectedIndex;
             Properties.Settings.Default.Dither = window.DitherChecked;
             Properties.Settings.Default.Stretch = window.StretchChecked;
         }
@@ -139,7 +141,7 @@ namespace ImageMap
         {
             World.AddMaps(ImportSide.GetMaps());
             ImportSide.ClearMaps();
-            //SendMapsWithMessage(Controller.GetAllMaps(MapStatus.Importing), AddChestCheck.Checked ? ViewController.LOCAL_IDENTIFIER : ViewController.NOBODY_IDENTIFIER);
+            SendMapsWithMessage(ImportSide.MapIDControls, AddChestCheck.Checked, null);
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
@@ -308,7 +310,7 @@ namespace ImageMap
                 SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, local, uuid);
         }
 
-        public int SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, bool local, string uuid)
+        private int SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, bool local, string uuid)
         {
             //var writemaps = maps.ToList();
             //var conflictids = new List<long>();
@@ -357,7 +359,7 @@ namespace ImageMap
             }
         }
 
-        public void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
+        private void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
         {
             Directory.CreateDirectory(folder);
             foreach (var box in maps)
@@ -366,13 +368,7 @@ namespace ImageMap
             }
         }
 
-        public void DeleteMapsFromWorld(IEnumerable<MapIDControl> maps)
-        {
-            World.RemoveMaps(maps.Select(x => x.ID));
-            DetermineTransferConflicts();
-        }
-
-        public void SaveMap(MapIDControl map, string file)
+        private void SaveMap(MapIDControl map, string file)
         {
             map.Map.Image.Save(file);
         }

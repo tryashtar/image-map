@@ -15,7 +15,7 @@ namespace ImageMap
 {
     public partial class ImportWindow : Form
     {
-        private bool AllowDither = false;
+        private bool ApproximateColorOptions = false;
         private bool Finished = false;
         private int EditingIndex = 0;
         private bool SingleImage = false;
@@ -25,19 +25,28 @@ namespace ImageMap
         public bool StretchChecked { get { return StretchCheck.Checked; } set { StretchCheck.Checked = value; } }
         public event EventHandler<MapCreationSettings> ImageReady;
         RotateFlipType Rotation = RotateFlipType.RotateNoneFlipNone;
-        public ImportWindow(bool allowdither)
+        public ImportWindow(bool approximate_colors)
         {
             InitializeComponent();
-            InterpolationModeBox.SelectedIndex = 0;
-            AllowDither = allowdither;
-            DitherCheck.Visible = allowdither;
+            ApproximateColorOptions = approximate_colors;
+            DitherCheck.Visible = ApproximateColorOptions;
+            ColorAlgorithmBox.Visible = ApproximateColorOptions;
+            ColorAlgorithmBox.Items.Add(new ColorAlgorithmDisplay("Good Fast Algorithm", SimpleAlgorithm.Instance));
+            ColorAlgorithmBox.Items.Add(new ColorAlgorithmDisplay("Euclidean Algorithm", EuclideanAlgorithm.Instance));
+            ColorAlgorithmBox.Items.Add(new ColorAlgorithmDisplay("CIEDE2000 Algorithm", Ciede2000Algorithm.Instance));
+            ColorAlgorithmBox.Items.Add(new ColorAlgorithmDisplay("CIE76 Algorithm", Cie76Algorithm.Instance));
+            ColorAlgorithmBox.Items.Add(new ColorAlgorithmDisplay("CMC Algorithm", CmcAlgorithm.Instance));
+            InterpolationModeBox.Items.Add(new ScalingModeDisplay("Automatic Scaling", ScalingMode.Automatic));
+            InterpolationModeBox.Items.Add(new ScalingModeDisplay("Pixel Art Scaling", ScalingMode.NearestNeighbor));
+            InterpolationModeBox.Items.Add(new ScalingModeDisplay("Bicubic Scaling", ScalingMode.Bicubic));
         }
 
         public void StartImports(Form parent, IEnumerable<string> inputpaths)
         {
             InputPaths = inputpaths.ToArray();
             CurrentIndexLabel.Visible = (InputPaths.Length > 1);
-            ApplyAllCheck.Visible = (InputPaths.Length > 1);
+            ConfirmAllButton.Visible = (InputPaths.Length > 1);
+            CancelAllButton.Visible = (InputPaths.Length > 1);
             EditingIndex = -1;
             ProcessNextImage(false);
             if (!Finished) // don't try to show if all loaded images were skipped
@@ -54,7 +63,12 @@ namespace ImageMap
         {
             if (keyData == Keys.Enter)
             {
-                ConfirmButton_Click(this, new EventArgs());
+                ConfirmButton_Click(this, EventArgs.Empty);
+                return true;
+            }
+            if (keyData == Keys.Escape)
+            {
+                CancelAllButton_Click(this, EventArgs.Empty);
                 return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
@@ -65,7 +79,8 @@ namespace ImageMap
             SingleImage = true;
             CurrentImage = image;
             CurrentIndexLabel.Visible = false;
-            ApplyAllCheck.Visible = false;
+            ConfirmAllButton.Visible = false;
+            CancelAllButton.Visible = false;
             Rotation = RotateFlipType.RotateNoneFlipNone;
             PreviewBox.Image = image;
             this.Text = "Import image data";
@@ -147,17 +162,23 @@ namespace ImageMap
 
         private InterpolationMode GetInterpolationMode()
         {
-            if (InterpolationModeBox.SelectedIndex == 1)
-                return InterpolationMode.NearestNeighbor;
-            else if (InterpolationModeBox.SelectedIndex == 2)
-                return InterpolationMode.HighQualityBicubic;
-            else // automatic
-                return (CurrentImage.Height > 128 && CurrentImage.Width > 128) ? InterpolationMode.HighQualityBicubic : InterpolationMode.NearestNeighbor;
+            var scaling = ((ScalingModeDisplay)InterpolationModeBox.SelectedItem).Mode;
+            switch (scaling)
+            {
+                case ScalingMode.Bicubic:
+                    return InterpolationMode.HighQualityBicubic;
+                case ScalingMode.NearestNeighbor:
+                    return InterpolationMode.NearestNeighbor;
+                case ScalingMode.Automatic:
+                    return (CurrentImage.Height > 128 && CurrentImage.Width > 128) ? InterpolationMode.HighQualityBicubic : InterpolationMode.NearestNeighbor;
+                default:
+                    throw new ArgumentException();
+            }
         }
 
         private IColorAlgorithm GetAlgorithm()
         {
-            return SimpleAlgorithm.Instance;
+            return ((ColorAlgorithmDisplay)ColorAlgorithmBox.SelectedItem).Algorithm;
         }
 
         private void InterpolationModeBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -167,34 +188,41 @@ namespace ImageMap
             PreviewBox.Interp = GetInterpolationMode();
         }
 
-        private void ConfirmButton_Click(object sender, EventArgs e)
+        private void ConfirmUntil(int final_index)
         {
             int index = EditingIndex;
-            int final;
-            if (SingleImage)
-                final = index;
-            else
-                final = ApplyAllCheck.Checked ? InputPaths.Length - 1 : EditingIndex;
-            for (int i = index; i <= final; i++)
+            for (int i = index; i <= final_index; i++)
             {
                 if (i > index)
                     ProcessNextImage(true);
                 if (CurrentImage == null)
                     return;
-                bool dithered = AllowDither && DitherChecked;
+                bool dithered = ApproximateColorOptions && DitherChecked;
                 var settings = new MapCreationSettings(CurrentImage, (int)WidthInput.Value, (int)HeightInput.Value, GetInterpolationMode(), dithered, StretchChecked, GetAlgorithm());
                 ImageReady?.Invoke(this, settings);
             }
-            EditingIndex = final;
+            EditingIndex = final_index;
             ProcessNextImage(false);
+        }
+
+        private void ConfirmButton_Click(object sender, EventArgs e)
+        {
+            ConfirmUntil(EditingIndex);
+        }
+
+        private void ConfirmAllButton_Click(object sender, EventArgs e)
+        {
+            ConfirmUntil(InputPaths.Length - 1);
         }
 
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            if (ApplyAllCheck.Checked)
-                Finish();
-            else
-                ProcessNextImage(false);
+            ProcessNextImage(false);
+        }
+
+        private void CancelAllButton_Click(object sender, EventArgs e)
+        {
+            Finish();
         }
 
         private void RotateButton_Click(object sender, EventArgs e)
@@ -219,6 +247,45 @@ namespace ImageMap
             PreviewBox.Width = (int)Math.Min(PreviewPanel.Width, PreviewPanel.Height / ideal);
             PreviewBox.Left = PreviewPanel.Width / 2 - (PreviewBox.Width / 2);
             PreviewBox.Top = PreviewPanel.Height / 2 - (PreviewBox.Height / 2);
+        }
+    }
+
+    public class ColorAlgorithmDisplay
+    {
+        public readonly string Name;
+        public readonly IColorAlgorithm Algorithm;
+        public ColorAlgorithmDisplay(string name, IColorAlgorithm algorithm)
+        {
+            Name = name;
+            Algorithm = algorithm;
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    public enum ScalingMode
+    {
+        Bicubic,
+        NearestNeighbor,
+        Automatic
+    }
+
+    public class ScalingModeDisplay
+    {
+        public readonly string Name;
+        public readonly ScalingMode Mode;
+        public ScalingModeDisplay(string name, ScalingMode mode)
+        {
+            Name = name;
+            Mode = mode;
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

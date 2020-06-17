@@ -25,18 +25,6 @@ namespace ImageMap.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ApplyAllCheck {
-            get {
-                return ((bool)(this["ApplyAllCheck"]));
-            }
-            set {
-                this["ApplyAllCheck"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool AutoID {
             get {
@@ -140,6 +128,18 @@ namespace ImageMap.Properties {
             }
             set {
                 this["Stretch"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int AlgorithmIndex {
+            get {
+                return ((int)(this["AlgorithmIndex"]));
+            }
+            set {
+                this["AlgorithmIndex"] = value;
             }
         }
     }

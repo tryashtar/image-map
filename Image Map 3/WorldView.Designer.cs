@@ -104,6 +104,8 @@
             this.ImportZone.Name = "ImportZone";
             this.ImportZone.Size = new System.Drawing.Size(590, 265);
             this.ImportZone.TabIndex = 3;
+            this.ImportZone.DragDrop += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragDrop);
+            this.ImportZone.DragEnter += new System.Windows.Forms.DragEventHandler(this.ImportZone_DragEnter);
             // 
             // ClickOpenLabel
             // 
@@ -212,41 +214,41 @@
             this.ExistingContextDelete,
             this.ExistingContextSelectAll});
             this.ExistingContextMenu.Name = "ImportContextMenu";
-            this.ExistingContextMenu.Size = new System.Drawing.Size(181, 136);
+            this.ExistingContextMenu.Size = new System.Drawing.Size(164, 114);
             this.ExistingContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.ExistingContextMenu_Opening);
             // 
             // ExistingContextAdd
             // 
             this.ExistingContextAdd.Name = "ExistingContextAdd";
-            this.ExistingContextAdd.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextAdd.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextAdd.Text = "Add to inventory";
             this.ExistingContextAdd.Click += new System.EventHandler(this.ExistingContextAdd_Click);
             // 
             // ExistingContextChangeID
             // 
             this.ExistingContextChangeID.Name = "ExistingContextChangeID";
-            this.ExistingContextChangeID.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextChangeID.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextChangeID.Text = "Change ID";
             this.ExistingContextChangeID.Click += new System.EventHandler(this.ExistingContextChangeID_Click);
             // 
             // ExistingContextExport
             // 
             this.ExistingContextExport.Name = "ExistingContextExport";
-            this.ExistingContextExport.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextExport.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextExport.Text = "Export image";
             this.ExistingContextExport.Click += new System.EventHandler(this.ContextExport_Click);
             // 
             // ExistingContextDelete
             // 
             this.ExistingContextDelete.Name = "ExistingContextDelete";
-            this.ExistingContextDelete.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextDelete.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextDelete.Text = "Delete";
             this.ExistingContextDelete.Click += new System.EventHandler(this.ExistingContextDelete_Click);
             // 
             // ExistingContextSelectAll
             // 
             this.ExistingContextSelectAll.Name = "ExistingContextSelectAll";
-            this.ExistingContextSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.ExistingContextSelectAll.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextSelectAll.Text = "Select all";
             this.ExistingContextSelectAll.Click += new System.EventHandler(this.ExistingContextSelectAll_Click);
             // 
