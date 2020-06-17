@@ -17,14 +17,8 @@ namespace ImageMap
         public virtual bool HasAnyMaps() => GetMaps().Any();
         public virtual IEnumerable<long> GetTakenIDs() => GetMaps().Keys;
         public abstract ContextMenuStrip GetContextMenu();
-        protected readonly List<MapIDControl> Controls = new List<MapIDControl>();
+        private readonly List<MapIDControl> Controls = new List<MapIDControl>();
         public IReadOnlyCollection<MapIDControl> MapIDControls => Controls.AsReadOnly();
-
-        protected readonly ContainerControl ParentControl;
-        public HalfPreview(ContainerControl parent)
-        {
-            ParentControl = parent;
-        }
 
         public void SelectAll()
         {
@@ -33,6 +27,7 @@ namespace ImageMap
                 box.SetSelected(true);
             }
         }
+
         public void DeselectAll()
         {
             foreach (var box in Controls)
@@ -40,6 +35,21 @@ namespace ImageMap
                 box.SetSelected(true);
             }
         }
+
+        protected void UpdateControlsFromMaps()
+        {
+            var maps = GetMaps();
+            Controls.RemoveAll(x => !maps.ContainsKey(x.ID));
+            foreach (var map in maps)
+            {
+                if (!Controls.Any(x => x.ID == map.Key))
+                    Controls.Add(CreateMapIdControl(map.Key, map.Value));
+            }
+            UpdateControls(Controls);
+            SignalControlsChanged();
+        }
+
+        protected virtual void UpdateControls(List<MapIDControl> pending_controls) { }
 
         protected void SignalControlsChanged()
         {
@@ -53,10 +63,16 @@ namespace ImageMap
             return box;
         }
 
+        protected MapIDControl CreateMapIdControl(long id, Map map)
+        {
+            var box = CreateMapIdControl(id);
+            box.SetBox(new MapPreviewBox(map));
+            return box;
+        }
+
         protected void Box_MouseDown(object sender, MouseEventArgs e)
         {
             var box = (MapIDControl)sender;
-            var context = GetContextMenu();
             if (e.Button == MouseButtons.Right)
             {
                 if (!box.Selected)
@@ -64,6 +80,7 @@ namespace ImageMap
                     DeselectAll();
                     box.SetSelected(true);
                 }
+                var context = GetContextMenu();
                 context.Show(box, new Point(e.X, e.Y));
             }
             //else
@@ -74,10 +91,9 @@ namespace ImageMap
     public class ImportPreview : HalfPreview
     {
         private readonly Dictionary<long, Map> ImportingMaps = new Dictionary<long, Map>();
+        private readonly Dictionary<long, MapIDControl> EmptyWaitingControls = new Dictionary<long, MapIDControl>();
         // simulate a threadsafe set
         private readonly ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID> ProcessingMaps = new ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID>();
-
-        public ImportPreview(ContainerControl parent) : base(parent) { }
 
         public override IReadOnlyDictionary<long, Map> GetMaps()
         {
@@ -103,16 +119,19 @@ namespace ImageMap
             ProcessingMaps.TryAdd(pending, pending);
         }
 
+        protected override void UpdateControls(List<MapIDControl> pending_controls)
+        {
+            pending_controls.AddRange(EmptyWaitingControls.Values);
+        }
+
         private void CreateEmptyIDControls(IEnumerable<long> ids)
         {
-            var boxes = new List<MapIDControl>();
             foreach (var id in ids)
             {
                 var box = CreateMapIdControl(id);
-                boxes.Add(box);
+                EmptyWaitingControls.Add(id, box);
             }
-            Controls.AddRange(boxes.ToArray());
-            SignalControlsChanged();
+            UpdateControlsFromMaps();
         }
 
         private void Pending_Finished(object sender, EventArgs e)
@@ -129,10 +148,14 @@ namespace ImageMap
         private void FillEmptyControls(IEnumerable<long> ids)
         {
             var maps = GetMaps();
-            foreach (var box in MapIDControls)
+            foreach (var id in ids)
             {
-                if (ids.Contains(box.ID) && maps.TryGetValue(box.ID, out var map))
-                    box.SetBox(new MapPreviewBox(map));
+                if (EmptyWaitingControls.TryGetValue(id, out var box))
+                {
+                    if (maps.TryGetValue(id, out var map))
+                        box.SetBox(new MapPreviewBox(map));
+                    EmptyWaitingControls.Remove(id);
+                }
             }
         }
     }
@@ -141,9 +164,15 @@ namespace ImageMap
     {
         protected readonly MinecraftWorld World;
 
-        public WorldPreview(ContainerControl parent, MinecraftWorld world) : base(parent)
+        public WorldPreview(MinecraftWorld world)
         {
             World = world;
+            World.MapsChanged += World_MapsChanged;
+        }
+
+        private void World_MapsChanged(object sender, EventArgs e)
+        {
+            UpdateControlsFromMaps();
         }
 
         public override IReadOnlyDictionary<long, Map> GetMaps()

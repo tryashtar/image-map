@@ -37,26 +37,21 @@ namespace ImageMap
 
         public void SetWorld(MinecraftWorld world)
         {
-            if (World != null)
-                World.MapsChanged -= World_MapsChanged;
             World = world;
-            World.MapsChanged += World_MapsChanged;
-            ImportSide = new ImportPreview(this);
-            WorldSide = new WorldPreview(this, world);
+            if (ImportSide != null)
+                ImportSide.ControlsChanged -= Side_ControlsChanged;
+            if (WorldSide != null)
+                WorldSide.ControlsChanged -= Side_ControlsChanged;
+            ImportSide = new ImportPreview();
+            WorldSide = new WorldPreview(world);
             ImportSide.ControlsChanged += Side_ControlsChanged;
             WorldSide.ControlsChanged += Side_ControlsChanged;
+            Side_ControlsChanged(this, EventArgs.Empty);
         }
 
         private void Side_ControlsChanged(object sender, EventArgs e)
         {
-            var side = (HalfPreview)sender;
-            var add = side.MapIDControls.Except(ImportZone.Controls.OfType<MapIDControl>());
-            var remove = ImportZone.Controls.OfType<MapIDControl>().Except(side.MapIDControls);
-            foreach (var control in remove)
-            {
-                ImportZone.Controls.Remove(control);
-            }
-            ImportZone.Controls.AddRange(add.ToArray());
+            Util.SetCoSetControls(ImportZone.Controls, ImportSide.MapIDControls);
             ClickOpenLabel.Visible = !ImportSide.MapIDControls.Any();
         }
 
@@ -111,7 +106,7 @@ namespace ImageMap
             return taken.Max() + 1;
         }
 
-        private void ChangeMapIDs(IEnumerable<MapIDControl> boxes, MapStatus area)
+        private void ChangeMapIDs(IEnumerable<MapIDControl> boxes)
         {
             //var input = new IDInputDialog(boxes.First().ID);
             //input.ShowDialog(this);
@@ -132,12 +127,6 @@ namespace ImageMap
             //    else
             //        Controller.ChangeMapIDs(boxes, firstid, area, MapReplaceOption.Skip);
             //}
-        }
-
-        private void World_MapsChanged(object sender, EventArgs e)
-        {
-            ExistingZone.Controls.Clear();
-            ExistingZone.Controls.AddRange(World.WorldMaps.Select(x => new MapIDControl(x.Key, new MapPreviewBox(x.Value))).ToArray());
         }
 
         private void SendButton_Click(object sender, EventArgs e)

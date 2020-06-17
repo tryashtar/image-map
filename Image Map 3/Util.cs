@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using static System.Windows.Forms.Control;
 
 namespace ImageMap
 {
@@ -40,6 +41,18 @@ namespace ImageMap
             if (ex is AggregateException agg)
                 return String.Join("\n", agg.InnerExceptions.Select(x => ExceptionMessage(x)));
             return $"{ex.GetType().Name}: {ex.Message}";
+        }
+
+        public static void SetCoSetControls<T>(ControlCollection source, IEnumerable<T> destination) where T : Control
+        {
+            var typed = source.OfType<T>();
+            var add = destination.Except(typed);
+            var remove = typed.Except(destination);
+            foreach (var item in remove)
+            {
+                source.Remove(item);
+            }
+            source.AddRange(add.ToArray());
         }
 
         // fall back if unsupported
