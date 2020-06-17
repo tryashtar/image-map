@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using System.Collections.Concurrent;
 
 namespace ImageMap
 {
@@ -38,17 +34,19 @@ namespace ImageMap
         public void SetWorld(MinecraftWorld world)
         {
             World = world;
+
             if (ImportSide != null)
                 ImportSide.ControlsChanged -= ImportSide_ControlsChanged;
+            ImportSide = new ImportPreview();
+            ImportSide.ContextMenu = ImportContextMenu;
+            ImportSide.ControlsChanged += ImportSide_ControlsChanged;
+            ImportSide_ControlsChanged(this, EventArgs.Empty);
+
             if (WorldSide != null)
                 WorldSide.ControlsChanged -= WorldSide_ControlsChanged;
-            ImportSide = new ImportPreview();
             WorldSide = new WorldPreview(world);
-            ImportSide.ControlsChanged += ImportSide_ControlsChanged;
+            WorldSide.ContextMenu = ExistingContextMenu;
             WorldSide.ControlsChanged += WorldSide_ControlsChanged;
-            ImportZone.Controls.Clear();
-            ExistingZone.Controls.Clear();
-            ClickOpenLabel.Visible = true;
             WorldSide_ControlsChanged(this, EventArgs.Empty);
         }
 
@@ -174,23 +172,21 @@ namespace ImageMap
 
         private void ImportContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //if (Controller.GetAllMaps(MapStatus.Importing).All(x => x.Selected))
-            //    ImportContextSelectAll.Text = "Deselect all";
-            //else
-            //    ImportContextSelectAll.Text = "Select all";
-            //ImportContextSend.Enabled = !IsProcessingMaps;
-            //ImportContextDiscard.Enabled = !IsProcessingMaps;
-            //ImportContextChangeID.Enabled = !IsProcessingMaps;
+            if (ImportSide.MapIDControls.All(x => x.IsSelected))
+                ImportContextSelectAll.Text = "Deselect all";
+            else
+                ImportContextSelectAll.Text = "Select all";
         }
 
         private void ExistingContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //ExistingContextAdd.DropDownItems.Clear();
-            //ExistingContextAdd.DropDownItems.AddRange(Controller.GetPlayerDestinations().Select(x => new ToolStripMenuItem(x, null, ExistingContextPlayerName_Click)).ToArray());
-            //if (Controller.GetAllMaps(MapStatus.Existing).All(x => x.Selected))
-            //    ExistingContextSelectAll.Text = "Deselect all";
-            //else
-            //    ExistingContextSelectAll.Text = "Select all";
+            ExistingContextAdd.DropDownItems.Clear();
+            ExistingContextAdd.DropDownItems.Add(new ToolStripMenuItem("Local player", null, ExistingContextChestLocal_Click));
+            ExistingContextAdd.DropDownItems.AddRange(World.GetPlayerIDs().Select(x => new ToolStripMenuItem(x, null, ExistingContextChestUUID_Click)).ToArray());
+            if (WorldSide.MapIDControls.All(x => x.IsSelected))
+                ExistingContextSelectAll.Text = "Deselect all";
+            else
+                ExistingContextSelectAll.Text = "Select all";
         }
 
         private void ImportContextSend_Click(object sender, EventArgs e)
@@ -200,15 +196,15 @@ namespace ImageMap
 
         private void ImportContextChangeID_Click(object sender, EventArgs e)
         {
-            //ChangeMapIDs(Controller.GetSelectedMaps(MapStatus.Importing).ToArray(), MapStatus.Importing);
+            ChangeMapIDs(ImportSide.SelectedControls);
         }
 
         private void ImportContextSelectAll_Click(object sender, EventArgs e)
         {
-            //if (Controller.GetAllMaps(MapStatus.Importing).All(x => x.Selected))
-            //    Controller.DeselectAll(MapStatus.Importing);
-            //else
-            //    Controller.SelectAll(MapStatus.Importing);
+            if (ImportSide.MapIDControls.All(x => x.IsSelected))
+                ImportSide.DeselectAll();
+            else
+                ImportSide.SelectAll();
         }
 
         private void ExistingContextAdd_Click(object sender, EventArgs e)
@@ -219,29 +215,28 @@ namespace ImageMap
             //ChangeMapIDs(Controller.GetSelectedMaps(MapStatus.Existing).ToArray(), MapStatus.Existing);
         }
 
-        private void ExistingContextExport_Click(object sender, EventArgs e)
+        private void ContextExport_Click(object sender, EventArgs e)
         {
-            //var selected = Controller.GetSelectedMaps(MapStatus.Existing);
-            //// super epic way to check if there is exactly one item
-            //bool onlyone = selected.Take(2).Count() == 1;
-            //var export_dialog = new SaveFileDialog()
-            //{
-            //    Title = "Export this map as a PNG",
-            //    Filter = "Image Files|*.png|All Files|*.*"
-            //};
-            //if (onlyone)
-            //    export_dialog.FileName = selected.First().GetMapName() + ".png";
-            //else
-            //    export_dialog.FileName = "";
-            //export_dialog.InitialDirectory = LastImgExportPath;
-            //if (export_dialog.ShowDialog() == DialogResult.OK)
-            //{
-            //    LastImgExportPath = Path.GetDirectoryName(export_dialog.FileName);
-            //    if (onlyone)
-            //        Controller.SaveMap(selected.First(), export_dialog.FileName);
-            //    else
-            //        Controller.SaveMaps(selected, Path.ChangeExtension(export_dialog.FileName, ""));
-            //}
+            var selected = ActivePreview.SelectedControls;
+            bool onlyone = Util.IsSingleSequence(selected);
+            var export_dialog = new SaveFileDialog()
+            {
+                Title = $"Export {Util.Pluralize(selected.Count(), "map")} as PNG",
+                Filter = "Image Files|*.png|All Files|*.*"
+            };
+            if (onlyone)
+                export_dialog.FileName = selected.First().GetMapName() + ".png";
+            else
+                export_dialog.FileName = "";
+            export_dialog.InitialDirectory = Properties.Settings.Default.LastImgExportPath;
+            if (export_dialog.ShowDialog() == DialogResult.OK)
+            {
+                Properties.Settings.Default.LastImgExportPath = Path.GetDirectoryName(export_dialog.FileName);
+                if (onlyone)
+                    SaveMap(selected.First(), export_dialog.FileName);
+                else
+                    SaveMaps(selected, Path.ChangeExtension(export_dialog.FileName, ""));
+            }
         }
 
         private void ImportContextDiscard_Click(object sender, EventArgs e)
@@ -257,118 +252,130 @@ namespace ImageMap
                 World.RemoveMaps(selected.Select(x => x.ID));
         }
 
-        private void ExistingContextPlayerName_Click(object sender, EventArgs e)
+        private void AddSelectedChests(bool local, string uuid)
         {
-            //var playername = ((ToolStripMenuItem)sender).Text;
-            //try
-            //{
-            //    bool success = Controller.AddChests(Controller.GetSelectedMaps(MapStatus.Existing).Select(x => x.ID), playername);
-            //    if (!success)
-            //        MessageBox.Show("There wasn't enough space to fit the chests in your inventory. One or more were not added.", "Chest alert!");
-            //}
-            //catch (FileNotFoundException ex)
-            //{
-            //    MessageBox.Show($"Could not find any player in that world with name {playername}\n\nFull error: {ex.Message}", "Player not found");
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"Unknown error happened: {ex.Message}", "Error!");
-            //}
+            try
+            {
+                var selected = WorldSide.SelectedControls.Select(x => x.ID);
+                bool success = true;
+                if (local)
+                    success = World.AddChestsLocalPlayer(selected);
+                else if (uuid != null)
+                    success = World.AddChests(selected, uuid);
+                if (!success)
+                    MessageBox.Show("There wasn't enough space to fit the chests in your inventory. One or more were not added.", "Chest alert!");
+            }
+            catch (FileNotFoundException ex)
+            {
+                MessageBox.Show($"Could not find any player in that world with name {uuid}\n\n{Util.ExceptionMessage(ex)}", "Player not found");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unknown error happened.\n\n{Util.ExceptionMessage(ex)}", "Error!");
+            }
+        }
+
+        private void ExistingContextChestUUID_Click(object sender, EventArgs e)
+        {
+            var uuid = ((ToolStripMenuItem)sender).Text;
+            AddSelectedChests(false, uuid);
+        }
+
+        private void ExistingContextChestLocal_Click(object sender, EventArgs e)
+        {
+            AddSelectedChests(true, null);
         }
 
         private void ExistingContextSelectAll_Click(object sender, EventArgs e)
         {
-            //if (Controller.GetAllMaps(MapStatus.Existing).All(x => x.Selected))
-            //    Controller.DeselectAll(MapStatus.Existing);
-            //else
-            //    Controller.SelectAll(MapStatus.Existing);
+            if (WorldSide.MapIDControls.All(x => x.IsSelected))
+                WorldSide.DeselectAll();
+            else
+                WorldSide.SelectAll();
         }
 
-        private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, string destination)
+        private void SendMapsWithMessage(IEnumerable<MapIDControl> maps, bool local, string uuid)
         {
-            //int conflicts = Controller.SendMapsToWorld(maps, MapReplaceOption.Info, destination);
-            //if (conflicts > 0)
-            //{
-            //    var option = new ReplaceOptionDialog(conflicts);
-            //    option.ShowDialog(this);
-            //    Controller.SendMapsToWorld(maps, option.SelectedOption, destination);
-            //}
-            //else
-            //    Controller.SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, destination);
+            var world = WorldSide.GetMaps();
+            var conflicts = maps.Where(x => world.ContainsKey(x.ID));
+            if (conflicts.Any())
+            {
+                var option = new ReplaceOptionDialog(conflicts.Count());
+                option.ShowDialog(this);
+                SendMapsToWorld(maps, option.SelectedOption, local, uuid);
+            }
+            else
+                SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, local, uuid);
         }
 
-        //public int SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, string playerid)
-        //{
-        //var writemaps = maps.ToList();
-        //var conflictids = new List<long>();
-        //// check for  conflicts
-        //foreach (var map in maps)
-        //{
-        //    if (map.Conflicted)
-        //    {
-        //        conflictids.Add(map.ID);
-        //        if (option == MapReplaceOption.Skip)
-        //            writemaps.Remove(map);
-        //    }
-        //}
-        //if (option == MapReplaceOption.Info)
-        //    return conflictids.Count;
-        //if (option == MapReplaceOption.ChangeExisting)
-        //{
-        //    foreach (var conflict in conflictids)
-        //    {
-        //        var currentholder = GetMapByID(conflict, MapStatus.Existing);
-        //        currentholder.SetID(GetSafeID());
-        //        writemaps.Add(currentholder);
-        //    }
-        //}
-        //SelectedWorld.AddMaps(writemaps.ToDictionary(x => x.ID, x => x.Map));
-        //var ids = writemaps.Select(x => x.ID);
-        //AddChests(ids, playerid);
-        //foreach (var box in writemaps.ToArray())
-        //{
-        //    var exists = GetMapByID(box.ID, MapStatus.Existing);
-        //    if (exists != null && exists != box)
-        //        RemoveFromZone(exists, MapStatus.Existing);
-        //    SendToZone(box, MapStatus.Existing);
-        //}
-        //DetermineTransferConflicts();
-        //return conflictids.Count;
-        //}
+        public int SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, bool local, string uuid)
+        {
+            //var writemaps = maps.ToList();
+            //var conflictids = new List<long>();
+            //// check for  conflicts
+            //foreach (var map in maps)
+            //{
+            //    if (map.Conflicted)
+            //    {
+            //        conflictids.Add(map.ID);
+            //        if (option == MapReplaceOption.Skip)
+            //            writemaps.Remove(map);
+            //    }
+            //}
+            //if (option == MapReplaceOption.Info)
+            //    return conflictids.Count;
+            //if (option == MapReplaceOption.ChangeExisting)
+            //{
+            //    foreach (var conflict in conflictids)
+            //    {
+            //        var currentholder = GetMapByID(conflict, MapStatus.Existing);
+            //        currentholder.SetID(GetSafeID());
+            //        writemaps.Add(currentholder);
+            //    }
+            //}
+            //SelectedWorld.AddMaps(writemaps.ToDictionary(x => x.ID, x => x.Map));
+            //var ids = writemaps.Select(x => x.ID);
+            //AddChests(ids, playerid);
+            //foreach (var box in writemaps.ToArray())
+            //{
+            //    var exists = GetMapByID(box.ID, MapStatus.Existing);
+            //    if (exists != null && exists != box)
+            //        RemoveFromZone(exists, MapStatus.Existing);
+            //    SendToZone(box, MapStatus.Existing);
+            //}
+            //DetermineTransferConflicts();
+            //return conflictids.Count;
+            return 0;
+        }
 
         private void DetermineTransferConflicts()
         {
-            //foreach (var box in GetAllMaps(MapStatus.Importing))
-            //{
-            //    var counterpart = GetMapByID(box.ID, MapStatus.Existing);
-            //    box.SetConflict(counterpart != null);
-            //}
+            foreach (var box in ImportSide.MapIDControls)
+            {
+                var maps = WorldSide.GetMaps();
+                box.SetConflict(maps.ContainsKey(box.ID));
+            }
         }
 
-        //public void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
-        //{
-        //    Directory.CreateDirectory(folder);
-        //    foreach (var box in maps)
-        //    {
-        //        box.Map.Image.Save(Path.Combine(folder, box.GetMapName() + ".png"));
-        //    }
-        //}
+        public void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
+        {
+            Directory.CreateDirectory(folder);
+            foreach (var box in maps)
+            {
+                box.Map.Image.Save(Path.Combine(folder, box.GetMapName() + ".png"));
+            }
+        }
 
-        //public void DeleteMapsFromWorld(IEnumerable<MapIDControl> maps)
-        //{
-        //    var remove = maps.ToArray();
-        //    foreach (var box in remove)
-        //    {
-        //        RemoveFromZone(box, MapStatus.Existing);
-        //    }
-        //    SelectedWorld.RemoveMaps(remove.Select(x => x.ID));
-        //    DetermineTransferConflicts();
-        //}
+        public void DeleteMapsFromWorld(IEnumerable<MapIDControl> maps)
+        {
+            World.RemoveMaps(maps.Select(x => x.ID));
+            DetermineTransferConflicts();
+        }
 
-        //public void SaveMap(MapIDControl map, string file)
-        //{
-        //    map.Map.Image.Save(file);
-        //}
+        public void SaveMap(MapIDControl map, string file)
+        {
+            map.Map.Image.Save(file);
+        }
 
         private void PasteShortcut_Click(object sender, EventArgs e)
         {

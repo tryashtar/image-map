@@ -44,6 +44,11 @@ namespace ImageMap
             }
         }
 
+        public static bool IsSingleSequence<T>(IEnumerable<T> items)
+        {
+            return items.Take(2).Count() == 1;
+        }
+
         public static string ExceptionMessage(Exception ex)
         {
             if (ex is AggregateException agg)

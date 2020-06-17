@@ -22,7 +22,7 @@ namespace ImageMap
         public abstract IReadOnlyDictionary<long, Map> GetMaps();
         public virtual bool HasAnyMaps() => GetMaps().Any();
         public virtual IEnumerable<long> GetTakenIDs() => GetMaps().Keys;
-        public abstract ContextMenuStrip GetContextMenu();
+        public ContextMenuStrip ContextMenu;
         private readonly List<MapIDControl> Controls = new List<MapIDControl>();
         public IReadOnlyCollection<MapIDControl> MapIDControls => Controls.AsReadOnly();
         public IEnumerable<MapIDControl> SelectedControls => Controls.Where(x => x.IsSelected);
@@ -39,7 +39,7 @@ namespace ImageMap
         {
             foreach (var box in Controls)
             {
-                box.SetSelected(true);
+                box.SetSelected(false);
             }
         }
 
@@ -87,7 +87,7 @@ namespace ImageMap
                     DeselectAll();
                     box.SetSelected(true);
                 }
-                var context = GetContextMenu();
+                var context = ContextMenu;
                 context.Show(box, new Point(e.X, e.Y));
             }
             else
@@ -131,10 +131,6 @@ namespace ImageMap
         public override IEnumerable<long> GetTakenIDs()
         {
             return base.GetTakenIDs().Concat(ProcessingMaps.SelectMany(x => x.Key.IDs));
-        }
-        public override ContextMenuStrip GetContextMenu()
-        {
-            throw new NotImplementedException();
         }
 
         public void AddPending(PendingMapsWithID pending)
@@ -219,10 +215,6 @@ namespace ImageMap
         public override IReadOnlyDictionary<long, Map> GetMaps()
         {
             return World.WorldMaps;
-        }
-        public override ContextMenuStrip GetContextMenu()
-        {
-            throw new NotImplementedException();
         }
     }
 }
