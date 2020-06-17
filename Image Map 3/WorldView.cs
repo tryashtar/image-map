@@ -14,12 +14,21 @@ namespace ImageMap
 {
     public partial class WorldView : UserControl
     {
-        private readonly Dictionary<long, Map> ImportingMaps = new Dictionary<long, Map>();
-        // simulate a threadsafe set
-        private readonly ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID> ProcessingMaps = new ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID>();
+        private ImportPreview ImportSide;
+        private WorldPreview WorldSide;
+        private HalfPreview ActivePreview
+        {
+            get
+            {
+                if (MapTabs.SelectedTab == ImportTab)
+                    return ImportSide;
+                else
+                    return WorldSide;
+            }
+        }
+
         private MinecraftWorld World;
         private EditionProperties ActiveEdition => EditionProperties.FromEdition(World.Edition);
-        public MapStatus CurrentView => MapTabs.SelectedTab == ImportTab ? MapStatus.Importing : MapStatus.Existing;
 
         public WorldView()
         {
@@ -32,8 +41,20 @@ namespace ImageMap
                 World.MapsChanged -= World_MapsChanged;
             World = world;
             World.MapsChanged += World_MapsChanged;
-            ExistingZone.Controls.Clear();
-            ImportZone.Controls.Clear();
+            ImportSide = new ImportPreview(this);
+            WorldSide = new WorldPreview(this, world);
+            ImportSide.ControlsChanged += Side_ControlsChanged;
+            WorldSide.ControlsChanged += WorldSide_ControlsChanged;
+        }
+
+        private void Side_ControlsChanged(object sender, EventArgs e)
+        {
+            var side = (HalfPreview)sender;
+        }
+
+        public bool HasUnsavedChanges()
+        {
+            return ImportSide.HasAnyMaps();
         }
 
         public void Import(IEnumerable<string> paths)
@@ -50,40 +71,6 @@ namespace ImageMap
             CloseImportWindow(window);
         }
 
-        public bool HasUnsavedChanges()
-        {
-            return ImportingMaps.Any() || ProcessingMaps.Any();
-        }
-
-        private Panel GetZone(MapStatus status)
-        {
-            return status == MapStatus.Importing ? ImportZone : ExistingZone;
-        }
-
-        private ContextMenuStrip GetContextMenu(MapStatus status)
-        {
-            return status == MapStatus.Importing ? ImportContextMenu : ExistingContextMenu;
-        }
-
-        private IEnumerable<MapIDControl> GetMapIDControls(MapStatus location)
-        {
-            foreach (var control in GetZone(location).Controls)
-            {
-                if (control is MapIDControl box)
-                    yield return box;
-            }
-        }
-
-        private MapStatus WhereIsBox(MapIDControl box)
-        {
-            foreach (MapStatus status in Enum.GetValues(typeof(MapStatus)))
-            {
-                if (GetMapIDControls(status).Contains(box))
-                    return status;
-            }
-            throw new ArgumentException();
-        }
-
         private ImportWindow PrepareImportWindow()
         {
             var window = ActiveEdition.CreateImportWindow();
@@ -98,30 +85,7 @@ namespace ImageMap
         private void Window_ImageReady(object sender, MapCreationSettings settings)
         {
             var pending = new PendingMapsWithID(GetSafeID(), settings, ActiveEdition);
-            CreateEmptyIDControls(pending);
-            pending.Finished += Pending_Finished;
-            ProcessingMaps.TryAdd(pending, pending);
-        }
-
-        private void Pending_Finished(object sender, EventArgs e)
-        {
-            var pending = (PendingMapsWithID)sender;
-            ProcessingMaps.TryRemove(pending, out _);
-            foreach (var item in pending.ResultMaps)
-            {
-                ImportingMaps[item.Key] = item.Value;
-            }
-            UpdateImportView();
-        }
-
-        // ensure the physical controls matches our internal model of ImportingMaps
-        private void UpdateImportView()
-        {
-            foreach (var box in GetMapIDControls(MapStatus.Importing))
-            {
-                if (!box.HasBox && ImportingMaps.TryGetValue(box.ID, out var map))
-                    box.SetBox(new MapPreviewBox(map));
-            }
+            ImportSide.AddPending(pending);
         }
 
         private void CloseImportWindow(ImportWindow window)
@@ -132,40 +96,9 @@ namespace ImageMap
             Properties.Settings.Default.Stretch = window.StretchChecked;
         }
 
-        private void CreateEmptyIDControls(PendingMapsWithID maps)
-        {
-            var boxes = new MapIDControl[maps.MapCount];
-            int i = -1;
-            foreach (var id in maps.IDs)
-            {
-                i++;
-                var box = new MapIDControl(id);
-                box.MouseDown += Box_MouseDown;
-                boxes[i] = box;
-            }
-            ImportZone.Controls.AddRange(boxes);
-        }
-
-
-        private void SelectAll(MapStatus place)
-        {
-            foreach (var box in GetMapIDControls(place))
-            {
-                box.SetSelected(true);
-            }
-        }
-
-        private void DeselectAll(MapStatus place)
-        {
-            foreach (var box in GetMapIDControls(place))
-            {
-                box.SetSelected(false);
-            }
-        }
-
         private long GetSafeID()
         {
-            var taken = ImportingMaps.Concat(World.WorldMaps).Select(x => x.Key).Concat(ProcessingMaps.SelectMany(x => x.Value.IDs)).ToList();
+            var taken = ImportSide.GetTakenIDs().Concat(WorldSide.GetTakenIDs()).ToList();
             taken.Add(-1);
             return taken.Max() + 1;
         }
@@ -197,24 +130,6 @@ namespace ImageMap
         {
             ExistingZone.Controls.Clear();
             ExistingZone.Controls.AddRange(World.WorldMaps.Select(x => new MapIDControl(x.Key, new MapPreviewBox(x.Value))).ToArray());
-        }
-
-        private void Box_MouseDown(object sender, MouseEventArgs e)
-        {
-            var box = (MapIDControl)sender;
-            var box_location = WhereIsBox(box);
-            var context = GetContextMenu(box_location);
-            if (e.Button == MouseButtons.Right)
-            {
-                if (!box.Selected)
-                {
-                    DeselectAll(box_location);
-                    box.SetSelected(true);
-                }
-                context.Show(box, new Point(e.X, e.Y));
-            }
-            //else
-            //    ClickSelect(box, where);
         }
 
         private void SendButton_Click(object sender, EventArgs e)
