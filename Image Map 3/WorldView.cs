@@ -46,7 +46,9 @@ namespace ImageMap
             WorldSide = new WorldPreview(world);
             ImportSide.ControlsChanged += ImportSide_ControlsChanged;
             WorldSide.ControlsChanged += WorldSide_ControlsChanged;
-            ImportSide_ControlsChanged(this, EventArgs.Empty);
+            ImportZone.Controls.Clear();
+            ExistingZone.Controls.Clear();
+            ClickOpenLabel.Visible = true;
             WorldSide_ControlsChanged(this, EventArgs.Empty);
         }
 
@@ -137,6 +139,8 @@ namespace ImageMap
 
         private void SendButton_Click(object sender, EventArgs e)
         {
+            World.AddMaps(ImportSide.GetMaps());
+            ImportSide.ClearMaps();
             //SendMapsWithMessage(Controller.GetAllMaps(MapStatus.Importing), AddChestCheck.Checked ? ViewController.LOCAL_IDENTIFIER : ViewController.NOBODY_IDENTIFIER);
         }
 
@@ -199,16 +203,6 @@ namespace ImageMap
             //ChangeMapIDs(Controller.GetSelectedMaps(MapStatus.Importing).ToArray(), MapStatus.Importing);
         }
 
-        private void ImportContextDiscard_Click(object sender, EventArgs e)
-        {
-            //var selected = Controller.GetSelectedMaps(MapStatus.Importing).ToArray();
-            //foreach (var box in selected)
-            //{
-            //    Controller.RemoveFromZone(box, MapStatus.Importing);
-            //    box.Map.Dispose();
-            //}
-        }
-
         private void ImportContextSelectAll_Click(object sender, EventArgs e)
         {
             //if (Controller.GetAllMaps(MapStatus.Importing).All(x => x.Selected))
@@ -250,11 +244,17 @@ namespace ImageMap
             //}
         }
 
+        private void ImportContextDiscard_Click(object sender, EventArgs e)
+        {
+            var selected = ImportSide.SelectedControls;
+            ImportSide.RemoveMaps(selected.Select(x => x.ID));
+        }
+
         private void ExistingContextDelete_Click(object sender, EventArgs e)
         {
-            //var selected = Controller.GetSelectedMaps(MapStatus.Existing);
-            //if (selected.Any() && MessageBox.Show("Deleting these maps will remove all copies from the world permanently.\n\nWould you like to delete these maps?", $"Delete {selected.Count()} maps?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            //    Controller.DeleteMapsFromWorld(selected);
+            var selected = WorldSide.SelectedControls;
+            if (selected.Any() && MessageBox.Show("Deleting these maps will remove all copies from the world permanently.\n\nWould you like to delete these maps?", $"Delete { Util.Pluralize(selected.Count(), "map")}?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                World.RemoveMaps(selected.Select(x => x.ID));
         }
 
         private void ExistingContextPlayerName_Click(object sender, EventArgs e)
@@ -406,11 +406,5 @@ namespace ImageMap
             else if (ActivePreview == WorldSide)
                 ExistingContextDelete_Click(this, EventArgs.Empty);
         }
-    }
-
-    public enum MapStatus
-    {
-        Importing,
-        Existing
     }
 }

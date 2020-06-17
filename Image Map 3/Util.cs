@@ -51,16 +51,16 @@ namespace ImageMap
             return $"{ex.GetType().Name}: {ex.Message}";
         }
 
-        public static void SetControls<T>(ControlCollection source, IEnumerable<T> destination) where T : Control
+        public static void SetControls<T>(ControlCollection destination, IEnumerable<T> source) where T : Control
         {
-            var typed = source.OfType<T>();
-            var add = destination.Except(typed);
-            var remove = typed.Except(destination);
+            var typed = destination.OfType<T>();
+            var add = source.Except(typed).ToArray();
+            var remove = typed.Except(source).ToList();
             foreach (var item in remove)
             {
-                source.Remove(item);
+                destination.Remove(item);
             }
-            source.AddRange(add.ToArray());
+            destination.AddRange(add);
         }
 
         // fall back if unsupported

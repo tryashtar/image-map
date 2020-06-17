@@ -4,6 +4,12 @@ using System.IO;
 
 namespace ImageMap
 {
+    public enum Edition
+    {
+        Java,
+        Bedrock
+    }
+
     public abstract class EditionProperties
     {
         public abstract string SavesFolder { get; set; }

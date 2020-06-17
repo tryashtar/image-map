@@ -5,19 +5,12 @@ using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
 using LevelDBWrapper;
-using System.Collections.Specialized;
 
 namespace ImageMap
 {
-    public enum Edition
-    {
-        Java,
-        Bedrock
-    }
-
     public abstract class MinecraftWorld : IDisposable
     {
-        private SortedDictionary<long, Map> Maps;
+        protected SortedDictionary<long, Map> Maps;
         public IReadOnlyDictionary<long, Map> WorldMaps => Maps;
         public string Folder { get; protected set; }
         public string Name { get; protected set; }
@@ -32,7 +25,7 @@ namespace ImageMap
         {
             Maps = new SortedDictionary<long, Map>(LoadMaps());
         }
-        public abstract void AddMaps(Dictionary<long, Map> maps);
+        public abstract void AddMaps(IReadOnlyDictionary<long, Map> maps);
         public abstract void RemoveMaps(IEnumerable<long> mapids);
         // returns whether there was enough room to fit the chests
         public abstract bool AddChestsLocalPlayer(IEnumerable<long> mapids);
@@ -43,6 +36,10 @@ namespace ImageMap
         protected abstract IEnumerable<byte> GetFreeSlots(NbtList invtag);
         // mapids count must not exceed 27
         protected abstract NbtCompound CreateChest(IEnumerable<long> mapids);
+        protected void SignalMapsChanged()
+        {
+            MapsChanged?.Invoke(this, EventArgs.Empty);
+        }
         // returns whether there was enough room to fit the chests
         protected bool PutChestsInInventory(NbtList invtag, IEnumerable<long> mapids)
         {
@@ -136,7 +133,7 @@ namespace ImageMap
             HasLocalPlayer = (LevelDat.RootTag["Data"]["Player"] != null);
         }
 
-        public override void AddMaps(Dictionary<long, Map> maps)
+        public override void AddMaps(IReadOnlyDictionary<long, Map> maps)
         {
             foreach (var map in maps)
             {
@@ -157,9 +154,14 @@ namespace ImageMap
                     }
                 };
                 new NbtFile(mapfile).SaveToFile(MapFileLocation(map.Key), NbtCompression.GZip);
+                Maps[map.Key] = map.Value;
             }
-            long biggest_id = maps.Keys.Max();
-            IncreaseMapIdCount((int)biggest_id);
+            if (maps.Any())
+            {
+                long biggest_id = maps.Keys.Max();
+                IncreaseMapIdCount((int)biggest_id);
+            }
+            SignalMapsChanged();
         }
 
         private void IncreaseMapIdCount(int id)
@@ -182,7 +184,9 @@ namespace ImageMap
             foreach (var id in mapids)
             {
                 File.Delete(MapFileLocation(id));
+                Maps.Remove(id);
             }
+            SignalMapsChanged();
         }
 
         public override IEnumerable<string> GetPlayerIDs()
@@ -298,7 +302,7 @@ namespace ImageMap
             BedrockDB?.Close();
         }
 
-        public override void AddMaps(Dictionary<long, Map> maps)
+        public override void AddMaps(IReadOnlyDictionary<long, Map> maps)
         {
             var batch = new WriteBatch();
             foreach (var map in maps)
@@ -323,10 +327,12 @@ namespace ImageMap
                 file.BigEndian = false;
                 byte[] bytes = file.SaveToBuffer(NbtCompression.None);
                 batch.Put($"map_{map.Key}", bytes);
+                Maps[map.Key] = map.Value;
             }
             OpenDB();
             BedrockDB.Write(batch);
             CloseDB();
+            SignalMapsChanged();
         }
 
         public override void RemoveMaps(IEnumerable<long> mapids)
@@ -335,8 +341,10 @@ namespace ImageMap
             foreach (var id in mapids)
             {
                 BedrockDB.Delete($"map_{id}");
+                Maps.Remove(id);
             }
             CloseDB();
+            SignalMapsChanged();
         }
 
         public override bool AddChestsLocalPlayer(IEnumerable<long> mapids) => AddChestsExact(mapids, "~local_player");

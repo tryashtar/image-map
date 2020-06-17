@@ -10,6 +10,12 @@ using System.Windows.Forms;
 
 namespace ImageMap
 {
+    public enum MapStatus
+    {
+        Importing,
+        Existing
+    }
+
     public abstract class HalfPreview
     {
         public event EventHandler ControlsChanged;
@@ -19,7 +25,7 @@ namespace ImageMap
         public abstract ContextMenuStrip GetContextMenu();
         private readonly List<MapIDControl> Controls = new List<MapIDControl>();
         public IReadOnlyCollection<MapIDControl> MapIDControls => Controls.AsReadOnly();
-        protected IEnumerable<MapIDControl> SelectedControls => Controls.Where(x => x.IsSelected);
+        public IEnumerable<MapIDControl> SelectedControls => Controls.Where(x => x.IsSelected);
 
         public void SelectAll()
         {
@@ -136,6 +142,21 @@ namespace ImageMap
             CreateEmptyIDControls(pending.IDs);
             pending.Finished += Pending_Finished;
             ProcessingMaps.TryAdd(pending, pending);
+        }
+
+        public void RemoveMaps(IEnumerable<long> ids)
+        {
+            foreach (var id in ids)
+            {
+                ImportingMaps.Remove(id);
+            }
+            UpdateControlsFromMaps();
+        }
+
+        public void ClearMaps()
+        {
+            ImportingMaps.Clear();
+            UpdateControlsFromMaps();
         }
 
         protected override void UpdateControls(List<MapIDControl> pending_controls)
