@@ -154,6 +154,7 @@
             this.SendButton.TabIndex = 18;
             this.SendButton.Text = "Send All to World";
             this.SendButton.UseVisualStyleBackColor = true;
+            this.SendButton.Click += new System.EventHandler(this.SendButton_Click);
             // 
             // OpenButton
             // 
