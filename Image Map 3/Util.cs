@@ -56,11 +56,13 @@ namespace ImageMap
             return $"{ex.GetType().Name}: {ex.Message}";
         }
 
-        public static void SetControls<T>(ControlCollection destination, IEnumerable<T> source) where T : Control
+        public static void SetControls<T>(Control control, IEnumerable<T> source) where T : Control
         {
+            var destination = control.Controls;
             var typed = destination.OfType<T>();
             var add = source.Except(typed).ToArray();
             var remove = typed.Except(source).ToList();
+            control.SuspendLayout();
             if (remove.Count == destination.Count)
                 destination.Clear();
             else
@@ -71,6 +73,7 @@ namespace ImageMap
                 }
             }
             destination.AddRange(add);
+            control.ResumeLayout();
         }
 
         // fall back if unsupported

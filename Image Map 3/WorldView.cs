@@ -52,14 +52,14 @@ namespace ImageMap
 
         private void ImportSide_ControlsChanged(object sender, EventArgs e)
         {
-            Util.SetControls(ImportZone.Controls, ImportSide.MapIDControls);
+            Util.SetControls(ImportZone, ImportSide.MapIDControls);
             ClickOpenLabel.Visible = !ImportSide.MapIDControls.Any();
             DetermineTransferConflicts();
         }
 
         private void WorldSide_ControlsChanged(object sender, EventArgs e)
         {
-            Util.SetControls(ExistingZone.Controls, WorldSide.MapIDControls);
+            Util.SetControls(ExistingZone, WorldSide.MapIDControls);
             DetermineTransferConflicts();
         }
 

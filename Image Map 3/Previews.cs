@@ -116,9 +116,7 @@ namespace ImageMap
     public class ImportPreview : HalfPreview
     {
         private readonly Dictionary<long, Map> ImportingMaps = new Dictionary<long, Map>();
-        private readonly Dictionary<long, MapIDControl> EmptyWaitingControls = new Dictionary<long, MapIDControl>();
-        // simulate a threadsafe set
-        private readonly ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID> ProcessingMaps = new ConcurrentDictionary<PendingMapsWithID, PendingMapsWithID>();
+        private readonly ConcurrentDictionary<PendingMapsWithID, IEnumerable<MapIDControl>> ProcessingMaps = new ConcurrentDictionary<PendingMapsWithID, IEnumerable<MapIDControl>>();
 
         public override IReadOnlyDictionary<long, Map> GetMaps()
         {
@@ -135,9 +133,10 @@ namespace ImageMap
 
         public void AddPending(PendingMapsWithID pending)
         {
-            CreateEmptyIDControls(pending.IDs);
+            var boxes = CreateEmptyIDControls(pending.IDs);
             pending.Finished += Pending_Finished;
-            ProcessingMaps.TryAdd(pending, pending);
+            ProcessingMaps.TryAdd(pending, boxes);
+            UpdateControlsFromMaps();
         }
 
         public void RemoveMaps(IEnumerable<long> ids)
@@ -157,41 +156,30 @@ namespace ImageMap
 
         protected override void UpdateControls(List<MapIDControl> pending_controls)
         {
-            pending_controls.AddRange(EmptyWaitingControls.Values);
+            pending_controls.AddRange(ProcessingMaps.Values.SelectMany(x => x));
         }
 
-        private void CreateEmptyIDControls(IEnumerable<long> ids)
+        private IEnumerable<MapIDControl> CreateEmptyIDControls(IEnumerable<long> ids)
         {
+            var boxes = new List<MapIDControl>();
             foreach (var id in ids)
             {
                 var box = CreateMapIdControl(id);
-                EmptyWaitingControls.Add(id, box);
+                boxes.Add(box);
             }
-            UpdateControlsFromMaps();
+            return boxes;
         }
 
         private void Pending_Finished(object sender, EventArgs e)
         {
             var pending = (PendingMapsWithID)sender;
-            ProcessingMaps.TryRemove(pending, out _);
+            ProcessingMaps.TryRemove(pending, out var boxes);
             foreach (var item in pending.ResultMaps)
             {
                 ImportingMaps[item.Key] = item.Value;
-            }
-            FillEmptyControls(pending.IDs);
-        }
-
-        private void FillEmptyControls(IEnumerable<long> ids)
-        {
-            var maps = GetMaps();
-            foreach (var id in ids)
-            {
-                if (EmptyWaitingControls.TryGetValue(id, out var box))
-                {
-                    if (maps.TryGetValue(id, out var map))
-                        box.SetBox(new MapPreviewBox(map));
-                    EmptyWaitingControls.Remove(id);
-                }
+                var box = boxes.FirstOrDefault(x => x.ID == item.Key);
+                if (box != null)
+                    box.SetBox(new MapPreviewBox(item.Value));
             }
         }
     }
