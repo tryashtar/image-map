@@ -1,6 +1,6 @@
 ﻿namespace ImageMap
 {
-    partial class WorldControl
+    partial class WorldIconControl
     {
         /// <summary> 
         /// Required designer variable.

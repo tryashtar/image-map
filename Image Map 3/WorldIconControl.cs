@@ -11,13 +11,13 @@ using System.IO;
 
 namespace ImageMap
 {
-    public abstract partial class WorldControl : UserControl
+    public abstract partial class WorldIconControl : UserControl
     {
         public string WorldFolder { get; private set; }
         protected abstract string GetIconPath(string folder);
         protected abstract string GetWorldName(string folder);
 
-        public WorldControl(string worldfolder)
+        public WorldIconControl(string worldfolder)
         {
             InitializeComponent();
             WorldFolder = worldfolder;
@@ -47,7 +47,7 @@ namespace ImageMap
         }
     }
 
-    public class JavaWorldControl : WorldControl
+    public class JavaWorldControl : WorldIconControl
     {
         public JavaWorldControl(string folder) : base(folder) { }
 
@@ -73,7 +73,7 @@ namespace ImageMap
         }
     }
 
-    public class BedrockWorldControl : WorldControl
+    public class BedrockWorldControl : WorldIconControl
     {
         public BedrockWorldControl(string folder) : base(folder) { }
 

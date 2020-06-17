@@ -8,15 +8,15 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace ImageMap
 {
-    public abstract partial class WorldWindow : Form
+    public abstract partial class WorldSelectWindow : Form
     {
         public bool Confirmed { get; private set; } = false;
         public string SelectedWorldFolder { get; private set; }
         public string SavesFolder { get; set; }
 
-        public abstract WorldControl NewWorldControl(string folder);
+        public abstract WorldIconControl NewWorldControl(string folder);
 
-        public WorldWindow()
+        public WorldSelectWindow()
         {
             InitializeComponent();
         }
@@ -55,17 +55,17 @@ namespace ImageMap
 
         private void World_Click(object sender, EventArgs e)
         {
-            foreach (WorldControl control in WorldZone.Controls)
+            foreach (WorldIconControl control in WorldZone.Controls)
             {
                 control.BackColor = Color.Transparent;
             }
-            ((WorldControl)sender).BackColor = Color.LightGreen;
+            ((WorldIconControl)sender).BackColor = Color.LightGreen;
         }
 
         private void World_DoubleClick(object sender, EventArgs e)
         {
             Confirmed = true;
-            SelectedWorldFolder = ((WorldControl)sender).WorldFolder;
+            SelectedWorldFolder = ((WorldIconControl)sender).WorldFolder;
             this.Close();
         }
 
@@ -88,17 +88,17 @@ namespace ImageMap
         }
     }
 
-    public class JavaWorldWindow : WorldWindow
+    public class JavaWorldWindow : WorldSelectWindow
     {
-        public override WorldControl NewWorldControl(string folder)
+        public override WorldIconControl NewWorldControl(string folder)
         {
             return new JavaWorldControl(folder);
         }
     }
 
-    public class BedrockWorldWindow : WorldWindow
+    public class BedrockWorldWindow : WorldSelectWindow
     {
-        public override WorldControl NewWorldControl(string folder)
+        public override WorldIconControl NewWorldControl(string folder)
         {
             return new BedrockWorldControl(folder);
         }

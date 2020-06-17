@@ -7,7 +7,7 @@ namespace ImageMap
     public abstract class EditionProperties
     {
         public abstract string SavesFolder { get; set; }
-        public abstract WorldWindow BrowseDialog { get; }
+        public abstract WorldSelectWindow BrowseDialog { get; }
         public abstract string DefaultSavesFolder();
         public abstract ImportWindow CreateImportWindow();
         public abstract IEnumerable<Map> MapFromSettings(MapCreationSettings settings);
@@ -35,8 +35,8 @@ namespace ImageMap
     public class JavaEditionProperties : EditionProperties
     {
         public static JavaEditionProperties Instance = new JavaEditionProperties();
-        private readonly WorldWindow Dialog;
-        public override WorldWindow BrowseDialog => Dialog;
+        private readonly WorldSelectWindow Dialog;
+        public override WorldSelectWindow BrowseDialog => Dialog;
         private JavaEditionProperties() : base(Edition.Java)
         {
             Dialog = new JavaWorldWindow();
@@ -69,8 +69,8 @@ namespace ImageMap
     public class BedrockEditionProperties : EditionProperties
     {
         public static BedrockEditionProperties Instance = new BedrockEditionProperties();
-        private readonly WorldWindow Dialog;
-        public override WorldWindow BrowseDialog => Dialog;
+        private readonly WorldSelectWindow Dialog;
+        public override WorldSelectWindow BrowseDialog => Dialog;
         private BedrockEditionProperties() : base(Edition.Bedrock)
         {
             Dialog = new BedrockWorldWindow();

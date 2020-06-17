@@ -110,11 +110,11 @@
     </Compile>
     <Compile Include="Util.cs" />
     <Compile Include="World.cs" />
-    <Compile Include="WorldControl.cs">
+    <Compile Include="WorldIconControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="WorldControl.Designer.cs">
-      <DependentUpon>WorldControl.cs</DependentUpon>
+    <Compile Include="WorldIconControl.Designer.cs">
+      <DependentUpon>WorldIconControl.cs</DependentUpon>
     </Compile>
     <Compile Include="WorldView.cs">
       <SubType>UserControl</SubType>
@@ -122,11 +122,11 @@
     <Compile Include="WorldView.Designer.cs">
       <DependentUpon>WorldView.cs</DependentUpon>
     </Compile>
-    <Compile Include="WorldWindow.cs">
+    <Compile Include="WorldSelectWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WorldWindow.Designer.cs">
-      <DependentUpon>WorldWindow.cs</DependentUpon>
+    <Compile Include="WorldSelectWindow.Designer.cs">
+      <DependentUpon>WorldSelectWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="CustomControls.cs">
       <SubType>Component</SubType>
@@ -158,14 +158,14 @@
     <EmbeddedResource Include="ReplaceOptionDialog.resx">
       <DependentUpon>ReplaceOptionDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WorldControl.resx">
-      <DependentUpon>WorldControl.cs</DependentUpon>
+    <EmbeddedResource Include="WorldIconControl.resx">
+      <DependentUpon>WorldIconControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WorldView.resx">
       <DependentUpon>WorldView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WorldWindow.resx">
-      <DependentUpon>WorldWindow.cs</DependentUpon>
+    <EmbeddedResource Include="WorldSelectWindow.resx">
+      <DependentUpon>WorldSelectWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ImportWindow.resx">
       <DependentUpon>ImportWindow.cs</DependentUpon>
