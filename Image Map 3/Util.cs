@@ -56,9 +56,14 @@ namespace ImageMap
             var typed = destination.OfType<T>();
             var add = source.Except(typed).ToArray();
             var remove = typed.Except(source).ToList();
-            foreach (var item in remove)
+            if (remove.Count == destination.Count)
+                destination.Clear();
+            else
             {
-                destination.Remove(item);
+                foreach (var item in remove)
+                {
+                    destination.Remove(item);
+                }
             }
             destination.AddRange(add);
         }
