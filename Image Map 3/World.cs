@@ -30,6 +30,14 @@ namespace ImageMap
         // returns whether there was enough room to fit the chests
         public abstract bool AddChestsLocalPlayer(IEnumerable<long> mapids);
         public abstract bool AddChests(IEnumerable<long> mapids, string playerid);
+        public void ChangeMapID(long from, long to)
+        {
+            if (Maps.TryGetValue(from, out var map))
+            {
+                RemoveMaps(new[] { from });
+                AddMaps(new Dictionary<long, Map> { { to, map } });
+            }
+        }
         public abstract IEnumerable<string> GetPlayerIDs();
         protected abstract Dictionary<long, Map> LoadMaps();
         // returns slot IDs not occupied with an item
@@ -199,6 +207,8 @@ namespace ImageMap
 
         public override bool AddChestsLocalPlayer(IEnumerable<long> mapids)
         {
+            if (!mapids.Any())
+                return true;
             ReloadLevelDat();
             var playertag = (NbtCompound)LevelDat.RootTag["Data"]["Player"];
             var invtag = (NbtList)playertag["Inventory"];
@@ -209,6 +219,8 @@ namespace ImageMap
 
         public override bool AddChests(IEnumerable<long> mapids, string playerid)
         {
+            if (!mapids.Any())
+                return true;
             var activefile = new NbtFile(PlayerFileLocation(playerid));
             var playertag = activefile.RootTag;
             var invtag = (NbtList)playertag["Inventory"];
@@ -351,6 +363,8 @@ namespace ImageMap
         public override bool AddChests(IEnumerable<long> mapids, string playerid) => AddChestsExact(mapids, UuidToKey(playerid));
         private bool AddChestsExact(IEnumerable<long> mapids, string exact_playerid)
         {
+            if (!mapids.Any())
+                return true;
             OpenDB();
             // acquire the file this player is stored in, and the tag that represents said player
             byte[] playerdata = BedrockDB.Get(exact_playerid);

@@ -41,18 +41,20 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DescriptionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F);
-            this.DescriptionLabel.Location = new System.Drawing.Point(12, 9);
+            this.DescriptionLabel.Location = new System.Drawing.Point(9, 7);
+            this.DescriptionLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.DescriptionLabel.Name = "DescriptionLabel";
-            this.DescriptionLabel.Size = new System.Drawing.Size(378, 117);
+            this.DescriptionLabel.Size = new System.Drawing.Size(284, 95);
             this.DescriptionLabel.TabIndex = 0;
             this.DescriptionLabel.Text = "Due to a conflict...";
             // 
             // SkipButton
             // 
             this.SkipButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.SkipButton.Location = new System.Drawing.Point(16, 141);
+            this.SkipButton.Location = new System.Drawing.Point(12, 115);
+            this.SkipButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.SkipButton.Name = "SkipButton";
-            this.SkipButton.Size = new System.Drawing.Size(119, 44);
+            this.SkipButton.Size = new System.Drawing.Size(89, 36);
             this.SkipButton.TabIndex = 1;
             this.SkipButton.Text = "Skip";
             this.SkipButton.UseVisualStyleBackColor = true;
@@ -61,9 +63,10 @@
             // OverwriteButton
             // 
             this.OverwriteButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.OverwriteButton.Location = new System.Drawing.Point(141, 141);
+            this.OverwriteButton.Location = new System.Drawing.Point(106, 115);
+            this.OverwriteButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.OverwriteButton.Name = "OverwriteButton";
-            this.OverwriteButton.Size = new System.Drawing.Size(119, 44);
+            this.OverwriteButton.Size = new System.Drawing.Size(89, 36);
             this.OverwriteButton.TabIndex = 2;
             this.OverwriteButton.Text = "Overwrite";
             this.OverwriteButton.UseVisualStyleBackColor = true;
@@ -72,9 +75,10 @@
             // AutoButton
             // 
             this.AutoButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.AutoButton.Location = new System.Drawing.Point(266, 141);
+            this.AutoButton.Location = new System.Drawing.Point(200, 115);
+            this.AutoButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.AutoButton.Name = "AutoButton";
-            this.AutoButton.Size = new System.Drawing.Size(119, 44);
+            this.AutoButton.Size = new System.Drawing.Size(89, 36);
             this.AutoButton.TabIndex = 3;
             this.AutoButton.Text = "Auto";
             this.AutoButton.UseVisualStyleBackColor = true;
@@ -82,15 +86,16 @@
             // 
             // ReplaceOptionDialog
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(402, 197);
+            this.ClientSize = new System.Drawing.Size(302, 160);
             this.Controls.Add(this.AutoButton);
             this.Controls.Add(this.OverwriteButton);
             this.Controls.Add(this.SkipButton);
             this.Controls.Add(this.DescriptionLabel);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "ReplaceOptionDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Map ID conflicts!";

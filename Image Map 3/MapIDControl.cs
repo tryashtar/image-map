@@ -44,15 +44,17 @@ namespace ImageMap
 
         public void SetBox(MapPreviewBox box)
         {
-            if (!HasBox)
+            if (Box != null)
             {
-                Box = box;
-                box.MouseDown += Box_MouseDown;
-                Controls.Add(box);
-                SetSize(box.Width, box.Height);
-                box.Left = this.Width / 2 - box.Width / 2;
-                box.Top = 3;
+                Box.MouseDown -= Box_MouseDown;
+                Controls.Remove(Box);
             }
+            Box = box;
+            Box.MouseDown += Box_MouseDown;
+            Controls.Add(Box);
+            SetSize(Box.Width, Box.Height);
+            Box.Left = this.Width / 2 - Box.Width / 2;
+            Box.Top = 3;
         }
 
         public void SetID(long id)

@@ -222,7 +222,6 @@
             this.ExistingContextAdd.Name = "ExistingContextAdd";
             this.ExistingContextAdd.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextAdd.Text = "Add to inventory";
-            this.ExistingContextAdd.Click += new System.EventHandler(this.ExistingContextAdd_Click);
             // 
             // ExistingContextChangeID
             // 
@@ -250,7 +249,7 @@
             this.ExistingContextSelectAll.Name = "ExistingContextSelectAll";
             this.ExistingContextSelectAll.Size = new System.Drawing.Size(163, 22);
             this.ExistingContextSelectAll.Text = "Select all";
-            this.ExistingContextSelectAll.Click += new System.EventHandler(this.ExistingContextSelectAll_Click);
+            this.ExistingContextSelectAll.Click += new System.EventHandler(this.ContextSelectAll_Click);
             // 
             // ImportContextMenu
             // 
@@ -261,36 +260,36 @@
             this.ImportContextDiscard,
             this.ImportContextSelectAll});
             this.ImportContextMenu.Name = "ImportContextMenu";
-            this.ImportContextMenu.Size = new System.Drawing.Size(148, 92);
+            this.ImportContextMenu.Size = new System.Drawing.Size(181, 114);
             this.ImportContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.ImportContextMenu_Opening);
             // 
             // ImportContextSend
             // 
             this.ImportContextSend.Name = "ImportContextSend";
-            this.ImportContextSend.Size = new System.Drawing.Size(147, 22);
+            this.ImportContextSend.Size = new System.Drawing.Size(180, 22);
             this.ImportContextSend.Text = "Send to world";
             this.ImportContextSend.Click += new System.EventHandler(this.ImportContextSend_Click);
             // 
             // ImportContextChangeID
             // 
             this.ImportContextChangeID.Name = "ImportContextChangeID";
-            this.ImportContextChangeID.Size = new System.Drawing.Size(147, 22);
+            this.ImportContextChangeID.Size = new System.Drawing.Size(180, 22);
             this.ImportContextChangeID.Text = "Change ID";
             this.ImportContextChangeID.Click += new System.EventHandler(this.ImportContextChangeID_Click);
             // 
             // ImportContextDiscard
             // 
             this.ImportContextDiscard.Name = "ImportContextDiscard";
-            this.ImportContextDiscard.Size = new System.Drawing.Size(147, 22);
+            this.ImportContextDiscard.Size = new System.Drawing.Size(180, 22);
             this.ImportContextDiscard.Text = "Discard";
             this.ImportContextDiscard.Click += new System.EventHandler(this.ImportContextDiscard_Click);
             // 
             // ImportContextSelectAll
             // 
             this.ImportContextSelectAll.Name = "ImportContextSelectAll";
-            this.ImportContextSelectAll.Size = new System.Drawing.Size(147, 22);
+            this.ImportContextSelectAll.Size = new System.Drawing.Size(180, 22);
             this.ImportContextSelectAll.Text = "Select all";
-            this.ImportContextSelectAll.Click += new System.EventHandler(this.ImportContextSelectAll_Click);
+            this.ImportContextSelectAll.Click += new System.EventHandler(this.ContextSelectAll_Click);
             // 
             // Shortcuts
             // 

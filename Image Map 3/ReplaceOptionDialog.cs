@@ -12,6 +12,7 @@ namespace ImageMap
 {
     public partial class ReplaceOptionDialog : Form
     {
+        public bool Confirmed { get; private set; }
         public MapReplaceOption SelectedOption { get; private set; }
 
         public ReplaceOptionDialog(int count)
@@ -22,20 +23,34 @@ namespace ImageMap
 
         private void AutoButton_Click(object sender, EventArgs e)
         {
+            Confirmed = true;
             SelectedOption = MapReplaceOption.ChangeExisting;
             this.Close();
         }
 
         private void OverwriteButton_Click(object sender, EventArgs e)
         {
+            Confirmed = true;
             SelectedOption = MapReplaceOption.ReplaceExisting;
             this.Close();
         }
 
         private void SkipButton_Click(object sender, EventArgs e)
         {
+            Confirmed = true;
             SelectedOption = MapReplaceOption.Skip;
             this.Close();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+            {
+                Confirmed = false;
+                this.Close();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 

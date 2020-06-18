@@ -36,7 +36,7 @@ namespace ImageMap
                 {
                     var control = NewWorldControl(world);
                     WorldZone.Controls.Add(control);
-                    control.Dock = DockStyle.Fill;
+                    control.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                     control.Click += World_Click;
                     control.DoubleClick += World_DoubleClick;
                 }

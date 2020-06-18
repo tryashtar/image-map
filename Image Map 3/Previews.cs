@@ -43,10 +43,18 @@ namespace ImageMap
             }
         }
 
+        public abstract void ChangeMapID(long from, long to);
+
         protected void UpdateControlsFromMaps()
         {
             var maps = GetMaps();
-            Controls.RemoveAll(x => !maps.ContainsKey(x.ID));
+            foreach (var box in Controls.ToList())
+            {
+                if (!maps.TryGetValue(box.ID, out var map))
+                    Controls.Remove(box);
+                else if (box.Map != map)
+                    box.SetBox(new MapPreviewBox(map));
+            }
             foreach (var map in maps)
             {
                 if (!Controls.Any(x => x.ID == map.Key))
@@ -115,7 +123,7 @@ namespace ImageMap
 
     public class ImportPreview : HalfPreview
     {
-        private readonly Dictionary<long, Map> ImportingMaps = new Dictionary<long, Map>();
+        private readonly SortedDictionary<long, Map> ImportingMaps = new SortedDictionary<long, Map>();
         private readonly ConcurrentDictionary<PendingMapsWithID, IEnumerable<MapIDControl>> ProcessingMaps = new ConcurrentDictionary<PendingMapsWithID, IEnumerable<MapIDControl>>();
 
         public override IReadOnlyDictionary<long, Map> GetMaps()
@@ -129,6 +137,15 @@ namespace ImageMap
         public override IEnumerable<long> GetTakenIDs()
         {
             return base.GetTakenIDs().Concat(ProcessingMaps.SelectMany(x => x.Key.IDs));
+        }
+        public override void ChangeMapID(long from, long to)
+        {
+            if (ImportingMaps.TryGetValue(from, out var map))
+            {
+                ImportingMaps.Remove(from);
+                ImportingMaps[to] = map;
+            }
+            UpdateControlsFromMaps();
         }
 
         public void AddPending(PendingMapsWithID pending)
@@ -203,6 +220,12 @@ namespace ImageMap
         public override IReadOnlyDictionary<long, Map> GetMaps()
         {
             return World.WorldMaps;
+        }
+
+        public override void ChangeMapID(long from, long to)
+        {
+            World.ChangeMapID(from, to);
+            UpdateControlsFromMaps();
         }
     }
 }
