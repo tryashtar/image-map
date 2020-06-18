@@ -50,15 +50,15 @@ namespace ImageMap
             this.Close();
         }
 
-        private void CancelButton_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
         private void AutoButton_Click(object sender, EventArgs e)
         {
             WantsAuto = true;
             Confirmed = true;
+            this.Close();
+        }
+
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
             this.Close();
         }
     }

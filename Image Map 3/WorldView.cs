@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
+using System.Data.OleDb;
 
 namespace ImageMap
 {
@@ -40,13 +41,14 @@ namespace ImageMap
             ImportSide = new ImportPreview();
             ImportSide.ContextMenu = ImportContextMenu;
             ImportSide.ControlsChanged += ImportSide_ControlsChanged;
-            ImportSide_ControlsChanged(this, EventArgs.Empty);
 
             if (WorldSide != null)
                 WorldSide.ControlsChanged -= WorldSide_ControlsChanged;
             WorldSide = new WorldPreview(world);
             WorldSide.ContextMenu = ExistingContextMenu;
             WorldSide.ControlsChanged += WorldSide_ControlsChanged;
+
+            ImportSide_ControlsChanged(this, EventArgs.Empty);
             WorldSide_ControlsChanged(this, EventArgs.Empty);
         }
 
@@ -61,6 +63,15 @@ namespace ImageMap
         {
             Util.SetControls(ExistingZone, WorldSide.MapIDControls);
             DetermineTransferConflicts();
+        }
+
+        private void DetermineTransferConflicts()
+        {
+            var maps = WorldSide.GetMaps();
+            foreach (var box in ImportSide.MapIDControls)
+            {
+                box.SetConflict(maps.ContainsKey(box.ID));
+            }
         }
 
         public bool HasUnsavedChanges()
@@ -120,34 +131,38 @@ namespace ImageMap
             input.ShowDialog(this);
             if (input.Confirmed)
             {
-                long id;
+                long firstid;
                 if (input.WantsAuto)
-                    id = GetSafeID();
+                    firstid = GetSafeID();
                 else
-                    id = input.SelectedID;
+                    firstid = input.SelectedID;
+                var desired_range = Util.CreateRange(firstid, boxes.Count());
+                var from_to = boxes.Zip(desired_range, (x, y) => new KeyValuePair<MapIDControl, long>(x, y));
 
-                var current_maps = ActivePreview.GetMaps();
-                var used_ids = current_maps.Keys.Except(boxes.Select(x => x.ID));
-                var conflicted_maps = Util.CreateRange(id, boxes.Count()).Where(x => used_ids.Contains(x));
+                // the map IDs that are currently being used and are not changing (potentially conflicting with the ones we want)
+                var taken_ids = ActivePreview.GetMaps().Keys.Except(boxes.Select(x => x.ID));
+                var conflicts = taken_ids.Intersect(desired_range);
+
                 var replace_option = MapReplaceOption.ReplaceExisting;
-                if (conflicted_maps.Any())
+                if (conflicts.Any())
                 {
-                    var picker = new ReplaceOptionDialog(conflicted_maps.Count());
+                    var picker = new ReplaceOptionDialog(conflicts.Count());
                     picker.ShowDialog(this);
                     if (picker.Confirmed)
                         replace_option = picker.SelectedOption;
                     else
                         return;
                 }
-                foreach (var box in boxes.ToList())
+
+                // go reverse so that we can change 0->1->2->3 without replacing 1 before we can change it to 2
+                foreach (var change in from_to.Reverse().ToList())
                 {
-                    if (replace_option == MapReplaceOption.ChangeExisting && conflicted_maps.Contains(id))
-                        ActivePreview.ChangeMapID(id, GetSafeID());
-                    else if (replace_option == MapReplaceOption.Skip && conflicted_maps.Contains(id))
+                    if (replace_option == MapReplaceOption.ChangeExisting && conflicts.Contains(change.Value))
+                        ActivePreview.ChangeMapID(change.Value, GetSafeID());
+                    else if (replace_option == MapReplaceOption.Skip && conflicts.Contains(change.Value))
                     { /* do nothing */}
                     else
-                        ActivePreview.ChangeMapID(box.ID, id);
-                    id++;
+                        ActivePreview.ChangeMapID(change.Key.ID, change.Value);
                 }
             }
         }
@@ -316,36 +331,20 @@ namespace ImageMap
         private void SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, bool local, string uuid)
         {
             var writemaps = maps.ToList();
-            var conflictids = new List<long>();
             // check for  conflicts
             foreach (var map in maps)
             {
                 if (map.Conflicted)
                 {
-                    conflictids.Add(map.ID);
-                    if (option == MapReplaceOption.Skip)
+                    if (option == MapReplaceOption.ChangeExisting)
+                        World.ChangeMapID(map.ID, GetSafeID());
+                    else if (option == MapReplaceOption.Skip)
                         writemaps.Remove(map);
-                }
-            }
-            if (option == MapReplaceOption.ChangeExisting)
-            {
-                foreach (var conflict in conflictids)
-                {
-                    World.ChangeMapID(conflict, GetSafeID());
                 }
             }
             ImportSide.RemoveMaps(writemaps.Select(x => x.ID));
             World.AddMaps(writemaps.ToDictionary(x => x.ID, x => x.Map));
             AddChests(writemaps, local, uuid);
-        }
-
-        private void DetermineTransferConflicts()
-        {
-            foreach (var box in ImportSide.MapIDControls)
-            {
-                var maps = WorldSide.GetMaps();
-                box.SetConflict(maps.ContainsKey(box.ID));
-            }
         }
 
         private void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
