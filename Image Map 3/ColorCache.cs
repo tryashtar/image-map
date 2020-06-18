@@ -11,8 +11,9 @@ namespace ImageMap
     // LFU cache
     public class ColorCache
     {
-        private int MaxSize = 2000;
-        private int CutSize = 1000;
+        private readonly int MaxSize = 10000;
+        private readonly int CutSize = 5000;
+        private int SemiAccurateCounter = 0;
         private readonly ConcurrentDictionary<Color, Color> Cache = new ConcurrentDictionary<Color, Color>();
         private readonly ConcurrentDictionary<Color, int> TimesUsed = new ConcurrentDictionary<Color, int>();
         public ColorCache()
@@ -22,6 +23,7 @@ namespace ImageMap
         {
             Cache[key] = value;
             IncreaseTimesUsed(key);
+            SemiAccurateCounter++;
             PruneIfBig();
         }
 
@@ -43,7 +45,7 @@ namespace ImageMap
 
         private void PruneIfBig()
         {
-            if (Cache.Count > MaxSize)
+            if (SemiAccurateCounter > MaxSize)
                 Prune(CutSize);
         }
 
@@ -57,6 +59,7 @@ namespace ImageMap
                 Cache.TryRemove(item.Key, out _);
                 TimesUsed.TryRemove(item.Key, out _);
             }
+            SemiAccurateCounter = Cache.Count;
         }
     }
 }
