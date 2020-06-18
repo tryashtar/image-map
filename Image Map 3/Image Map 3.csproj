@@ -228,4 +228,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y "$(SolutionDir)leveldb-mcpe\$(Configuration)\leveldb.dll" "$(ProjectDir)$(OutDir)"
+xcopy /y "$(SolutionDir)zlib\zlib\libz\$(Configuration)\libz.dll" "$(ProjectDir)$(OutDir)"
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>
