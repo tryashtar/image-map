@@ -23,7 +23,7 @@ namespace ImageMap
         public virtual bool HasAnyMaps() => GetMaps().Any();
         public virtual IEnumerable<long> GetTakenIDs() => GetMaps().Keys;
         public ContextMenuStrip ContextMenu;
-        private readonly List<MapIDControl> Controls = new List<MapIDControl>();
+        private List<MapIDControl> Controls = new List<MapIDControl>();
         public IReadOnlyCollection<MapIDControl> MapIDControls => Controls.AsReadOnly();
         public IEnumerable<MapIDControl> SelectedControls => Controls.Where(x => x.IsSelected);
 
@@ -61,6 +61,7 @@ namespace ImageMap
                     Controls.Add(CreateMapIdControl(map.Key, map.Value));
             }
             UpdateControls(Controls);
+            Controls = Controls.OrderBy(x => x.ID).ToList();
             SignalControlsChanged();
         }
 

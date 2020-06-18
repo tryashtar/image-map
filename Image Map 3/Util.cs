@@ -73,6 +73,15 @@ namespace ImageMap
                 }
             }
             destination.AddRange(add);
+            if (control is FlowLayoutPanel flow)
+            {
+                int i = -1;
+                foreach (var item in source)
+                {
+                    i++;
+                    flow.Controls.SetChildIndex(item, i);
+                }
+            }
             control.ResumeLayout();
         }
 
