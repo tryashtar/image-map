@@ -100,6 +100,7 @@
     </Compile>
     <Compile Include="LockBitmap.cs" />
     <Compile Include="Map.cs" />
+    <Compile Include="ColorMappings.cs" />
     <Compile Include="MapCreationSettings.cs" />
     <Compile Include="Previews.cs" />
     <Compile Include="ReplaceOptionDialog.cs">

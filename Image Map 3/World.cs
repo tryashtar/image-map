@@ -113,11 +113,13 @@ namespace ImageMap
     {
         private NbtFile LevelDat;
         private bool HasLocalPlayer;
+        private IColorMapping VersionMapping;
         public override Edition Edition => Edition.Java;
 
         public JavaWorld(string folder) : base(folder)
         {
             ReloadLevelDat();
+            VersionMapping = Java1p16Mapping.Instance;
         }
 
         private void ReloadLevelDat()
@@ -224,7 +226,7 @@ namespace ImageMap
                 if (Util.MapString(name, out long number))
                 {
                     NbtFile nbtfile = new NbtFile(file);
-                    maps.Add(number, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue));
+                    maps.Add(number, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue, VersionMapping));
                 }
             }
             return maps;
