@@ -31,14 +31,14 @@
             this.components = new System.ComponentModel.Container();
             this.MapTabs = new System.Windows.Forms.TabControl();
             this.ImportTab = new System.Windows.Forms.TabPage();
-            this.ImportZone = new System.Windows.Forms.FlowLayoutPanel();
+            this.ImportZone = new MapPreviewPanel();
             this.ClickOpenLabel = new System.Windows.Forms.Label();
             this.ImportControls = new System.Windows.Forms.Panel();
             this.AddChestCheck = new System.Windows.Forms.CheckBox();
             this.SendButton = new System.Windows.Forms.Button();
             this.OpenButton = new System.Windows.Forms.Button();
             this.ExistingTab = new System.Windows.Forms.TabPage();
-            this.ExistingZone = new System.Windows.Forms.FlowLayoutPanel();
+            this.ExistingZone = new MapPreviewPanel();
             this.ExistingControls = new System.Windows.Forms.Panel();
             this.ExistingContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ExistingContextAdd = new System.Windows.Forms.ToolStripMenuItem();
@@ -365,14 +365,14 @@
 
         public System.Windows.Forms.TabControl MapTabs;
         public System.Windows.Forms.TabPage ImportTab;
-        public System.Windows.Forms.FlowLayoutPanel ImportZone;
+        public MapPreviewPanel ImportZone;
         public System.Windows.Forms.Label ClickOpenLabel;
         public System.Windows.Forms.Panel ImportControls;
         private System.Windows.Forms.CheckBox AddChestCheck;
         public System.Windows.Forms.Button SendButton;
         public System.Windows.Forms.Button OpenButton;
         public System.Windows.Forms.TabPage ExistingTab;
-        public System.Windows.Forms.FlowLayoutPanel ExistingZone;
+        public MapPreviewPanel ExistingZone;
         public System.Windows.Forms.Panel ExistingControls;
         public System.Windows.Forms.ContextMenuStrip ExistingContextMenu;
         private System.Windows.Forms.ToolStripMenuItem ExistingContextAdd;

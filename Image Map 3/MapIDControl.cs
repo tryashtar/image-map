@@ -31,9 +31,9 @@ namespace ImageMap
             SetSize(128, 128);
         }
 
-        public MapIDControl(long id, MapPreviewBox box) : this(id)
+        public MapIDControl(long id, Map map) : this(id)
         {
-            SetBox(box);
+            SetMap(map);
         }
 
         private void SetSize(int width, int height)
@@ -42,25 +42,30 @@ namespace ImageMap
             this.Height = height + IDLabel.Height + 6;
         }
 
-        public void SetBox(MapPreviewBox box)
+        public void SetMap(Map map)
         {
             if (Box != null)
             {
+                if (Box.Map == map)
+                    return;
                 Box.MouseDown -= Box_MouseDown;
                 Controls.Remove(Box);
             }
-            Box = box;
-            Box.MouseDown += Box_MouseDown;
-            Controls.Add(Box);
-            SetSize(Box.Width, Box.Height);
-            Box.Left = this.Width / 2 - Box.Width / 2;
-            Box.Top = 3;
+            if (map != null)
+            {
+                Box = new MapPreviewBox(map);
+                Box.MouseDown += Box_MouseDown;
+                Controls.Add(Box);
+                SetSize(Box.Width, Box.Height);
+                Box.Left = this.Width / 2 - Box.Width / 2;
+                Box.Top = 3;
+            }
         }
 
         public void SetID(long id)
         {
             ID = id;
-            IDLabel.Text = $"map_{id}";
+            IDLabel.Text = Util.MapName(id);
         }
 
         public void SetConflict(bool conflict)
@@ -82,11 +87,6 @@ namespace ImageMap
                 SelectedChanged?.Invoke(this, IsSelected);
                 UpdateColor();
             }
-        }
-
-        public string GetMapName()
-        {
-            return "map_" + ID;
         }
 
         private void UpdateColor()

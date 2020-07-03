@@ -8,10 +8,11 @@ using LevelDBWrapper;
 
 namespace ImageMap
 {
-    public abstract class MinecraftWorld : IDisposable
+    public abstract class MinecraftWorld : IMapSource, IDisposable
     {
         protected SortedDictionary<long, Map> Maps;
-        public IReadOnlyDictionary<long, Map> WorldMaps => Maps;
+        public IReadOnlyDictionary<long, Map> GetMaps() => Maps;
+        public IEnumerable<long> GetTakenIDs() => Maps.Keys;
         public string Folder { get; protected set; }
         public string Name { get; protected set; }
         public event EventHandler MapsChanged;
@@ -77,21 +78,6 @@ namespace ImageMap
                     return true;
             }
             return false;
-        }
-
-        protected static bool MapString(string input, out long mapid)
-        {
-            var match = Regex.Match(input, @"^map_(-?\d+)$");
-            if (match.Success)
-            {
-                mapid = Int64.Parse(match.Groups[1].Value);
-                return true;
-            }
-            else
-            {
-                mapid = 0;
-                return false;
-            }
         }
 
         protected static bool UuidString(string input, out string uuid)
@@ -235,7 +221,7 @@ namespace ImageMap
             foreach (string file in Directory.GetFiles(Path.Combine(Folder, "data"), "*.dat"))
             {
                 string name = Path.GetFileNameWithoutExtension(file);
-                if (MapString(name, out long number))
+                if (Util.MapString(name, out long number))
                 {
                     NbtFile nbtfile = new NbtFile(file);
                     maps.Add(number, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue));
@@ -285,7 +271,7 @@ namespace ImageMap
 
         private string MapFileLocation(long mapid)
         {
-            return Path.Combine(Folder, "data", $"map_{mapid}.dat");
+            return Path.Combine(Folder, "data", $"{Util.MapName(mapid)}.dat");
         }
 
         private string PlayerFileLocation(string playerid)
@@ -338,7 +324,7 @@ namespace ImageMap
                 NbtFile file = new NbtFile(mapfile);
                 file.BigEndian = false;
                 byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-                batch.Put($"map_{map.Key}", bytes);
+                batch.Put(Util.MapName(map.Key), bytes);
                 Maps[map.Key] = map.Value;
             }
             OpenDB();
@@ -352,7 +338,7 @@ namespace ImageMap
             OpenDB();
             foreach (var id in mapids)
             {
-                BedrockDB.Delete($"map_{id}");
+                BedrockDB.Delete(Util.MapName(id));
                 Maps.Remove(id);
             }
             CloseDB();
@@ -369,7 +355,7 @@ namespace ImageMap
             // acquire the file this player is stored in, and the tag that represents said player
             byte[] playerdata = BedrockDB.Get(exact_playerid);
             if (playerdata == null)
-                throw new FileNotFoundException($"Player with UUID {exact_playerid} not found");
+                throw new FileNotFoundException($"Player data with ID {exact_playerid} not found");
             var file = new NbtFile();
             file.BigEndian = false;
             file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
@@ -404,7 +390,7 @@ namespace ImageMap
                 var name = iterator.StringKey();
                 if (name.StartsWith(MapKeyword))
                 {
-                    if (MapString(name, out long number))
+                    if (Util.MapString(name, out long number))
                     {
                         NbtFile nbtfile = new NbtFile();
                         nbtfile.BigEndian = false;

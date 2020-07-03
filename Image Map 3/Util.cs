@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using static System.Windows.Forms.Control;
+using System.Text.RegularExpressions;
 
 namespace ImageMap
 {
@@ -55,6 +56,28 @@ namespace ImageMap
                 return String.Join("\n", agg.InnerExceptions.Select(x => ExceptionMessage(x)));
             return $"{ex.GetType().Name}: {ex.Message}";
         }
+
+        public static string MapName(long id)
+        {
+            return $"map_{id}";
+        }
+
+        public static bool MapString(string input, out long mapid)
+        {
+            var match = Regex.Match(input, @"^map_(-?\d+)$");
+            if (match.Success)
+            {
+                mapid = Int64.Parse(match.Groups[1].Value);
+                return true;
+            }
+            else
+            {
+                mapid = 0;
+                return false;
+            }
+        }
+
+        public static Dictionary<T, U> Copy<T, U>(this IReadOnlyDictionary<T, U> dict) => dict.ToDictionary(x => x.Key, y => y.Value);
 
         public static void SetControls<T>(Control control, IEnumerable<T> source) where T : Control
         {

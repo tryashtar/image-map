@@ -11,9 +11,9 @@ namespace ImageMap
 {
     public partial class WorldView : UserControl
     {
-        private ImportPreview ImportSide;
-        private WorldPreview WorldSide;
-        private HalfPreview ActivePreview
+        private ImportMaps ImportSide;
+        private MinecraftWorld WorldSide;
+        private IMapSource ActiveSide
         {
             get
             {
@@ -23,55 +23,52 @@ namespace ImageMap
                     return WorldSide;
             }
         }
+        private MapPreviewPanel ActiveZone
+        {
+            get
+            {
+                if (MapTabs.SelectedTab == ImportTab)
+                    return ImportZone;
+                else
+                    return ExistingZone;
+            }
+        }
 
-        private MinecraftWorld World;
-        private EditionProperties ActiveEdition => EditionProperties.FromEdition(World.Edition);
+        private EditionProperties ActiveEdition => EditionProperties.FromEdition(WorldSide.Edition);
 
         public WorldView()
         {
             InitializeComponent();
+            ImportZone.SetContextMenu(ImportContextMenu);
+            ExistingZone.SetContextMenu(ExistingContextMenu);
         }
 
         public void SetWorld(MinecraftWorld world)
         {
-            World = world;
-
-            if (ImportSide != null)
-                ImportSide.ControlsChanged -= ImportSide_ControlsChanged;
-            ImportSide = new ImportPreview();
-            ImportSide.ContextMenu = ImportContextMenu;
-            ImportSide.ControlsChanged += ImportSide_ControlsChanged;
-
-            if (WorldSide != null)
-                WorldSide.ControlsChanged -= WorldSide_ControlsChanged;
-            WorldSide = new WorldPreview(world);
-            WorldSide.ContextMenu = ExistingContextMenu;
-            WorldSide.ControlsChanged += WorldSide_ControlsChanged;
-
-            ImportSide_ControlsChanged(this, EventArgs.Empty);
-            WorldSide_ControlsChanged(this, EventArgs.Empty);
+            WorldSide = world;
+            WorldSide.MapsChanged += WorldSide_MapsChanged;
+            WorldSide_MapsChanged(this, EventArgs.Empty);
+            ImportSide = new ImportMaps();
+            ImportSide.MapsChanged += ImportSide_MapsChanged;
+            ImportSide_MapsChanged(this, EventArgs.Empty);
         }
 
-        private void ImportSide_ControlsChanged(object sender, EventArgs e)
+        private void ImportSide_MapsChanged(object sender, EventArgs e)
         {
-            Util.SetControls(ImportZone, ImportSide.MapIDControls);
-            ClickOpenLabel.Visible = !ImportSide.MapIDControls.Any();
+            ImportZone.SetMapsImport(ImportSide);
+            ClickOpenLabel.Visible = !ImportSide.HasAnyMaps();
             DetermineTransferConflicts();
         }
 
-        private void WorldSide_ControlsChanged(object sender, EventArgs e)
+        private void WorldSide_MapsChanged(object sender, EventArgs e)
         {
-            Util.SetControls(ExistingZone, WorldSide.MapIDControls);
+            ExistingZone.SetMaps(WorldSide.GetMaps());
             DetermineTransferConflicts();
         }
 
         private void DetermineTransferConflicts()
         {
-            var maps = WorldSide.GetMaps();
-            foreach (var box in ImportSide.MapIDControls)
-            {
-                box.SetConflict(maps.ContainsKey(box.ID));
-            }
+            ImportZone.SetConflicts(WorldSide.GetTakenIDs());
         }
 
         public bool HasUnsavedChanges()
@@ -125,9 +122,9 @@ namespace ImageMap
             return taken.Max() + 1;
         }
 
-        private void InputChangeMapIDs(IEnumerable<MapIDControl> boxes)
+        private void InputChangeMapIDs(IEnumerable<long> originals)
         {
-            var input = new IDInputDialog(boxes.First().ID);
+            var input = new IDInputDialog(originals.First());
             input.ShowDialog(this);
             if (input.Confirmed)
             {
@@ -136,11 +133,11 @@ namespace ImageMap
                     firstid = GetSafeID();
                 else
                     firstid = input.SelectedID;
-                var desired_range = Util.CreateRange(firstid, boxes.Count());
-                var from_to = boxes.Zip(desired_range, (x, y) => new KeyValuePair<MapIDControl, long>(x, y));
+                var desired_range = Util.CreateRange(firstid, originals.Count());
+                var from_to = originals.OrderBy(x => x).Zip(desired_range.OrderBy(x => x), (x, y) => new KeyValuePair<long, long>(x, y));
 
                 // the map IDs that are currently being used and are not changing (potentially conflicting with the ones we want)
-                var taken_ids = ActivePreview.GetMaps().Keys.Except(boxes.Select(x => x.ID));
+                var taken_ids = ActiveSide.GetTakenIDs().Except(originals);
                 var conflicts = taken_ids.Intersect(desired_range);
 
                 var replace_option = MapReplaceOption.ReplaceExisting;
@@ -155,26 +152,29 @@ namespace ImageMap
                 }
 
                 // go reverse so that we can change 0->1->2->3 without replacing 1 before we can change it to 2
-                foreach (var change in from_to.Reverse().ToList())
+                if (firstid > originals.First())
+                    from_to = from_to.Reverse();
+
+                foreach (var change in from_to.ToList())
                 {
                     if (replace_option == MapReplaceOption.ChangeExisting && conflicts.Contains(change.Value))
-                        ActivePreview.ChangeMapID(change.Value, GetSafeID());
+                        ActiveSide.ChangeMapID(change.Value, GetSafeID());
                     else if (replace_option == MapReplaceOption.Skip && conflicts.Contains(change.Value))
                     { /* do nothing */}
                     else
-                        ActivePreview.ChangeMapID(change.Key.ID, change.Value);
+                        ActiveSide.ChangeMapID(change.Key, change.Value);
                 }
             }
         }
 
         private void SendButton_Click(object sender, EventArgs e)
         {
-            SendMapsCheckConflicts(ImportSide.MapIDControls, AddChestCheck.Checked, null);
+            SendMapsCheckConflicts(ImportZone.ReadyMaps.Keys, AddChestCheck.Checked, null);
         }
 
         private void ImportContextSend_Click(object sender, EventArgs e)
         {
-            SendMapsCheckConflicts(ImportSide.SelectedControls, AddChestCheck.Checked, null);
+            SendMapsCheckConflicts(ImportZone.ReadySelectedMaps.Keys, AddChestCheck.Checked, null);
         }
 
         private void OpenButton_Click(object sender, EventArgs e)
@@ -207,7 +207,7 @@ namespace ImageMap
 
         private void ImportContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (ImportSide.MapIDControls.All(x => x.IsSelected))
+            if (ImportZone.AllAreSelected)
                 ImportContextSelectAll.Text = "Deselect all";
             else
                 ImportContextSelectAll.Text = "Select all";
@@ -217,8 +217,8 @@ namespace ImageMap
         {
             ExistingContextAdd.DropDownItems.Clear();
             ExistingContextAdd.DropDownItems.Add(new ToolStripMenuItem("Local player", null, ExistingContextChestLocal_Click));
-            ExistingContextAdd.DropDownItems.AddRange(World.GetPlayerIDs().Select(x => new ToolStripMenuItem(x, null, ExistingContextChestUUID_Click)).ToArray());
-            if (WorldSide.MapIDControls.All(x => x.IsSelected))
+            ExistingContextAdd.DropDownItems.AddRange(WorldSide.GetPlayerIDs().Select(x => new ToolStripMenuItem(x, null, ExistingContextChestUUID_Click)).ToArray());
+            if (ExistingZone.AllAreSelected)
                 ExistingContextSelectAll.Text = "Deselect all";
             else
                 ExistingContextSelectAll.Text = "Select all";
@@ -226,17 +226,17 @@ namespace ImageMap
 
         private void ImportContextChangeID_Click(object sender, EventArgs e)
         {
-            InputChangeMapIDs(ImportSide.SelectedControls);
+            InputChangeMapIDs(ImportZone.AllSelectedMaps.Keys);
         }
 
         private void ExistingContextChangeID_Click(object sender, EventArgs e)
         {
-            InputChangeMapIDs(WorldSide.SelectedControls);
+            InputChangeMapIDs(ExistingZone.AllSelectedMaps.Keys);
         }
 
         private void ContextExport_Click(object sender, EventArgs e)
         {
-            var selected = ActivePreview.SelectedControls;
+            var selected = ActiveZone.AllSelectedMaps;
             bool onlyone = Util.IsSingleSequence(selected);
             var export_dialog = new SaveFileDialog()
             {
@@ -244,7 +244,7 @@ namespace ImageMap
                 Filter = "Image Files|*.png|All Files|*.*"
             };
             if (onlyone)
-                export_dialog.FileName = selected.First().GetMapName() + ".png";
+                export_dialog.FileName = Util.MapName(selected.Keys.First()) + ".png";
             else
                 export_dialog.FileName = "";
             export_dialog.InitialDirectory = Properties.Settings.Default.LastImgExportPath;
@@ -252,7 +252,7 @@ namespace ImageMap
             {
                 Properties.Settings.Default.LastImgExportPath = Path.GetDirectoryName(export_dialog.FileName);
                 if (onlyone)
-                    SaveMap(selected.First(), export_dialog.FileName);
+                    SaveMap(selected.Values.First(), export_dialog.FileName);
                 else
                     SaveMaps(selected, Path.ChangeExtension(export_dialog.FileName, ""));
             }
@@ -260,27 +260,26 @@ namespace ImageMap
 
         private void ImportContextDiscard_Click(object sender, EventArgs e)
         {
-            var selected = ImportSide.SelectedControls;
-            ImportSide.RemoveMaps(selected.Select(x => x.ID));
+            var selected = ImportZone.AllSelectedMaps;
+            ImportSide.RemoveMaps(selected.Keys);
         }
 
         private void ExistingContextDelete_Click(object sender, EventArgs e)
         {
-            var selected = WorldSide.SelectedControls;
+            var selected = ExistingZone.AllSelectedMaps;
             if (selected.Any() && MessageBox.Show("Deleting these maps will remove all copies from the world permanently.\n\nWould you like to delete these maps?", $"Delete { Util.Pluralize(selected.Count(), "map")}?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                World.RemoveMaps(selected.Select(x => x.ID));
+                WorldSide.RemoveMaps(selected.Keys);
         }
 
-        private void AddChests(IEnumerable<MapIDControl> maps, bool local, string uuid)
+        private void AddChests(IEnumerable<long> maps, bool local, string uuid)
         {
             try
             {
-                var ids = maps.Select(x => x.ID);
                 bool success = true;
                 if (local)
-                    success = World.AddChestsLocalPlayer(ids);
+                    success = WorldSide.AddChestsLocalPlayer(maps);
                 else if (uuid != null)
-                    success = World.AddChests(ids, uuid);
+                    success = WorldSide.AddChests(maps, uuid);
                 if (!success)
                     MessageBox.Show("There wasn't enough space to fit the chests in your inventory. One or more were not added.", "Chest alert!");
             }
@@ -297,26 +296,26 @@ namespace ImageMap
         private void ExistingContextChestUUID_Click(object sender, EventArgs e)
         {
             var uuid = ((ToolStripMenuItem)sender).Text;
-            AddChests(WorldSide.SelectedControls, false, uuid);
+            AddChests(ExistingZone.AllSelectedMaps.Keys, false, uuid);
         }
 
         private void ExistingContextChestLocal_Click(object sender, EventArgs e)
         {
-            AddChests(WorldSide.SelectedControls, true, null);
+            AddChests(ExistingZone.AllSelectedMaps.Keys, true, null);
         }
 
         private void ContextSelectAll_Click(object sender, EventArgs e)
         {
-            if (ActivePreview.MapIDControls.All(x => x.IsSelected))
-                ActivePreview.DeselectAll();
+            if (ActiveZone.AllAreSelected)
+                ActiveZone.DeselectAll();
             else
-                ActivePreview.SelectAll();
+                ActiveZone.SelectAll();
         }
 
-        private void SendMapsCheckConflicts(IEnumerable<MapIDControl> maps, bool local, string uuid)
+        private void SendMapsCheckConflicts(IEnumerable<long> maps, bool local, string uuid)
         {
-            var world = WorldSide.GetMaps();
-            var conflicts = maps.Where(x => world.ContainsKey(x.ID));
+            var world = WorldSide.GetTakenIDs();
+            var conflicts = maps.Where(x => world.Contains(x));
             if (conflicts.Any())
             {
                 var option = new ReplaceOptionDialog(conflicts.Count());
@@ -328,37 +327,40 @@ namespace ImageMap
                 SendMapsToWorld(maps, MapReplaceOption.ReplaceExisting, local, uuid);
         }
 
-        private void SendMapsToWorld(IEnumerable<MapIDControl> maps, MapReplaceOption option, bool local, string uuid)
+        private void SendMapsToWorld(IEnumerable<long> maps, MapReplaceOption option, bool local, string uuid)
         {
+            var worldids = WorldSide.GetTakenIDs();
             var writemaps = maps.ToList();
             // check for  conflicts
             foreach (var map in maps)
             {
-                if (map.Conflicted)
+                bool conflicted = worldids.Contains(map);
+                if (conflicted)
                 {
                     if (option == MapReplaceOption.ChangeExisting)
-                        World.ChangeMapID(map.ID, GetSafeID());
+                        WorldSide.ChangeMapID(map, GetSafeID());
                     else if (option == MapReplaceOption.Skip)
                         writemaps.Remove(map);
                 }
             }
-            ImportSide.RemoveMaps(writemaps.Select(x => x.ID));
-            World.AddMaps(writemaps.ToDictionary(x => x.ID, x => x.Map));
+            var import = ImportSide.GetMaps().Copy();
+            ImportSide.RemoveMaps(writemaps);
+            WorldSide.AddMaps(writemaps.ToDictionary(x => x, x => import[x]));
             AddChests(writemaps, local, uuid);
         }
 
-        private void SaveMaps(IEnumerable<MapIDControl> maps, string folder)
+        private void SaveMaps(IReadOnlyDictionary<long, Map> maps, string folder)
         {
             Directory.CreateDirectory(folder);
-            foreach (var box in maps)
+            foreach (var map in maps)
             {
-                box.Map.Image.Save(Path.Combine(folder, box.GetMapName() + ".png"));
+                map.Value.Image.Save(Path.Combine(folder, Util.MapName(map.Key) + ".png"));
             }
         }
 
-        private void SaveMap(MapIDControl map, string file)
+        private void SaveMap(Map map, string file)
         {
-            map.Map.Image.Save(file);
+            map.Image.Save(file);
         }
 
         private void PasteShortcut_Click(object sender, EventArgs e)
@@ -382,19 +384,19 @@ namespace ImageMap
 
         private void SelectAllShortcut_Click(object sender, EventArgs e)
         {
-            ActivePreview.SelectAll();
+            ActiveZone.SelectAll();
         }
 
         private void DeselectAllShortcut_Click(object sender, EventArgs e)
         {
-            ActivePreview.DeselectAll();
+            ActiveZone.DeselectAll();
         }
 
         private void DeleteShortcut_Click(object sender, EventArgs e)
         {
-            if (ActivePreview == ImportSide)
+            if (ActiveSide == ImportSide)
                 ImportContextDiscard_Click(this, EventArgs.Empty);
-            else if (ActivePreview == WorldSide)
+            else if (ActiveSide == WorldSide)
                 ExistingContextDelete_Click(this, EventArgs.Empty);
         }
     }
