@@ -83,7 +83,7 @@
             this.MapViewZone.Location = new System.Drawing.Point(131, 10);
             this.MapViewZone.Margin = new System.Windows.Forms.Padding(2);
             this.MapViewZone.Name = "MapViewZone";
-            this.MapViewZone.Size = new System.Drawing.Size(595, 367);
+            this.MapViewZone.Size = new System.Drawing.Size(604, 394);
             this.MapViewZone.TabIndex = 5;
             this.MapViewZone.Visible = false;
             // 
@@ -92,7 +92,7 @@
             this.WorldView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.WorldView.Location = new System.Drawing.Point(0, 0);
             this.WorldView.Name = "WorldView";
-            this.WorldView.Size = new System.Drawing.Size(595, 367);
+            this.WorldView.Size = new System.Drawing.Size(604, 394);
             this.WorldView.TabIndex = 22;
             // 
             // TheForm
@@ -100,7 +100,7 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(726, 377);
+            this.ClientSize = new System.Drawing.Size(735, 404);
             this.Controls.Add(this.BedrockWorldButton);
             this.Controls.Add(this.JavaWorldButton);
             this.Controls.Add(this.MapViewZone);

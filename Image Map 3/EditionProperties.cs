@@ -62,7 +62,8 @@ namespace ImageMap
         public override MinecraftWorld OpenWorld(string folder)
         {
             var world = new JavaWorld(folder);
-            world.Initialize();
+            world.LoadMapsFront(25);
+            world.LoadMapsBack(25);
             return world;
         }
     }
@@ -92,7 +93,8 @@ namespace ImageMap
         public override MinecraftWorld OpenWorld(string folder)
         {
             var world = new BedrockWorld(folder);
-            world.Initialize();
+            world.LoadMapsFront(50);
+            world.LoadMapsBack(50);
             return world;
         }
     }

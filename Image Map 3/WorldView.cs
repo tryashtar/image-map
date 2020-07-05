@@ -62,8 +62,14 @@ namespace ImageMap
 
         private void WorldSide_MapsChanged(object sender, EventArgs e)
         {
-            ExistingZone.SetMaps(WorldSide.GetMaps());
+            var maps = WorldSide.GetMaps();
+            ExistingZone.SetMaps(maps);
             DetermineTransferConflicts();
+            int idcount = WorldSide.GetTakenIDs().Count();
+            LoadedMapsLabel.Text = $"{maps.Count} / {idcount} maps loaded";
+            bool all = (maps.Count == idcount);
+            LoadAllButton.Visible = !all;
+            LoadMoreButton.Visible = !all;
         }
 
         private void DetermineTransferConflicts()
@@ -398,6 +404,17 @@ namespace ImageMap
                 ImportContextDiscard_Click(this, EventArgs.Empty);
             else if (ActiveSide == WorldSide)
                 ExistingContextDelete_Click(this, EventArgs.Empty);
+        }
+
+        private void LoadMoreButton_Click(object sender, EventArgs e)
+        {
+            WorldSide.LoadMapsFront(5);
+            WorldSide.LoadMapsBack(5);
+        }
+
+        private void LoadAllButton_Click(object sender, EventArgs e)
+        {
+            WorldSide.LoadAllMaps();
         }
     }
 }

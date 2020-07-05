@@ -31,14 +31,14 @@
             this.components = new System.ComponentModel.Container();
             this.MapTabs = new System.Windows.Forms.TabControl();
             this.ImportTab = new System.Windows.Forms.TabPage();
-            this.ImportZone = new MapPreviewPanel();
+            this.ImportZone = new ImageMap.MapPreviewPanel();
             this.ClickOpenLabel = new System.Windows.Forms.Label();
             this.ImportControls = new System.Windows.Forms.Panel();
             this.AddChestCheck = new System.Windows.Forms.CheckBox();
             this.SendButton = new System.Windows.Forms.Button();
             this.OpenButton = new System.Windows.Forms.Button();
             this.ExistingTab = new System.Windows.Forms.TabPage();
-            this.ExistingZone = new MapPreviewPanel();
+            this.ExistingZone = new ImageMap.MapPreviewPanel();
             this.ExistingControls = new System.Windows.Forms.Panel();
             this.ExistingContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ExistingContextAdd = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,11 +56,15 @@
             this.SelectAllShortcut = new System.Windows.Forms.ToolStripMenuItem();
             this.DeselectAllShortcut = new System.Windows.Forms.ToolStripMenuItem();
             this.DeleteShortcut = new System.Windows.Forms.ToolStripMenuItem();
+            this.LoadMoreButton = new System.Windows.Forms.Button();
+            this.LoadAllButton = new System.Windows.Forms.Button();
+            this.LoadedMapsLabel = new System.Windows.Forms.Label();
             this.MapTabs.SuspendLayout();
             this.ImportTab.SuspendLayout();
             this.ImportZone.SuspendLayout();
             this.ImportControls.SuspendLayout();
             this.ExistingTab.SuspendLayout();
+            this.ExistingControls.SuspendLayout();
             this.ExistingContextMenu.SuspendLayout();
             this.ImportContextMenu.SuspendLayout();
             this.Shortcuts.SuspendLayout();
@@ -138,7 +142,7 @@
             this.AddChestCheck.Checked = true;
             this.AddChestCheck.CheckState = System.Windows.Forms.CheckState.Checked;
             this.AddChestCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.AddChestCheck.Location = new System.Drawing.Point(295, 14);
+            this.AddChestCheck.Location = new System.Drawing.Point(295, 16);
             this.AddChestCheck.Margin = new System.Windows.Forms.Padding(2);
             this.AddChestCheck.Name = "AddChestCheck";
             this.AddChestCheck.Size = new System.Drawing.Size(218, 24);
@@ -149,7 +153,7 @@
             // SendButton
             // 
             this.SendButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.SendButton.Location = new System.Drawing.Point(104, 2);
+            this.SendButton.Location = new System.Drawing.Point(104, 4);
             this.SendButton.Margin = new System.Windows.Forms.Padding(2);
             this.SendButton.Name = "SendButton";
             this.SendButton.Size = new System.Drawing.Size(187, 43);
@@ -161,7 +165,7 @@
             // OpenButton
             // 
             this.OpenButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
-            this.OpenButton.Location = new System.Drawing.Point(2, 2);
+            this.OpenButton.Location = new System.Drawing.Point(2, 4);
             this.OpenButton.Margin = new System.Windows.Forms.Padding(2);
             this.OpenButton.Name = "OpenButton";
             this.OpenButton.Size = new System.Drawing.Size(97, 43);
@@ -196,13 +200,15 @@
             // 
             // ExistingControls
             // 
+            this.ExistingControls.Controls.Add(this.LoadedMapsLabel);
+            this.ExistingControls.Controls.Add(this.LoadAllButton);
+            this.ExistingControls.Controls.Add(this.LoadMoreButton);
             this.ExistingControls.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.ExistingControls.Location = new System.Drawing.Point(2, 267);
             this.ExistingControls.Margin = new System.Windows.Forms.Padding(2);
             this.ExistingControls.Name = "ExistingControls";
             this.ExistingControls.Size = new System.Drawing.Size(590, 50);
             this.ExistingControls.TabIndex = 5;
-            this.ExistingControls.Visible = false;
             // 
             // ExistingContextMenu
             // 
@@ -260,34 +266,34 @@
             this.ImportContextDiscard,
             this.ImportContextSelectAll});
             this.ImportContextMenu.Name = "ImportContextMenu";
-            this.ImportContextMenu.Size = new System.Drawing.Size(181, 114);
+            this.ImportContextMenu.Size = new System.Drawing.Size(148, 92);
             this.ImportContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.ImportContextMenu_Opening);
             // 
             // ImportContextSend
             // 
             this.ImportContextSend.Name = "ImportContextSend";
-            this.ImportContextSend.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextSend.Size = new System.Drawing.Size(147, 22);
             this.ImportContextSend.Text = "Send to world";
             this.ImportContextSend.Click += new System.EventHandler(this.ImportContextSend_Click);
             // 
             // ImportContextChangeID
             // 
             this.ImportContextChangeID.Name = "ImportContextChangeID";
-            this.ImportContextChangeID.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextChangeID.Size = new System.Drawing.Size(147, 22);
             this.ImportContextChangeID.Text = "Change ID";
             this.ImportContextChangeID.Click += new System.EventHandler(this.ImportContextChangeID_Click);
             // 
             // ImportContextDiscard
             // 
             this.ImportContextDiscard.Name = "ImportContextDiscard";
-            this.ImportContextDiscard.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextDiscard.Size = new System.Drawing.Size(147, 22);
             this.ImportContextDiscard.Text = "Discard";
             this.ImportContextDiscard.Click += new System.EventHandler(this.ImportContextDiscard_Click);
             // 
             // ImportContextSelectAll
             // 
             this.ImportContextSelectAll.Name = "ImportContextSelectAll";
-            this.ImportContextSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.ImportContextSelectAll.Size = new System.Drawing.Size(147, 22);
             this.ImportContextSelectAll.Text = "Select all";
             this.ImportContextSelectAll.Click += new System.EventHandler(this.ContextSelectAll_Click);
             // 
@@ -337,6 +343,41 @@
             this.DeleteShortcut.Text = "Delete";
             this.DeleteShortcut.Click += new System.EventHandler(this.DeleteShortcut_Click);
             // 
+            // LoadMoreButton
+            // 
+            this.LoadMoreButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.LoadMoreButton.Location = new System.Drawing.Point(2, 4);
+            this.LoadMoreButton.Margin = new System.Windows.Forms.Padding(2);
+            this.LoadMoreButton.Name = "LoadMoreButton";
+            this.LoadMoreButton.Size = new System.Drawing.Size(128, 43);
+            this.LoadMoreButton.TabIndex = 18;
+            this.LoadMoreButton.Text = "Load More";
+            this.LoadMoreButton.UseVisualStyleBackColor = true;
+            this.LoadMoreButton.Click += new System.EventHandler(this.LoadMoreButton_Click);
+            // 
+            // LoadAllButton
+            // 
+            this.LoadAllButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.LoadAllButton.Location = new System.Drawing.Point(134, 4);
+            this.LoadAllButton.Margin = new System.Windows.Forms.Padding(2);
+            this.LoadAllButton.Name = "LoadAllButton";
+            this.LoadAllButton.Size = new System.Drawing.Size(128, 43);
+            this.LoadAllButton.TabIndex = 19;
+            this.LoadAllButton.Text = "Load All";
+            this.LoadAllButton.UseVisualStyleBackColor = true;
+            this.LoadAllButton.Click += new System.EventHandler(this.LoadAllButton_Click);
+            // 
+            // LoadedMapsLabel
+            // 
+            this.LoadedMapsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.LoadedMapsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.LoadedMapsLabel.Location = new System.Drawing.Point(377, 14);
+            this.LoadedMapsLabel.Name = "LoadedMapsLabel";
+            this.LoadedMapsLabel.Size = new System.Drawing.Size(210, 31);
+            this.LoadedMapsLabel.TabIndex = 20;
+            this.LoadedMapsLabel.Text = "X/X Loaded";
+            this.LoadedMapsLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // WorldView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -352,6 +393,7 @@
             this.ImportControls.ResumeLayout(false);
             this.ImportControls.PerformLayout();
             this.ExistingTab.ResumeLayout(false);
+            this.ExistingControls.ResumeLayout(false);
             this.ExistingContextMenu.ResumeLayout(false);
             this.ImportContextMenu.ResumeLayout(false);
             this.Shortcuts.ResumeLayout(false);
@@ -390,5 +432,8 @@
         private System.Windows.Forms.ToolStripMenuItem SelectAllShortcut;
         private System.Windows.Forms.ToolStripMenuItem DeselectAllShortcut;
         private System.Windows.Forms.ToolStripMenuItem DeleteShortcut;
+        public System.Windows.Forms.Button LoadMoreButton;
+        public System.Windows.Forms.Button LoadAllButton;
+        private System.Windows.Forms.Label LoadedMapsLabel;
     }
 }

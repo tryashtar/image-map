@@ -14,7 +14,7 @@ namespace ImageMap
     {
         protected SortedDictionary<long, Map> Maps;
         public IReadOnlyDictionary<long, Map> GetMaps() => Maps;
-        public IEnumerable<long> GetTakenIDs() => Maps.Keys;
+        public abstract IEnumerable<long> GetTakenIDs();
         public string Folder { get; protected set; }
         public string Name { get; protected set; }
         public event EventHandler MapsChanged;
@@ -22,12 +22,9 @@ namespace ImageMap
         public MinecraftWorld(string folder)
         {
             Folder = folder;
+            Maps = new SortedDictionary<long, Map>();
         }
         // user needs to call this
-        public void Initialize()
-        {
-            Maps = new SortedDictionary<long, Map>(LoadMaps());
-        }
         public abstract IEnumerable<Map> MapsFromSettings(MapCreationSettings settings);
         public abstract void AddMaps(IReadOnlyDictionary<long, Map> maps);
         public abstract void RemoveMaps(IEnumerable<long> mapids);
@@ -43,7 +40,9 @@ namespace ImageMap
             }
         }
         public abstract IEnumerable<string> GetPlayerIDs();
-        protected abstract Dictionary<long, Map> LoadMaps();
+        public abstract void LoadAllMaps();
+        public abstract void LoadMapsFront(int take);
+        public abstract void LoadMapsBack(int take);
         // returns slot IDs not occupied with an item
         protected abstract IEnumerable<byte> GetFreeSlots(NbtList invtag);
         // mapids count must not exceed 27
@@ -83,26 +82,6 @@ namespace ImageMap
             return false;
         }
 
-        protected static bool UuidString(string input, out string uuid)
-        {
-            var match = Regex.Match(input, @"^player_(server_)?([0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12})$");
-            if (match.Success)
-            {
-                uuid = match.Groups[2].Value;
-                return true;
-            }
-            else
-            {
-                uuid = null;
-                return false;
-            }
-        }
-
-        protected static string UuidToKey(string uuid)
-        {
-            return $"player_server_{uuid}";
-        }
-
         public virtual void Dispose()
         {
             foreach (var map in Maps.Values)
@@ -115,12 +94,14 @@ namespace ImageMap
     public class JavaWorld : MinecraftWorld
     {
         private NbtFile LevelDat;
+        private readonly List<long> UnloadedIDs;
         public IJavaVersion Version { get; private set; }
         public override Edition Edition => Edition.Java;
 
         public JavaWorld(string folder) : base(folder)
         {
             ReloadLevelDat();
+            UnloadedIDs = LoadAllMapIDs().OrderBy(x => x).ToList();
         }
 
         public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings)
@@ -236,21 +217,6 @@ namespace ImageMap
             return success;
         }
 
-        protected override Dictionary<long, Map> LoadMaps()
-        {
-            var maps = new Dictionary<long, Map>();
-            foreach (string file in Directory.GetFiles(Path.Combine(Folder, "data"), "*.dat"))
-            {
-                string name = Path.GetFileNameWithoutExtension(file);
-                if (Util.MapString(name, out long number))
-                {
-                    NbtFile nbtfile = new NbtFile(file);
-                    maps.Add(number, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue, Version));
-                }
-            }
-            return maps;
-        }
-
         protected override IEnumerable<byte> GetFreeSlots(NbtList invtag)
         {
             List<byte> emptyslots = new List<byte>(35);
@@ -299,6 +265,41 @@ namespace ImageMap
         {
             return Path.Combine(Folder, "playerdata", $"{playerid}.dat");
         }
+
+        public override IEnumerable<long> GetTakenIDs()
+        {
+            return Maps.Keys.Concat(UnloadedIDs);
+        }
+
+        private IEnumerable<long> LoadAllMapIDs()
+        {
+            var ids = new List<long>();
+            foreach (string file in Directory.GetFiles(Path.Combine(Folder, "data"), "*.dat"))
+            {
+                string name = Path.GetFileNameWithoutExtension(file);
+                if (Util.MapString(name, out long number))
+                {
+                    ids.Add(number);
+                }
+            }
+            return ids;
+        }
+
+        private void LoadMaps(IEnumerable<long> ids)
+        {
+            foreach (var id in ids)
+            {
+                var file = Path.Combine(Folder, "data", $"{Util.MapName(id)}.dat");
+                var nbtfile = new NbtFile(file);
+                Maps.Add(id, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue, Version));
+                UnloadedIDs.Remove(id);
+            }
+            SignalMapsChanged();
+        }
+
+        public override void LoadAllMaps() => LoadMaps(UnloadedIDs.ToList());
+        public override void LoadMapsFront(int take) => LoadMaps(UnloadedIDs.Take(take).ToList());
+        public override void LoadMapsBack(int take) => LoadMaps(UnloadedIDs.Skip(Math.Max(0, UnloadedIDs.Count - take)).ToList());
     }
 
     public class BedrockWorld : MinecraftWorld, IDisposable
@@ -306,11 +307,13 @@ namespace ImageMap
         public IBedrockVersion Version { get; private set; }
         private LevelDB BedrockDB;
         private NbtFile LevelDat;
+        private readonly List<long> UnloadedIDs;
         public override Edition Edition => Edition.Bedrock;
 
         public BedrockWorld(string folder) : base(folder)
         {
             Name = File.ReadAllText(Path.Combine(Folder, "levelname.txt"));
+            UnloadedIDs = LoadAllMapIDs().OrderBy(x => x).ToList();
         }
 
         public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings)
@@ -430,6 +433,26 @@ namespace ImageMap
             return success;
         }
 
+        private static bool UuidString(string input, out string uuid)
+        {
+            var match = Regex.Match(input, @"^player_(server_)?([0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12})$");
+            if (match.Success)
+            {
+                uuid = match.Groups[2].Value;
+                return true;
+            }
+            else
+            {
+                uuid = null;
+                return false;
+            }
+        }
+
+        private static string UuidToKey(string uuid)
+        {
+            return $"player_server_{uuid}";
+        }
+
         public override void Dispose()
         {
             CloseDB();
@@ -437,9 +460,14 @@ namespace ImageMap
             base.Dispose();
         }
 
-        protected override Dictionary<long, Map> LoadMaps()
+        public override IEnumerable<long> GetTakenIDs()
         {
-            var maps = new Dictionary<long, Map>();
+            return Maps.Keys.Concat(UnloadedIDs);
+        }
+
+        private IEnumerable<long> LoadAllMapIDs()
+        {
+            var ids = new List<long>();
             OpenDB();
             // thank you A Cynodont for help with this section
             const string MapKeyword = "map";
@@ -451,13 +479,7 @@ namespace ImageMap
                 if (name.StartsWith(MapKeyword))
                 {
                     if (Util.MapString(name, out long number))
-                    {
-                        var map = LoadNbtFromBytes(iterator.Value());
-                        var colors = map.RootTag["colors"].ByteArrayValue;
-                        // skip completely blank maps (bedrock likes generating pointless parents)
-                        if (!colors.All(x => x == 0))
-                            maps.Add(number, new BedrockMap(colors));
-                    }
+                        ids.Add(number);
                 }
                 else
                     break;
@@ -465,8 +487,29 @@ namespace ImageMap
             }
             iterator.Dispose();
             CloseDB();
-            return maps;
+            return ids;
         }
+
+        private void LoadMaps(IEnumerable<long> ids)
+        {
+            OpenDB();
+            foreach (var id in ids)
+            {
+                var key = Util.MapName(id);
+                var map = LoadNbtFromDB(key);
+                var colors = map.RootTag["colors"].ByteArrayValue;
+                // skip completely blank maps (bedrock likes generating pointless parents)
+                if (!colors.All(x => x == 0))
+                    Maps.Add(id, new BedrockMap(colors));
+                UnloadedIDs.Remove(id);
+            }
+            CloseDB();
+            SignalMapsChanged();
+        }
+
+        public override void LoadAllMaps() => LoadMaps(UnloadedIDs.ToList());
+        public override void LoadMapsFront(int take) => LoadMaps(UnloadedIDs.Take(take).ToList());
+        public override void LoadMapsBack(int take) => LoadMaps(UnloadedIDs.Skip(Math.Max(0, UnloadedIDs.Count - take)).ToList());
 
         public override IEnumerable<string> GetPlayerIDs()
         {

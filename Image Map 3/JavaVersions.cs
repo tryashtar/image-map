@@ -43,7 +43,7 @@ namespace ImageMap
         public abstract NbtCompound CreateMapItem(byte slot, long mapid);
         public abstract NbtCompound CreateMapCompound(long mapid, byte[] colors);
 
-        protected IEnumerable<Color> AlternatesFromMultipliers(Color color, IEnumerable<int> multipliers)
+        protected IEnumerable<Color> AlternatesFromMultipliers(Color color, params int[] multipliers)
         {
             return multipliers.Select(x => Color.FromArgb(color.A, color.R * x / 255, color.G * x / 255, color.B * x / 255));
         }
@@ -112,7 +112,7 @@ namespace ImageMap
         }
 
         // second and fourth colors are identical
-        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, new int[] { 180, 220, 255, 220 });
+        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, 180, 220, 255, 220);
 
         public override IEnumerable<Color> GetBaseColors()
         {
@@ -148,7 +148,7 @@ namespace ImageMap
         public override NbtCompound CreateMapCompound(long mapid, byte[] colors) => JavaOldMapping.Instance.CreateMapCompound(mapid, colors);
 
         // second and fourth colors are identical
-        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, new int[] { 176, 216, 250, 216 });
+        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, 176, 216, 250, 216);
 
         public override IEnumerable<Color> GetBaseColors()
         {
@@ -193,7 +193,7 @@ namespace ImageMap
         public override NbtCompound CreateMapItem(byte slot, long mapid) => Java1p7SnapshotMapping.Instance.CreateMapItem(slot, mapid);
         public override NbtCompound CreateMapCompound(long mapid, byte[] colors) => Java1p7SnapshotMapping.Instance.CreateMapCompound(mapid, colors);
 
-        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, new int[] { 176, 216, 250, 132 });
+        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
 
         public override IEnumerable<Color> GetBaseColors() => Java1p7SnapshotMapping.Instance.GetBaseColors();
 

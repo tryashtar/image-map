@@ -2,11 +2,8 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-using static System.Windows.Forms.Control;
 using System.Text.RegularExpressions;
 
 namespace ImageMap
