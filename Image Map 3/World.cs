@@ -515,15 +515,7 @@ namespace ImageMap
             byte slot = 0;
             foreach (var mapid in mapids)
             {
-                chestcontents.Add(new NbtCompound
-                {
-                    new NbtString("Name", "minecraft:map"), // 1.6+ support
-                    new NbtShort("id", 358), // 1.5 support
-                    new NbtByte("Count", 1),
-                    new NbtByte("Slot", slot),
-                    new NbtCompound("tag") { new NbtLong("map_uuid", mapid)
-                    }
-                });
+                chestcontents.Add(Version.CreateMapItem(slot, mapid));
                 slot++;
             }
             var chest = new NbtCompound

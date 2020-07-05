@@ -39,8 +39,6 @@
             // 
             // JavaWorldButton
             // 
-            this.JavaWorldButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.JavaWorldButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
             this.JavaWorldButton.Location = new System.Drawing.Point(8, 8);
             this.JavaWorldButton.Margin = new System.Windows.Forms.Padding(2);
@@ -66,8 +64,6 @@
             // 
             // BedrockWorldButton
             // 
-            this.BedrockWorldButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.BedrockWorldButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F);
             this.BedrockWorldButton.Location = new System.Drawing.Point(8, 93);
             this.BedrockWorldButton.Margin = new System.Windows.Forms.Padding(2);

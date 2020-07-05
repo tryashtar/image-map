@@ -224,7 +224,7 @@ namespace ImageMap
         public override IEnumerable<Color> GetBaseColors()
         {
             // most colors were changed, ignore previous versions
-            return FixShading(new List<Color>
+            return new Color[] { Color.Transparent }.Concat(FixShading(new List<Color>
             {
                 Color.FromArgb(124, 175, 55),
                 Color.FromArgb(242, 228, 160),
@@ -261,7 +261,7 @@ namespace ImageMap
                 Color.FromArgb(0, 213, 57),
                 Color.FromArgb(126, 84, 48),
                 Color.FromArgb(110, 2, 0)
-            });
+            }));
         }
         public override string ToString() => "1.8+";
     }
