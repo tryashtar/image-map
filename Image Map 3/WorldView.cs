@@ -103,7 +103,7 @@ namespace ImageMap
 
         private void Window_ImageReady(object sender, MapCreationSettings settings)
         {
-            var pending = new PendingMapsWithID(GetSafeID(), settings, ActiveEdition);
+            var pending = new PendingMapsWithID(GetSafeID(), settings, WorldSide);
             ImportSide.AddPending(pending);
         }
 

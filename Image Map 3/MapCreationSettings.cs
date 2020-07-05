@@ -49,11 +49,11 @@ namespace ImageMap
         public Dictionary<long, Map> ResultMaps { get; private set; }
         private readonly object IDModificationLock = new object();
 
-        public PendingMapsWithID(long first_id, MapCreationSettings settings, EditionProperties edition)
+        public PendingMapsWithID(long first_id, MapCreationSettings settings, MinecraftWorld world)
         {
             UsedIDs = Util.CreateRange(first_id, settings.NumberOfMaps).ToList();
             Settings = settings;
-            var task = new Task<IEnumerable<Map>>(() => edition.MapFromSettings(settings));
+            var task = new Task<IEnumerable<Map>>(() => world.MapsFromSettings(settings));
             task.Start();
             task.ContinueWith((t) =>
             {

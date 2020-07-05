@@ -13,6 +13,19 @@ namespace ImageMap
             InitializeComponent();
         }
 
+        private void DoOpenWorld(MinecraftWorld world)
+        {
+            OpenedWorld = world;
+            WorldView.SetWorld(OpenedWorld);
+            MapViewZone.Visible = true;
+            string title = $"Image Map – {OpenedWorld.Name}";
+            if (world is JavaWorld java)
+                title += $" (Java {java.Version})";
+            else if (world is BedrockWorld bedrock)
+                title += $" (Bedrock {bedrock.Version})";
+            this.Text = title;
+        }
+
         private void TheForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             Properties.Settings.Default.Save();
@@ -43,12 +56,7 @@ namespace ImageMap
                     MessageBox.Show($"Error opening that world:\n\n{Util.ExceptionMessage(ex)}", "World error!");
                 }
                 if (world != null)
-                {
-                    OpenedWorld = world;
-                    WorldView.SetWorld(OpenedWorld);
-                    MapViewZone.Visible = true;
-                    this.Text = "Image Map – " + OpenedWorld.Name;
-                }
+                    DoOpenWorld(world);
             }
         }
 

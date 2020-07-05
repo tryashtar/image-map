@@ -89,6 +89,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BedrockVersions.cs" />
     <Compile Include="ColorAlgorithms.cs" />
     <Compile Include="ColorCache.cs" />
     <Compile Include="EditionProperties.cs" />
@@ -100,7 +101,7 @@
     </Compile>
     <Compile Include="LockBitmap.cs" />
     <Compile Include="Map.cs" />
-    <Compile Include="ColorMappings.cs" />
+    <Compile Include="JavaVersions.cs" />
     <Compile Include="MapCreationSettings.cs" />
     <Compile Include="Previews.cs" />
     <Compile Include="ReplaceOptionDialog.cs">

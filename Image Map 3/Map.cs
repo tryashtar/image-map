@@ -102,7 +102,7 @@ namespace ImageMap
 
     public class JavaMap : Map
     {
-        public static IEnumerable<JavaMap> FromSettings(MapCreationSettings settings, IColorMapping mapping)
+        public static IEnumerable<JavaMap> FromSettings(MapCreationSettings settings, IJavaVersion mapping)
         {
             Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode, !settings.Stretch);
             LockBitmap final = new LockBitmap((Bitmap)original.Clone());
@@ -166,7 +166,7 @@ namespace ImageMap
             return maps;
         }
 
-        private static Color GetBestPixel(Color true_color, IColorAlgorithm algorithm, IColorMapping mapping)
+        private static Color GetBestPixel(Color true_color, IColorAlgorithm algorithm, IJavaVersion mapping)
         {
             // partial transparency is not allowed
             if (true_color.A < 128)
@@ -206,7 +206,7 @@ namespace ImageMap
             }
         }
 
-        public JavaMap(byte[] colors, IColorMapping mapping) : base(colors)
+        public JavaMap(byte[] colors, IJavaVersion mapping) : base(colors)
         {
             if (colors.Length != MAP_WIDTH * MAP_HEIGHT)
                 throw new ArgumentException($"Invalid image dimensions: {colors.Length} is not {MAP_WIDTH}*{MAP_HEIGHT}");

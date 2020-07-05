@@ -5,6 +5,8 @@ using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
 using LevelDBWrapper;
+using System.ComponentModel.Design;
+using System.Windows.Forms;
 
 namespace ImageMap
 {
@@ -26,6 +28,7 @@ namespace ImageMap
         {
             Maps = new SortedDictionary<long, Map>(LoadMaps());
         }
+        public abstract IEnumerable<Map> MapsFromSettings(MapCreationSettings settings);
         public abstract void AddMaps(IReadOnlyDictionary<long, Map> maps);
         public abstract void RemoveMaps(IEnumerable<long> mapids);
         // returns whether there was enough room to fit the chests
@@ -112,43 +115,54 @@ namespace ImageMap
     public class JavaWorld : MinecraftWorld
     {
         private NbtFile LevelDat;
-        private bool HasLocalPlayer;
-        private IColorMapping VersionMapping;
+        public IJavaVersion Version { get; private set; }
         public override Edition Edition => Edition.Java;
 
         public JavaWorld(string folder) : base(folder)
         {
             ReloadLevelDat();
-            VersionMapping = Java1p16Mapping.Instance;
+        }
+
+        public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings)
+        {
+            return JavaMap.FromSettings(settings, Version);
         }
 
         private void ReloadLevelDat()
         {
             LevelDat = new NbtFile(Path.Combine(Folder, "level.dat"));
             Name = LevelDat.RootTag["Data"]["LevelName"].StringValue;
-            HasLocalPlayer = (LevelDat.RootTag["Data"]["Player"] != null);
+            Version = DetermineVersionFromLevelDat((NbtCompound)LevelDat.RootTag["Data"]);
+        }
+
+        private static IJavaVersion DetermineVersionFromLevelDat(NbtCompound leveldat)
+        {
+            var dataversion = leveldat["DataVersion"];
+            if (dataversion is NbtInt intversion)
+            {
+                if (intversion.Value >= 2562) // 1.16 pre-6
+                    return Java1p16Mapping.Instance;
+                if (intversion.Value >= 1128) // 17w17a
+                    return Java1p12Mapping.Instance;
+            }
+            var gamerules = leveldat["GameRules"];
+            if (gamerules != null && gamerules["doEntityDrops"] != null) // 1.8.1 pre-1
+                return Java1p8Mapping.Instance;
+            var player = leveldat["Player"];
+            if (player != null && player["HealF"] != null) // 1.6.4, not great (ideally 13w42a, with another check for 13w43a)
+                return Java1p7Mapping.Instance;
+            if (leveldat["MapFeatures"] != null)
+                return JavaOldMapping.Instance;
+            throw new InvalidOperationException("Couldn't determine world version, or it's from an old version from before maps existed (pre-beta 1.8)");
         }
 
         public override void AddMaps(IReadOnlyDictionary<long, Map> maps)
         {
             foreach (var map in maps)
             {
-                NbtCompound mapfile = new NbtCompound("")
-                {
-                    new NbtCompound("data")
-                    {
-                        new NbtByte("scale", 0),
-                        new NbtString("dimension", "minecraft:overworld"),
-                        new NbtShort("height", Map.MAP_HEIGHT),
-                        new NbtShort("width", Map.MAP_WIDTH),
-                        new NbtByte("trackingPosition", 0),
-                        new NbtByte("unlimitedTracking", 0),
-                        new NbtInt("xCenter", Int32.MaxValue),
-                        new NbtInt("zCenter", Int32.MaxValue),
-                        new NbtByte("locked", 1),
-                        new NbtByteArray("colors", map.Value.Colors)
-                    }
-                };
+                var data = Version.CreateMapCompound(map.Key, map.Value.Colors);
+                data.Name = "data";
+                var mapfile = new NbtCompound("image map") { data };
                 new NbtFile(mapfile).SaveToFile(MapFileLocation(map.Key), NbtCompression.GZip);
                 Maps[map.Key] = map.Value;
             }
@@ -187,7 +201,10 @@ namespace ImageMap
 
         public override IEnumerable<string> GetPlayerIDs()
         {
-            foreach (var file in Directory.EnumerateFiles(Path.Combine(Folder, "playerdata"), "*.dat"))
+            var folder = Path.Combine(Folder, "playerdata");
+            if (!Directory.Exists(folder))
+                yield break;
+            foreach (var file in Directory.EnumerateFiles(folder, "*.dat"))
             {
                 yield return Path.GetFileNameWithoutExtension(file);
             }
@@ -199,6 +216,8 @@ namespace ImageMap
                 return true;
             ReloadLevelDat();
             var playertag = (NbtCompound)LevelDat.RootTag["Data"]["Player"];
+            if (playertag == null)
+                return false;
             var invtag = (NbtList)playertag["Inventory"];
             var success = PutChestsInInventory(invtag, mapids);
             LevelDat.SaveToFile(LevelDat.FileName, LevelDat.FileCompression);
@@ -226,7 +245,7 @@ namespace ImageMap
                 if (Util.MapString(name, out long number))
                 {
                     NbtFile nbtfile = new NbtFile(file);
-                    maps.Add(number, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue, VersionMapping));
+                    maps.Add(number, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue, Version));
                 }
             }
             return maps;
@@ -284,7 +303,9 @@ namespace ImageMap
 
     public class BedrockWorld : MinecraftWorld, IDisposable
     {
+        public IBedrockVersion Version { get; private set; }
         private LevelDB BedrockDB;
+        private NbtFile LevelDat;
         public override Edition Edition => Edition.Bedrock;
 
         public BedrockWorld(string folder) : base(folder)
@@ -292,9 +313,70 @@ namespace ImageMap
             Name = File.ReadAllText(Path.Combine(Folder, "levelname.txt"));
         }
 
+        public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings)
+        {
+            return BedrockMap.FromSettings(settings);
+        }
+
         private void OpenDB()
         {
             BedrockDB = new LevelDB(Path.Combine(Folder, "db"));
+            LevelDat = LoadNbtFromFile(Path.Combine(Folder, "level.dat"));
+            Version = DetermineVersionFromLevelDat(LevelDat.RootTag);
+        }
+
+        private static IBedrockVersion DetermineVersionFromLevelDat(NbtCompound leveldat)
+        {
+            var versiontag = leveldat["lastOpenedWithVersion"];
+            if (versiontag is NbtList list)
+            {
+                var minor = list[1];
+                if (minor is NbtInt num)
+                {
+                    if (num.Value >= 11)
+                        return Bedrock1p11Version.Instance;
+                    if (num.Value >= 7)
+                        return Bedrock1p7Version.Instance;
+                    if (num.Value >= 2)
+                        return Bedrock1p2Version.Instance;
+                }
+            }
+            throw new InvalidOperationException("Couldn't determine world version");
+        }
+
+        private NbtFile LoadNbtFromFile(string filepath)
+        {
+            return LoadNbtFromBytes(File.ReadAllBytes(filepath), 8);
+        }
+
+        private NbtFile LoadNbtFromDB(string key)
+        {
+            byte[] data = BedrockDB.Get(key);
+            if (data == null)
+                throw new FileNotFoundException($"Key {key} not found in leveldb");
+            return LoadNbtFromBytes(data);
+        }
+
+        private NbtFile LoadNbtFromBytes(byte[] data, int skip = 0)
+        {
+            var file = new NbtFile();
+            file.BigEndian = false;
+            file.LoadFromBuffer(data, skip, data.Length - skip, NbtCompression.None);
+            return file;
+        }
+
+        private byte[] WriteNbtToBytes(NbtCompound root)
+        {
+            NbtFile file = new NbtFile(root);
+            file.BigEndian = false;
+            return file.SaveToBuffer(NbtCompression.None);
+        }
+
+        private void WriteNbtToDB(string key, NbtFile file)
+        {
+            file.BigEndian = false;
+            var bytes = file.SaveToBuffer(NbtCompression.None);
+            BedrockDB.Put(key, bytes);
         }
 
         private void CloseDB()
@@ -307,25 +389,9 @@ namespace ImageMap
             var batch = new WriteBatch();
             foreach (var map in maps)
             {
-                NbtCompound mapfile = new NbtCompound("map")
-                {
-                    new NbtLong("mapId", map.Key),
-                    new NbtLong("parentMapId", -1),
-                    new NbtList("decorations", NbtTagType.Compound),
-                    new NbtByte("fullyExplored", 1),
-                    new NbtByte("scale", 4),
-                    new NbtByte("dimension", 0),
-                    new NbtShort("height", Map.MAP_HEIGHT),
-                    new NbtShort("width", Map.MAP_WIDTH),
-                    new NbtByte("unlimitedTracking", 0),
-                    new NbtInt("xCenter", Int32.MaxValue),
-                    new NbtInt("zCenter", Int32.MaxValue),
-                    new NbtByte("mapLocked", 1),
-                    new NbtByteArray("colors", map.Value.Colors)
-                };
-                NbtFile file = new NbtFile(mapfile);
-                file.BigEndian = false;
-                byte[] bytes = file.SaveToBuffer(NbtCompression.None);
+                var mapfile = Version.CreateMapCompound(map.Key, map.Value.Colors);
+                mapfile.Name = "image map";
+                var bytes = WriteNbtToBytes(mapfile);
                 batch.Put(Util.MapName(map.Key), bytes);
                 Maps[map.Key] = map.Value;
             }
@@ -355,18 +421,10 @@ namespace ImageMap
                 return true;
             OpenDB();
             // acquire the file this player is stored in, and the tag that represents said player
-            byte[] playerdata = BedrockDB.Get(exact_playerid);
-            if (playerdata == null)
-                throw new FileNotFoundException($"Player data with ID {exact_playerid} not found");
-            var file = new NbtFile();
-            file.BigEndian = false;
-            file.LoadFromBuffer(playerdata, 0, playerdata.Length, NbtCompression.None);
-            var invtag = (NbtList)file.RootTag["Inventory"];
-
+            var player = LoadNbtFromDB(exact_playerid);
+            var invtag = (NbtList)player.RootTag["Inventory"];
             var success = PutChestsInInventory(invtag, mapids);
-
-            byte[] bytes = file.SaveToBuffer(NbtCompression.None);
-            BedrockDB.Put(exact_playerid, bytes);
+            WriteNbtToDB(exact_playerid, player);
             CloseDB();
 
             return success;
@@ -394,11 +452,8 @@ namespace ImageMap
                 {
                     if (Util.MapString(name, out long number))
                     {
-                        NbtFile nbtfile = new NbtFile();
-                        nbtfile.BigEndian = false;
-                        byte[] data = iterator.Value();
-                        nbtfile.LoadFromBuffer(data, 0, data.Length, NbtCompression.AutoDetect);
-                        var colors = nbtfile.RootTag["colors"].ByteArrayValue;
+                        var map = LoadNbtFromBytes(iterator.Value());
+                        var colors = map.RootTag["colors"].ByteArrayValue;
                         // skip completely blank maps (bedrock likes generating pointless parents)
                         if (!colors.All(x => x == 0))
                             maps.Add(number, new BedrockMap(colors));
@@ -426,10 +481,8 @@ namespace ImageMap
                 var value = iterator.Value();
                 if (UuidString(name, out string uuid))
                 {
-                    NbtFile nbtfile = new NbtFile();
-                    nbtfile.BigEndian = false;
-                    nbtfile.LoadFromBuffer(value, 0, value.Length, NbtCompression.AutoDetect);
-                    if (nbtfile.RootTag["Inventory"] != null)
+                    var player = LoadNbtFromBytes(value);
+                    if (player.RootTag["Inventory"] != null)
                         names.Add(uuid);
                 }
                 else
@@ -473,7 +526,7 @@ namespace ImageMap
                 });
                 slot++;
             }
-            var chest = new NbtCompound()
+            var chest = new NbtCompound
             {
                 new NbtString("Name", "minecraft:chest"), // 1.6+ support
                 new NbtShort("id", 54), // 1.5 support

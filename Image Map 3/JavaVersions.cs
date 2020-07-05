@@ -1,23 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using fNbt;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
 namespace ImageMap
 {
-    public interface IColorMapping
+    public interface IJavaVersion
     {
         byte ColorToByte(Color input);
         bool TryColorToByte(Color input, out byte output);
         Color ByteToColor(byte input);
         bool TryByteToColor(byte input, out Color output);
         IEnumerable<Color> GetAllColors();
+        NbtCompound CreateMapItem(byte slot, long mapid);
+        NbtCompound CreateMapCompound(long mapid, byte[] colors);
     }
 
-    public abstract class JavaMapping : IColorMapping
+    public abstract class AbstractJavaVersion : IJavaVersion
     {
         private readonly Dictionary<Color, byte> ColorMap;
         private readonly Dictionary<byte, Color> ReverseColorMap;
-        public JavaMapping()
+        public AbstractJavaVersion()
         {
             var colors = GetBaseColors();
             ColorMap = new Dictionary<Color, byte>();
@@ -36,6 +40,8 @@ namespace ImageMap
 
         public abstract IEnumerable<Color> GetBaseColors();
         public abstract IEnumerable<Color> GetAlternateColors(Color color);
+        public abstract NbtCompound CreateMapItem(byte slot, long mapid);
+        public abstract NbtCompound CreateMapCompound(long mapid, byte[] colors);
 
         protected IEnumerable<Color> AlternatesFromMultipliers(Color color, IEnumerable<int> multipliers)
         {
@@ -75,14 +81,38 @@ namespace ImageMap
     }
 
     // beta 1.8+
-    public class JavaOldMapping : JavaMapping
+    public class JavaOldMapping : AbstractJavaVersion
     {
         public static JavaOldMapping Instance = new JavaOldMapping();
         private JavaOldMapping() { }
 
+        public override NbtCompound CreateMapItem(byte slot, long mapid)
+        {
+            return new NbtCompound
+            {
+                new NbtShort("id", 358),
+                new NbtShort("Damage", (short)mapid),
+                new NbtByte("Slot", slot),
+                new NbtByte("Count", 1)
+            };
+        }
+
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors)
+        {
+            return new NbtCompound
+            {
+                new NbtByteArray("colors", colors),
+                new NbtByte("scale", 0),
+                new NbtByte("dimension", 0),
+                new NbtInt("xCenter", Int32.MaxValue),
+                new NbtInt("zCenter", Int32.MaxValue),
+                new NbtShort("height", Map.MAP_HEIGHT),
+                new NbtShort("width", Map.MAP_WIDTH)
+            };
+        }
+
         // second and fourth colors are identical
-        public static readonly int[] ColorMultipliers = new int[] { 180, 220, 255, 220 };
-        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, ColorMultipliers);
+        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, new int[] { 180, 220, 255, 220 });
 
         public override IEnumerable<Color> GetBaseColors()
         {
@@ -104,17 +134,21 @@ namespace ImageMap
                 Color.FromArgb(104, 83, 50)
             };
         }
+
+        public override string ToString() => "Beta 1.8+";
     }
 
     // 13w42a+
-    public class Java1p7SnapshotMapping : JavaMapping
+    public class Java1p7SnapshotMapping : AbstractJavaVersion
     {
         public static Java1p7SnapshotMapping Instance = new Java1p7SnapshotMapping();
         private Java1p7SnapshotMapping() { }
 
+        public override NbtCompound CreateMapItem(byte slot, long mapid) => JavaOldMapping.Instance.CreateMapItem(slot, mapid);
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors) => JavaOldMapping.Instance.CreateMapCompound(mapid, colors);
+
         // second and fourth colors are identical
-        public static readonly int[] ColorMultipliers = new int[] { 176, 216, 250, 216 };
-        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, ColorMultipliers);
+        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, new int[] { 176, 216, 250, 216 });
 
         public override IEnumerable<Color> GetBaseColors()
         {
@@ -146,25 +180,44 @@ namespace ImageMap
             });
             return old_colors.Concat(new_colors);
         }
+
+        public override string ToString() => "13w42a+";
     }
 
     // 13w43a+
-    public class Java1p7Mapping : JavaMapping
+    public class Java1p7Mapping : AbstractJavaVersion
     {
         public static Java1p7Mapping Instance = new Java1p7Mapping();
         private Java1p7Mapping() { }
 
-        public static readonly int[] ColorMultipliers = new int[] { 176, 216, 250, 132 };
-        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, ColorMultipliers);
+        public override NbtCompound CreateMapItem(byte slot, long mapid) => Java1p7SnapshotMapping.Instance.CreateMapItem(slot, mapid);
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors) => Java1p7SnapshotMapping.Instance.CreateMapCompound(mapid, colors);
+
+        public override IEnumerable<Color> GetAlternateColors(Color color) => AlternatesFromMultipliers(color, new int[] { 176, 216, 250, 132 });
 
         public override IEnumerable<Color> GetBaseColors() => Java1p7SnapshotMapping.Instance.GetBaseColors();
+
+        public override string ToString() => "1.7+";
     }
 
     // 1.8.1-pre1+
-    public class Java1p8Mapping : JavaMapping
+    public class Java1p8Mapping : AbstractJavaVersion
     {
         public static Java1p8Mapping Instance = new Java1p8Mapping();
         private Java1p8Mapping() { }
+
+        public override NbtCompound CreateMapItem(byte slot, long mapid)
+        {
+            return new NbtCompound
+            {
+                new NbtString("id", "minecraft:filled_map"),
+                new NbtShort("Damage", (short)mapid),
+                new NbtByte("Slot", slot),
+                new NbtByte("Count", 1)
+            };
+        }
+
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors) => Java1p7Mapping.Instance.CreateMapCompound(mapid, colors);
 
         public override IEnumerable<Color> GetAlternateColors(Color color) => Java1p7Mapping.Instance.GetAlternateColors(color);
 
@@ -197,7 +250,7 @@ namespace ImageMap
                 Color.FromArgb(149, 149, 149),
                 Color.FromArgb(74, 124, 149),
                 Color.FromArgb(124, 62, 174),
-                Color.FromArgb(50, 74, 255),
+                Color.FromArgb(50, 74, 174),
                 Color.FromArgb(100, 74, 50),
                 Color.FromArgb(100, 124, 50),
                 Color.FromArgb(149, 50, 50),
@@ -207,16 +260,34 @@ namespace ImageMap
                 Color.FromArgb(73, 125, 250),
                 Color.FromArgb(0, 213, 57),
                 Color.FromArgb(126, 84, 48),
-                Color.FromArgb(110, 2, 0),
+                Color.FromArgb(110, 2, 0)
             });
         }
+        public override string ToString() => "1.8+";
     }
 
     // 17w17a+
-    public class Java1p12Mapping : JavaMapping
+    public class Java1p12Mapping : AbstractJavaVersion
     {
         public static Java1p12Mapping Instance = new Java1p12Mapping();
         private Java1p12Mapping() { }
+
+        public override NbtCompound CreateMapItem(byte slot, long mapid) => Java1p8Mapping.Instance.CreateMapItem(slot, mapid);
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors)
+        {
+            return new NbtCompound
+            {
+                new NbtByteArray("colors", colors),
+                new NbtByte("scale", 0),
+                new NbtByte("dimension", 0),
+                new NbtInt("xCenter", Int32.MaxValue),
+                new NbtInt("zCenter", Int32.MaxValue),
+                new NbtShort("height", Map.MAP_HEIGHT),
+                new NbtShort("width", Map.MAP_WIDTH),
+                new NbtByte("trackingPosition", 0),
+                new NbtByte("unlimitedTracking", 0)
+            };
+        }
 
         public override IEnumerable<Color> GetAlternateColors(Color color) => Java1p7Mapping.Instance.GetAlternateColors(color);
 
@@ -244,13 +315,97 @@ namespace ImageMap
             });
             return old_colors.Concat(new_colors);
         }
+
+        public override string ToString() => "1.12+";
+    }
+
+    // 17w47a+
+    public class Java1p13Mapping : AbstractJavaVersion
+    {
+        public static Java1p13Mapping Instance = new Java1p13Mapping();
+        private Java1p13Mapping() { }
+
+        public override NbtCompound CreateMapItem(byte slot, long mapid)
+        {
+            return new NbtCompound
+            {
+                new NbtString("id", "minecraft:filled_map"),
+                new NbtByte("Slot", slot),
+                new NbtByte("Count", 1),
+                new NbtCompound("tag") { new NbtInt("map", (int)mapid) }
+            };
+        }
+
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors)
+        {
+            return new NbtCompound
+            {
+                new NbtByteArray("colors", colors),
+                new NbtByte("scale", 0),
+                new NbtByte("dimension", 0),
+                new NbtInt("xCenter", Int32.MaxValue),
+                new NbtInt("zCenter", Int32.MaxValue),
+                new NbtByte("trackingPosition", 0),
+                new NbtByte("unlimitedTracking", 0)
+            };
+        }
+
+        public override IEnumerable<Color> GetAlternateColors(Color color) => Java1p12Mapping.Instance.GetAlternateColors(color);
+        public override IEnumerable<Color> GetBaseColors() => Java1p12Mapping.Instance.GetBaseColors();
+
+        public override string ToString() => "1.13+";
+    }
+
+    // 19w02a+
+    public class Java1p14Mapping : AbstractJavaVersion
+    {
+        public static Java1p14Mapping Instance = new Java1p14Mapping();
+        private Java1p14Mapping() { }
+
+        public override NbtCompound CreateMapItem(byte slot, long mapid) => Java1p13Mapping.Instance.CreateMapItem(slot, mapid);
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors)
+        {
+            return new NbtCompound
+            {
+                new NbtByteArray("colors", colors),
+                new NbtByte("scale", 0),
+                new NbtInt("dimension", 0),
+                new NbtByte("locked", 1),
+                new NbtInt("xCenter", Int32.MaxValue),
+                new NbtInt("zCenter", Int32.MaxValue),
+                new NbtByte("trackingPosition", 0),
+                new NbtByte("unlimitedTracking", 0)
+            };
+        }
+
+        public override IEnumerable<Color> GetAlternateColors(Color color) => Java1p12Mapping.Instance.GetAlternateColors(color);
+        public override IEnumerable<Color> GetBaseColors() => Java1p12Mapping.Instance.GetBaseColors();
+
+        public override string ToString() => "1.14+";
     }
 
     // 1.16 pre-6+
-    public class Java1p16Mapping : JavaMapping
+    public class Java1p16Mapping : AbstractJavaVersion
     {
         public static Java1p16Mapping Instance = new Java1p16Mapping();
         private Java1p16Mapping() { }
+
+        public override NbtCompound CreateMapItem(byte slot, long mapid) => Java1p14Mapping.Instance.CreateMapItem(slot, mapid);
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors)
+        {
+            return new NbtCompound
+            {
+                new NbtByteArray("colors", colors),
+                new NbtByte("scale", 0),
+                new NbtString("dimension", "minecraft:overworld"),
+                new NbtByte("locked", 1),
+                new NbtInt("xCenter", Int32.MaxValue),
+                new NbtInt("zCenter", Int32.MaxValue),
+                new NbtByte("trackingPosition", 0),
+                new NbtByte("unlimitedTracking", 0)
+            };
+        }
+
         public override IEnumerable<Color> GetAlternateColors(Color color) => Java1p8Mapping.Instance.GetAlternateColors(color);
         public override IEnumerable<Color> GetBaseColors()
         {
@@ -267,5 +422,7 @@ namespace ImageMap
             });
             return old_colors.Concat(new_colors);
         }
+
+        public override string ToString() => "1.16+";
     }
 }

@@ -54,7 +54,10 @@ namespace ImageMap
         {
             if (ex is AggregateException agg)
                 return String.Join("\n", agg.InnerExceptions.Select(x => ExceptionMessage(x)));
-            return $"{ex.GetType().Name}: {ex.Message}";
+            string result = $"{ex.GetType().Name}: {ex.Message}";
+            if (ex.InnerException != null)
+                result += "\n" + ExceptionMessage(ex.InnerException);
+            return result;
         }
 
         public static string MapName(long id)
