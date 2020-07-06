@@ -10,10 +10,10 @@ Firstly: download, unzip, and run the application. Click the button that corresp
 
 ### Existing Maps
 
-This tab shows maps that are currently in your world. Click on a map to select it, and again to deselect. Right-click to open the options menu:
+This tab shows maps that are currently in your world. Click on a map to select it, and again to deselect. Right-click to open the options menu:  
 <img src="https://i.imgur.com/vuEaZPn.png" width=200>
 
-If your world has tons of maps, not all of them are loaded at once, for performance reasons. You can press these buttons to continue loading in maps, if you wish to preview them:
+If your world has tons of maps, not all of them are loaded at once, for performance reasons. You can press these buttons to continue loading in maps, if you wish to preview them:  
 <img src="https://i.imgur.com/OG4vZjN.png" width=140> <img src="https://i.imgur.com/C23TcQQ.png" width=140>&nbsp;  
 Note that even if some maps aren't loaded, the app will still detect and warn about transfer conflicts if you try to change the ID of a map to one that's already taken.
 
@@ -67,7 +67,7 @@ Large item frames and slow algorithms may take some time to process. Maps that a
 You can hover over any map to see the original image. Click on a map to select it, and again to deselect. Right-click to open the options menu:  
 <img src="https://i.imgur.com/xerSSiz.png" width=200>
 
-You can also send all of your maps to the world at once with this button:
+You can also send all of your maps to the world at once with this button:  
 <img src="https://i.imgur.com/EjrbLtG.png" width=200>
 
 If <img src="https://i.imgur.com/Km59iGD.png" height=20> is checked, a chest will be added to your singleplayer inventory containing all the maps you sent. Ensure your world isn't open in Minecraft, or this won't work!
