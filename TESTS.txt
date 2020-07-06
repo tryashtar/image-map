@@ -1,0 +1,25 @@
+pending maps:
+   - right-click + send to world
+      - should ignore
+   - send all to world
+      - should ignore
+
+change ID, import side:
+   - change to itself
+      - should do nothing
+   - select many, increase by one
+      - should work unless upper end conflicts
+   - source pending, destination pending
+      - should work, slot filled with different map done loading
+   - source pending, destination existing
+      - should work, slot filled when done loading
+   - source existing, destination pending
+      - should work, slot not filled when done loading
+   - source existing, destination existing
+      - should work
+
+change ID, world side:
+   - change to itself
+      - should do nothing
+   - select many, increase by one
+      - should work unless upper end conflicts

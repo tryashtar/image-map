@@ -1,0 +1,18 @@
+A. zlib
+   1. download https://github.com/kiyolee/zlib-win-build
+   2. copy all files in root directory to zlib folder, including win32 folder
+   3. copy contents of build-VS2019 folder to zlib/zlib
+   4. add zlib/zlib/libz/libz.vcxproj project to solution
+   5. zlib project properties -> change "output directory" for "all configurations" and "all platforms" to "$(ProjectDir)\$(Configuration)" 
+   6. build zlib project in visual studio
+
+B. leveldb
+   1. download https://github.com/pmmp/leveldb-mcpe
+   2. copy everything to leveldb-mcpe folder
+   3. open leveldb.vcxproj and find/replace "SolutionDir" to "ProjectDir"
+   4. add leveldb-mcpe/leveldb.vcxproj project to solution
+   5. in the property manager window, right click leveldb -> add new project property sheet, save as properties.props
+   6. add a user macro with name "ZlibLibPath" and value "..\zlib\zlib\libz\($Configuration)\libz.lib"
+   7. add a user macro with name "ZlibIncludePath" and value "..\zlib"
+   8. leveldb project properties -> change "output directory" for "all configurations" and "all platforms" to "$(ProjectDir)\$(Configuration)"
+   9. build leveldb project in visual studio
