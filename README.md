@@ -77,14 +77,14 @@ If <img src="https://i.imgur.com/Km59iGD.png" height=20> is checked, a chest wil
 This program supports all of the map color palettes Java Minecraft has had throughout its history, up to the most recent changes in 1.16. Note that Bedrock Minecraft supports full RGB for its maps, so there is no limited palette. Here are all the supported palettes:
 
 Beta 1.8+  
-<img src="https://i.imgur.com/e2esxac.png" height=45>&nbsp;  
+<img src="https://i.imgur.com/e2esxac.png" height=36>&nbsp;  
 13w42a  
-<img src="https://i.imgur.com/5vyLGks.png" height=45>&nbsp;  
+<img src="https://i.imgur.com/5vyLGks.png" height=36>&nbsp;  
 13w43a (1.7)+  
-<img src="https://i.imgur.com/kF8Vk69.png" height=60>&nbsp;  
+<img src="https://i.imgur.com/kF8Vk69.png" height=48>&nbsp;  
 1.8.1-pre1+  
-<img src="https://i.imgur.com/WUwSshI.png" height=60>&nbsp;  
+<img src="https://i.imgur.com/WUwSshI.png" height=48>&nbsp;  
 17w17a (1.12)+  
-<img src="https://i.imgur.com/mXW0Xta.png" height=60>&nbsp;  
+<img src="https://i.imgur.com/mXW0Xta.png" height=48>&nbsp;  
 1.16 pre-6+  
-<img src="https://i.imgur.com/ea62NuN.png" height=60>&nbsp;  
+<img src="https://i.imgur.com/ea62NuN.png" height=48>&nbsp;  
