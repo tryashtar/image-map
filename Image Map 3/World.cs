@@ -122,18 +122,18 @@ namespace ImageMap
             if (dataversion is NbtInt intversion)
             {
                 if (intversion.Value >= 2562) // 1.16 pre-6
-                    return Java1p16Mapping.Instance;
+                    return Java1p16Version.Instance;
                 if (intversion.Value >= 1128) // 17w17a
-                    return Java1p12Mapping.Instance;
+                    return Java1p12Version.Instance;
             }
             var gamerules = leveldat["GameRules"];
             if (gamerules != null && gamerules["doEntityDrops"] != null) // 1.8.1 pre-1
-                return Java1p8Mapping.Instance;
+                return Java1p8Version.Instance;
             var player = leveldat["Player"];
             if (player != null && player["HealF"] != null) // 1.6.4, not great (ideally 13w42a, with another check for 13w43a)
-                return Java1p7Mapping.Instance;
+                return Java1p7Version.Instance;
             if (leveldat["MapFeatures"] != null)
-                return JavaOldMapping.Instance;
+                return JavaB1p8Version.Instance;
             throw new InvalidOperationException("Couldn't determine world version, or it's from an old version from before maps existed (pre-beta 1.8)");
         }
 
