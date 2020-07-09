@@ -47,17 +47,17 @@ namespace ImageMap
                 ImportingMaps[to] = map;
             }
             else
+            {   
+                // if we're changing the ID of a pending map to replace an existing map
+                if (ImportingMaps.ContainsKey(to))
+                    ImportingMaps.Remove(to);
+            }
+            foreach (var pending in ProcessingMaps.Keys)
             {
-                foreach (var pending in ProcessingMaps.Keys)
-                {
-                    // if we're changing the ID of a map to replace a pending map
-                    if (pending.IDs.Contains(to))
-                        pending.DiscardResult(to);
-                    // if we're changing the ID of a pending map to replace an existing map
-                    if (ImportingMaps.ContainsKey(to))
-                        ImportingMaps.Remove(to);
-                    pending.ChangeMapID(from, to);
-                }
+                // if we're changing the ID of a map to replace a pending map
+                if (pending.IDs.Contains(to))
+                    pending.DiscardResult(to);
+                pending.ChangeMapID(from, to);
             }
             MapsChanged?.Invoke(this, EventArgs.Empty);
         }

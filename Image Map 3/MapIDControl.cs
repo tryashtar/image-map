@@ -18,10 +18,11 @@ namespace ImageMap
         public bool Conflicted { get; private set; }
         public bool HasBox => Box != null;
         private MapPreviewBox Box;
+        private ProgressBar Progress;
         public event EventHandler<bool> SelectedChanged;
 
         // awaiting to receive a preview box
-        public MapIDControl(long id)
+        public MapIDControl(long id, Map map)
         {
             InitializeComponent();
             AutoScaleMode = AutoScaleMode.None;
@@ -29,10 +30,15 @@ namespace ImageMap
             SetID(id);
             SetConflict(false);
             SetSize(128, 128);
-        }
-
-        public MapIDControl(long id, Map map) : this(id)
-        {
+            Progress = new ProgressBar();
+            Progress.Minimum = 0;
+            Progress.Maximum = 100;
+            Controls.Add(Progress);
+            Progress.Left = this.Left + 5;
+            Progress.Width = this.Width - 10;
+            Progress.Height = 15;
+            Progress.Top = this.Bottom - Progress.Height - IDLabel.Height - 5;
+            Progress.Visible = true;
             SetMap(map);
         }
 
@@ -44,14 +50,19 @@ namespace ImageMap
 
         public void SetMap(Map map)
         {
-            if (Box != null)
+            if (Map == map)
+                return;
+            if (map == null)
             {
-                if (Box.Map == map)
-                    return;
-                Box.MouseDown -= Box_MouseDown;
-                Controls.Remove(Box);
+                if (Box != null)
+                {
+                    Box.MouseDown -= Box_MouseDown;
+                    Controls.Remove(Box);
+                    Box = null;
+                }
+                Progress.Visible = true;
             }
-            if (map != null)
+            else
             {
                 Box = new MapPreviewBox(map);
                 Box.MouseDown += Box_MouseDown;
@@ -59,6 +70,7 @@ namespace ImageMap
                 SetSize(Box.Width, Box.Height);
                 Box.Left = this.Width / 2 - Box.Width / 2;
                 Box.Top = 3;
+                Progress.Visible = false;
             }
         }
 
@@ -72,6 +84,11 @@ namespace ImageMap
         {
             Conflicted = conflict;
             UpdateColor();
+        }
+
+        public void SetProgress(decimal percent)
+        {
+            Progress.Value = (int)(percent * 100);
         }
 
         public void ToggleSelected()

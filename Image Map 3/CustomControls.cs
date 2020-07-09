@@ -100,6 +100,12 @@ namespace ImageMap
             }
         }
 
+        public void SetProgress(long id, decimal percentage)
+        {
+            var box = MapControls[id];
+            box.SetProgress(percentage);
+        }
+
         public void SetMaps(IReadOnlyDictionary<long, Map> new_maps)
         {
             var add = new_maps.Keys.Except(MapControls.Keys).Select(x => NewMapIDControl(x, new_maps[x])).ToList();

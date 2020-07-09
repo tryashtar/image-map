@@ -37,9 +37,16 @@ namespace ImageMap
         }
     }
 
+    // disturbing things happen if this isn't a struct
+    public struct MapCreationProgress
+    {
+        public decimal PercentageComplete;
+    }
+
     public class PendingMapsWithID
     {
         public event EventHandler Finished;
+        public event EventHandler<MapCreationProgress> ProgressChanged;
         public int MapCount => Settings.NumberOfMaps;
         private readonly List<long> UsedIDs;
         private readonly HashSet<int> DiscardIndexes = new HashSet<int>();
@@ -53,23 +60,25 @@ namespace ImageMap
         {
             UsedIDs = Util.CreateRange(first_id, settings.NumberOfMaps).ToList();
             Settings = settings;
-            var task = new Task<IEnumerable<Map>>(() => world.MapsFromSettings(settings));
-            task.Start();
-            task.ContinueWith((t) =>
+            _ = GetMaps(settings, world);
+        }
+
+        private async Task GetMaps(MapCreationSettings settings, MinecraftWorld world)
+        {
+            var progress = new Progress<MapCreationProgress>();
+            progress.ProgressChanged += (s, e) => ProgressChanged?.Invoke(this, e);
+            var maps = (await Task.Run(() => world.MapsFromSettings(settings, progress))).ToList();
+            lock (IDModificationLock)
             {
-                lock (IDModificationLock)
+                var ids = UsedIDs;
+                foreach (int index in DiscardIndexes.OrderByDescending(x => x))
                 {
-                    var ids = UsedIDs;
-                    var maps = task.Result.ToList();
-                    foreach (int index in DiscardIndexes.OrderByDescending(x => x))
-                    {
-                        ids.RemoveAt(index);
-                        maps.RemoveAt(index);
-                    }
-                    ResultMaps = ids.Zip(maps, (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
+                    ids.RemoveAt(index);
+                    maps.RemoveAt(index);
                 }
-                Finish();
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+                ResultMaps = ids.Zip(maps, (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
+            }
+            Finish();
         }
 
         private void Finish()

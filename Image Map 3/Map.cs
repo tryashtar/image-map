@@ -102,7 +102,7 @@ namespace ImageMap
 
     public class JavaMap : Map
     {
-        public static IEnumerable<JavaMap> FromSettings(MapCreationSettings settings, IJavaVersion mapping)
+        public static IEnumerable<JavaMap> FromSettings(MapCreationSettings settings, IJavaVersion mapping, IProgress<MapCreationProgress> progress)
         {
             Bitmap original = ResizeImg(settings.Original, MAP_WIDTH * settings.SplitW, MAP_HEIGHT * settings.SplitH, settings.InterpMode, !settings.Stretch);
             LockBitmap final = new LockBitmap((Bitmap)original.Clone());
@@ -114,9 +114,12 @@ namespace ImageMap
                 colors[i] = new byte[MAP_WIDTH * MAP_HEIGHT];
             }
 
+            var report = new MapCreationProgress();
             #region java map algorithm
             for (int y = 0; y < final.Height; y++)
             {
+                report.PercentageComplete = ((decimal)y) / final.Height;
+                progress.Report(report);
                 for (int x = 0; x < final.Width; x++)
                 {
                     Color oldpixel = final.GetPixel(x, y);

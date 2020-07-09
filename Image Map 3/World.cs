@@ -25,7 +25,7 @@ namespace ImageMap
             Maps = new SortedDictionary<long, Map>();
         }
         // user needs to call this
-        public abstract IEnumerable<Map> MapsFromSettings(MapCreationSettings settings);
+        public abstract IEnumerable<Map> MapsFromSettings(MapCreationSettings settings, IProgress<MapCreationProgress> progress);
         public abstract void AddMaps(IReadOnlyDictionary<long, Map> maps);
         public abstract void RemoveMaps(IEnumerable<long> mapids);
         // returns whether there was enough room to fit the chests
@@ -104,9 +104,9 @@ namespace ImageMap
             UnloadedIDs = LoadAllMapIDs().OrderBy(x => x).ToList();
         }
 
-        public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings)
+        public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings, IProgress<MapCreationProgress> progress)
         {
-            return JavaMap.FromSettings(settings, Version);
+            return JavaMap.FromSettings(settings, Version, progress);
         }
 
         private void ReloadLevelDat()
@@ -316,8 +316,9 @@ namespace ImageMap
             UnloadedIDs = LoadAllMapIDs().OrderBy(x => x).ToList();
         }
 
-        public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings)
+        public override IEnumerable<Map> MapsFromSettings(MapCreationSettings settings, IProgress<MapCreationProgress> progress)
         {
+            // bedrock maps are fast enough that reporting progress is not needed
             return BedrockMap.FromSettings(settings);
         }
 

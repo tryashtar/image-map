@@ -111,6 +111,17 @@ namespace ImageMap
         {
             var pending = new PendingMapsWithID(GetSafeID(), settings, WorldSide);
             ImportSide.AddPending(pending);
+            pending.ProgressChanged += Pending_ProgressChanged;
+        }
+
+        private void Pending_ProgressChanged(object sender, MapCreationProgress e)
+        {
+            var pending = (PendingMapsWithID)sender;
+            decimal progress = e.PercentageComplete;
+            foreach (var id in pending.IDs)
+            {
+                ImportZone.SetProgress(id, progress);
+            }
         }
 
         private void CloseImportWindow(ImportWindow window)
