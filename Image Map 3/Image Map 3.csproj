@@ -244,6 +244,7 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy /y "$(SolutionDir)leveldb-mcpe\$(Configuration)\leveldb.dll" "$(ProjectDir)$(OutDir)"
 xcopy /y "$(SolutionDir)zlib\zlib\libz\$(Configuration)\libz.dll" "$(ProjectDir)$(OutDir)"
+if $(ConfigurationName) == Release (powershell Compress-Archive -Path '$(TargetDir)*.dll', '$(TargetDir)*.exe' -DestinationPath '$(TargetDir)ImageMap3.zip' -Force)
 </PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Fody.6.0.0\build\Fody.targets" Condition="Exists('..\packages\Fody.6.0.0\build\Fody.targets')" />
