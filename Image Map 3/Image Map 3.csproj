@@ -90,92 +90,102 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BedrockVersions.cs" />
-    <Compile Include="ColorAlgorithms.cs" />
-    <Compile Include="ColorCache.cs" />
-    <Compile Include="EditionProperties.cs" />
-    <Compile Include="IDInputDialog.cs">
+    <Compile Include="BedrockDefinitions\BedrockEditionProperties.cs" />
+    <Compile Include="BedrockDefinitions\BedrockMap.cs" />
+    <Compile Include="BedrockDefinitions\BedrockVersions.cs" />
+    <Compile Include="BedrockDefinitions\BedrockWorld.cs" />
+    <Compile Include="IMapSource.cs" />
+    <Compile Include="JavaDefinitions\JavaMap.cs" />
+    <Compile Include="JavaDefinitions\JavaWorld.cs" />
+    <Compile Include="UI\MapPreviewBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="JavaDefinitions\ColorAlgorithms.cs" />
+    <Compile Include="JavaDefinitions\ColorCache.cs" />
+    <Compile Include="JavaDefinitions\JavaEditionProperties.cs" />
+    <Compile Include="MinecraftDefinitions\EditionProperties.cs" />
+    <Compile Include="UI\IDInputDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="IDInputDialog.Designer.cs">
+    <Compile Include="UI\IDInputDialog.Designer.cs">
       <DependentUpon>IDInputDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="LockBitmap.cs" />
-    <Compile Include="Map.cs" />
-    <Compile Include="JavaVersions.cs" />
+    <Compile Include="MinecraftDefinitions\Map.cs" />
+    <Compile Include="JavaDefinitions\JavaVersions.cs" />
     <Compile Include="MapCreationSettings.cs" />
-    <Compile Include="Previews.cs" />
-    <Compile Include="ReplaceOptionDialog.cs">
+    <Compile Include="ImportMaps.cs" />
+    <Compile Include="UI\ReplaceOptionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ReplaceOptionDialog.Designer.cs">
+    <Compile Include="UI\ReplaceOptionDialog.Designer.cs">
       <DependentUpon>ReplaceOptionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Util.cs" />
-    <Compile Include="World.cs" />
-    <Compile Include="WorldIconControl.cs">
+    <Compile Include="MinecraftDefinitions\MinecraftWorld.cs" />
+    <Compile Include="UI\WorldIconControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="WorldIconControl.Designer.cs">
+    <Compile Include="UI\WorldIconControl.Designer.cs">
       <DependentUpon>WorldIconControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="WorldView.cs">
+    <Compile Include="UI\WorldView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="WorldView.Designer.cs">
+    <Compile Include="UI\WorldView.Designer.cs">
       <DependentUpon>WorldView.cs</DependentUpon>
     </Compile>
-    <Compile Include="WorldSelectWindow.cs">
+    <Compile Include="UI\WorldSelectWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WorldSelectWindow.Designer.cs">
+    <Compile Include="UI\WorldSelectWindow.Designer.cs">
       <DependentUpon>WorldSelectWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="CustomControls.cs">
+    <Compile Include="UI\MapPreviewPanel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImportWindow.cs">
+    <Compile Include="UI\ImportWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ImportWindow.Designer.cs">
+    <Compile Include="UI\ImportWindow.Designer.cs">
       <DependentUpon>ImportWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="MapIDControl.cs">
+    <Compile Include="UI\MapIDControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="MapIDControl.Designer.cs">
+    <Compile Include="UI\MapIDControl.Designer.cs">
       <DependentUpon>MapIDControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="TheForm.cs">
+    <Compile Include="UI\TheForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TheForm.Designer.cs">
+    <Compile Include="UI\TheForm.Designer.cs">
       <DependentUpon>TheForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="IDInputDialog.resx">
+    <EmbeddedResource Include="UI\IDInputDialog.resx">
       <DependentUpon>IDInputDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ReplaceOptionDialog.resx">
+    <EmbeddedResource Include="UI\ReplaceOptionDialog.resx">
       <DependentUpon>ReplaceOptionDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WorldIconControl.resx">
+    <EmbeddedResource Include="UI\WorldIconControl.resx">
       <DependentUpon>WorldIconControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WorldView.resx">
+    <EmbeddedResource Include="UI\WorldView.resx">
       <DependentUpon>WorldView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WorldSelectWindow.resx">
+    <EmbeddedResource Include="UI\WorldSelectWindow.resx">
       <DependentUpon>WorldSelectWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ImportWindow.resx">
+    <EmbeddedResource Include="UI\ImportWindow.resx">
       <DependentUpon>ImportWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MapIDControl.resx">
+    <EmbeddedResource Include="UI\MapIDControl.resx">
       <DependentUpon>MapIDControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TheForm.resx">
+    <EmbeddedResource Include="UI\TheForm.resx">
       <DependentUpon>TheForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

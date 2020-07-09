@@ -10,15 +10,6 @@ using System.Windows.Forms;
 
 namespace ImageMap
 {
-    public interface IMapSource
-    {
-        IReadOnlyDictionary<long, Map> GetMaps();
-        IEnumerable<long> GetTakenIDs();
-        void ChangeMapID(long from, long to);
-        void AddMaps(IReadOnlyDictionary<long, Map> maps);
-        void RemoveMaps(IEnumerable<long> ids);
-    }
-
     public class ImportMaps : IMapSource
     {
         public event EventHandler MapsChanged;
