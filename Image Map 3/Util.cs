@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using fNbt;
 
 namespace ImageMap
 {
@@ -75,6 +76,44 @@ namespace ImageMap
                 mapid = 0;
                 return false;
             }
+        }
+
+        public static T GetNbt<T>(NbtCompound compound, params string[] path) where T : NbtTag
+        {
+            NbtTag tag = compound;
+            foreach (var item in path)
+            {
+                tag = tag[item];
+                if (tag == null)
+                    return null;
+            }
+            if (tag is T desired)
+                return desired;
+            return null;
+        }
+
+        public static T GetNbt<T>(NbtFile file, params string[] path) where T : NbtTag
+        {
+            return GetNbt<T>(file.RootTag, path);
+        }
+
+        public static void SetNbt(NbtCompound compound, NbtTag value, params string[] path)
+        {
+            NbtCompound tag = compound;
+            foreach (var item in path)
+            {
+                if (!tag.Contains(item))
+                    tag.Add(new NbtCompound(item));
+                tag = (NbtCompound)tag[item]; // exception if existing non-compound tag is present
+            }
+            if (tag.TryGet(value.Name, out NbtTag existing) && existing.TagType == value.TagType)
+                tag.Remove(value.Name);
+            tag.Add(value);
+        }
+
+        public static void SetNbt(NbtFile file, NbtTag value, params string[] path)
+        {
+            SetNbt(file.RootTag, value, path);
         }
 
         public static Dictionary<T, U> Copy<T, U>(this IReadOnlyDictionary<T, U> dict) => dict.ToDictionary(x => x.Key, y => y.Value);

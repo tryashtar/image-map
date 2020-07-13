@@ -29,8 +29,8 @@ namespace ImageMap
         private void ReloadLevelDat()
         {
             LevelDat = new NbtFile(Path.Combine(Folder, "level.dat"));
-            Name = LevelDat.RootTag["Data"]["LevelName"].StringValue;
-            Version = DetermineVersionFromLevelDat((NbtCompound)LevelDat.RootTag["Data"]);
+            Name = Util.GetNbt<NbtString>(LevelDat, "Data", "LevelName")?.StringValue ?? Path.GetFileName(Folder);
+            Version = DetermineVersionFromLevelDat(Util.GetNbt<NbtCompound>(LevelDat, "Data"));
         }
 
         private static IJavaVersion DetermineVersionFromLevelDat(NbtCompound leveldat)
@@ -43,11 +43,9 @@ namespace ImageMap
                 if (intversion.Value >= 1128) // 17w17a
                     return Java1p12Version.Instance;
             }
-            var gamerules = leveldat["GameRules"];
-            if (gamerules != null && gamerules["doEntityDrops"] != null) // 1.8.1 pre-1
+            if (Util.GetNbt<NbtString>(leveldat, "GameRules", "doEntityDrops") != null) // 1.8.1 pre-1
                 return Java1p8Version.Instance;
-            var player = leveldat["Player"];
-            if (player != null && player["HealF"] != null) // 1.6.4, not great (ideally 13w42a, with another check for 13w43a)
+            if (Util.GetNbt<NbtFloat>(leveldat, "Player", "HealF") != null) // 1.6.4, not great (ideally 13w42a, with another check for 13w43a)
                 return Java1p7Version.Instance;
             if (leveldat["MapFeatures"] != null)
                 return JavaB1p8Version.Instance;
@@ -79,7 +77,8 @@ namespace ImageMap
             if (File.Exists(path))
             {
                 idcounts = new NbtFile(Path.Combine(Folder, "data", "idcounts.dat"));
-                int existing = idcounts.RootTag["data"]["map"].IntValue;
+                int existing = Util.GetNbt<NbtInt>(idcounts, "data", "map")?.IntValue ?? 0;
+                Util.SetNbt(idcounts, new NbtInt("map", Math.Max(existing, id)), "data");
                 idcounts.RootTag["data"]["map"] = new NbtInt("map", Math.Max(existing, id));
             }
             else
@@ -113,10 +112,9 @@ namespace ImageMap
             if (!mapids.Any())
                 return true;
             ReloadLevelDat();
-            var playertag = (NbtCompound)LevelDat.RootTag["Data"]["Player"];
-            if (playertag == null)
+            var invtag = Util.GetNbt<NbtList>(LevelDat, "Data", "Player", "Inventory");
+            if (invtag == null)
                 return false;
-            var invtag = (NbtList)playertag["Inventory"];
             var success = PutChestsInInventory(invtag, mapids);
             LevelDat.SaveToFile(LevelDat.FileName, LevelDat.FileCompression);
             return success;
@@ -129,6 +127,8 @@ namespace ImageMap
             var activefile = new NbtFile(PlayerFileLocation(playerid));
             var playertag = activefile.RootTag;
             var invtag = (NbtList)playertag["Inventory"];
+            if (invtag == null)
+                return false;
             var success = PutChestsInInventory(invtag, mapids);
             activefile.SaveToFile(activefile.FileName, activefile.FileCompression);
             return success;
@@ -208,7 +208,9 @@ namespace ImageMap
             {
                 var file = Path.Combine(Folder, "data", $"{Util.MapName(id)}.dat");
                 var nbtfile = new NbtFile(file);
-                Maps.Add(id, new JavaMap(nbtfile.RootTag["data"]["colors"].ByteArrayValue, Version));
+                var colors = Util.GetNbt<NbtByteArray>(nbtfile, "data", "colors");
+                if (colors != null)
+                    Maps.Add(id, new JavaMap(colors.ByteArrayValue, Version));
                 UnloadedIDs.Remove(id);
             }
             SignalMapsChanged();

@@ -20,7 +20,9 @@ namespace ImageMap
 
         public BedrockWorld(string folder) : base(folder)
         {
-            Name = File.ReadAllText(Path.Combine(Folder, "levelname.txt"));
+            var levelname = Path.Combine(Folder, "levelname.txt");
+            if (File.Exists(levelname))
+                Name = File.ReadLines(levelname).First();
             UnloadedIDs = LoadAllMapIDs().OrderBy(x => x).ToList();
         }
 
@@ -135,6 +137,8 @@ namespace ImageMap
             // acquire the file this player is stored in, and the tag that represents said player
             var player = LoadNbtFromDB(exact_playerid);
             var invtag = (NbtList)player.RootTag["Inventory"];
+            if (invtag == null)
+                return false;
             var success = PutChestsInInventory(invtag, mapids);
             WriteNbtToDB(exact_playerid, player);
             CloseDB();
@@ -206,10 +210,14 @@ namespace ImageMap
             {
                 var key = Util.MapName(id);
                 var map = LoadNbtFromDB(key);
-                var colors = map.RootTag["colors"].ByteArrayValue;
-                // skip completely blank maps (bedrock likes generating pointless parents)
-                if (!colors.All(x => x == 0))
-                    Maps.Add(id, new BedrockMap(colors));
+                var colors = map.RootTag["colors"];
+                if (colors != null)
+                {
+                    var bytes = colors.ByteArrayValue;
+                    // skip completely blank maps (bedrock likes generating pointless parents)
+                    if (!bytes.All(x => x == 0))
+                        Maps.Add(id, new BedrockMap(bytes));
+                }
                 UnloadedIDs.Remove(id);
             }
             CloseDB();
