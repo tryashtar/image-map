@@ -68,6 +68,7 @@ namespace ImageMap
             var progress = new Progress<MapCreationProgress>();
             progress.ProgressChanged += (s, e) => ProgressChanged?.Invoke(this, e);
             var maps = (await Task.Run(() => world.MapsFromSettings(settings, progress))).ToList();
+            settings.Dispose();
             lock (IDModificationLock)
             {
                 var ids = UsedIDs;
