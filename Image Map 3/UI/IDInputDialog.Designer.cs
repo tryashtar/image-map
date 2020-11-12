@@ -53,7 +53,7 @@
             // 
             this.IDInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F);
             this.IDInput.Location = new System.Drawing.Point(66, 45);
-            this.IDInput.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.IDInput.Margin = new System.Windows.Forms.Padding(2);
             this.IDInput.Maximum = new decimal(new int[] {
             -1,
             2147483647,
@@ -72,7 +72,7 @@
             // 
             this.ConfirmButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.ConfirmButton.Location = new System.Drawing.Point(9, 84);
-            this.ConfirmButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.ConfirmButton.Margin = new System.Windows.Forms.Padding(2);
             this.ConfirmButton.Name = "ConfirmButton";
             this.ConfirmButton.Size = new System.Drawing.Size(110, 36);
             this.ConfirmButton.TabIndex = 14;
@@ -84,7 +84,7 @@
             // 
             this.CancelButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.CancelButton.Location = new System.Drawing.Point(193, 84);
-            this.CancelButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.CancelButton.Margin = new System.Windows.Forms.Padding(2);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(79, 36);
             this.CancelButton.TabIndex = 15;
@@ -96,7 +96,7 @@
             // 
             this.AutoButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.AutoButton.Location = new System.Drawing.Point(124, 84);
-            this.AutoButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AutoButton.Margin = new System.Windows.Forms.Padding(2);
             this.AutoButton.Name = "AutoButton";
             this.AutoButton.Size = new System.Drawing.Size(64, 36);
             this.AutoButton.TabIndex = 16;
@@ -128,7 +128,7 @@
             this.Controls.Add(this.MapIDLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "IDInputDialog";

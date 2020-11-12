@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ImportWindow));
             this.PreviewPanel = new System.Windows.Forms.Panel();
+            this.PreviewBox = new ImageMap.InterpPictureBox();
             this.ControlsPanel = new System.Windows.Forms.Panel();
             this.HeightLabel = new System.Windows.Forms.Label();
             this.WidthLabel = new System.Windows.Forms.Label();
@@ -45,12 +46,11 @@
             this.WidthInput = new System.Windows.Forms.NumericUpDown();
             this.InterpolationModeBox = new System.Windows.Forms.ComboBox();
             this.CurrentIndexLabel = new System.Windows.Forms.Label();
-            this.PreviewBox = new ImageMap.InterpPictureBox();
             this.PreviewPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).BeginInit();
             this.ControlsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.HeightInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.WidthInput)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).BeginInit();
             this.SuspendLayout();
             // 
             // PreviewPanel
@@ -63,6 +63,20 @@
             this.PreviewPanel.Name = "PreviewPanel";
             this.PreviewPanel.Size = new System.Drawing.Size(675, 326);
             this.PreviewPanel.TabIndex = 10;
+            // 
+            // PreviewBox
+            // 
+            this.PreviewBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.PreviewBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.PreviewBox.Interp = System.Drawing.Drawing2D.InterpolationMode.Default;
+            this.PreviewBox.Location = new System.Drawing.Point(258, 10);
+            this.PreviewBox.Margin = new System.Windows.Forms.Padding(2);
+            this.PreviewBox.Name = "PreviewBox";
+            this.PreviewBox.Size = new System.Drawing.Size(126, 134);
+            this.PreviewBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.PreviewBox.TabIndex = 1;
+            this.PreviewBox.TabStop = false;
+            this.PreviewBox.Paint += new System.Windows.Forms.PaintEventHandler(this.PreviewBox_Paint);
             // 
             // ControlsPanel
             // 
@@ -287,20 +301,6 @@
             this.CurrentIndexLabel.TabIndex = 10;
             this.CurrentIndexLabel.Text = "0 / 0";
             // 
-            // PreviewBox
-            // 
-            this.PreviewBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.PreviewBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.PreviewBox.Interp = System.Drawing.Drawing2D.InterpolationMode.Default;
-            this.PreviewBox.Location = new System.Drawing.Point(258, 10);
-            this.PreviewBox.Margin = new System.Windows.Forms.Padding(2);
-            this.PreviewBox.Name = "PreviewBox";
-            this.PreviewBox.Size = new System.Drawing.Size(126, 134);
-            this.PreviewBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.PreviewBox.TabIndex = 1;
-            this.PreviewBox.TabStop = false;
-            this.PreviewBox.Paint += new System.Windows.Forms.PaintEventHandler(this.PreviewBox_Paint);
-            // 
             // ImportWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -314,11 +314,11 @@
             this.Text = "Import";
             this.Layout += new System.Windows.Forms.LayoutEventHandler(this.ImportWindow_Layout);
             this.PreviewPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).EndInit();
             this.ControlsPanel.ResumeLayout(false);
             this.ControlsPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.HeightInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.WidthInput)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).EndInit();
             this.ResumeLayout(false);
 
         }

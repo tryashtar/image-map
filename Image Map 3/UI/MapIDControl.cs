@@ -52,16 +52,15 @@ namespace ImageMap
         {
             if (Map == map)
                 return;
-            if (map == null)
+            // remove old box
+            if (Box != null)
             {
-                if (Box != null)
-                {
-                    Box.MouseDown -= Box_MouseDown;
-                    Controls.Remove(Box);
-                    Box = null;
-                }
-                Progress.Visible = true;
+                Box.MouseDown -= Box_MouseDown;
+                Controls.Remove(Box);
+                Box = null;
             }
+            if (map == null)
+                Progress.Visible = true;
             else
             {
                 Box = new MapPreviewBox(map);
