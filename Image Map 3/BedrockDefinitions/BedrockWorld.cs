@@ -238,6 +238,8 @@ namespace ImageMap
             while (iterator.IsValid())
             {
                 var name = iterator.StringKey();
+                if (!name.StartsWith(PlayerKeyword))
+                    break;
                 var value = iterator.Value();
                 if (UuidString(name, out string uuid))
                 {
@@ -245,8 +247,6 @@ namespace ImageMap
                     if (player.RootTag["Inventory"] != null)
                         names.Add(uuid);
                 }
-                else
-                    break;
                 iterator.Next();
             }
             iterator.Dispose();
