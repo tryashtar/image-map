@@ -1,6 +1,8 @@
 [submodule "zlib"]
 	path = zlib
 [submodule "leveldb-mcpe"]
+   url = https://github.com/tryashtar/leveldb-mcpe
 	path = leveldb-mcpe
 [submodule "fNbt"]
+   url = https://github.com/tryashtar/fNbt
 	path = fNbt
