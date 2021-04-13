@@ -6,3 +6,6 @@
 [submodule "fNbt"]
    url = https://github.com/tryashtar/fNbt
 	path = fNbt
+[submodule "LevelDBWrapper"]
+	path = LevelDBWrapper
+	url = https://github.com/tryashtar/LevelDBWrapper
