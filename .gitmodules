@@ -1,6 +1,12 @@
 [submodule "zlib"]
 	path = zlib
+   url = https://github.com/tryashtar/zlib-win-build
 [submodule "leveldb-mcpe"]
+   url = https://github.com/tryashtar/leveldb-mcpe
 	path = leveldb-mcpe
 [submodule "fNbt"]
+   url = https://github.com/tryashtar/fNbt
 	path = fNbt
+[submodule "LevelDBWrapper"]
+	path = LevelDBWrapper
+	url = https://github.com/tryashtar/LevelDBWrapper

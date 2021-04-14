@@ -47,6 +47,9 @@ namespace ImageMap
             if (!WorldView.HasUnsavedChanges() || MessageBox.Show("You have unsaved maps waiting to be imported! If you select a new world, these will be lost!\n\nDiscard unsaved maps?", "Wait a minute!", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 MinecraftWorld world = null;
+#if DEBUG
+                world = getworld();
+#else
                 try
                 {
                     world = getworld();
@@ -55,6 +58,7 @@ namespace ImageMap
                 {
                     MessageBox.Show($"Error opening that world:\n\n{Util.ExceptionMessage(ex)}", "World error!");
                 }
+#endif
                 if (world != null)
                     DoOpenWorld(world);
             }
