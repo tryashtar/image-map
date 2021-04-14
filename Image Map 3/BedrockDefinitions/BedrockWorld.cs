@@ -199,88 +199,8 @@ namespace ImageMap
                 iterator.Next();
             }
             iterator.Dispose();
-
-            foreach (var item in BedrockDB)
-            {
-                var key = item.Key;
-                var value = item.Value;
-                var str_key = Encoding.UTF8.GetString(key);
-                if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 49)
-                {
-                    if (value.Length > 0)
-                    {
-                        var files = new List<NbtCompound>();
-                        int index = 0;
-                        do
-                        {
-                            var file = LoadNbt(value, index);
-                            files.Add(file.Item2.RootTag);
-                            index += (int)file.Item1;
-                        } while (index < value.Length);
-                    }
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 44)
-                {
-                    if (value.Length != 1)
-                        throw new Exception();
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 45)
-                {
-                }
-                else if ((key.Length == 10 || key.Length == 14) && key[key.Length - 2] == 47)
-                {
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 54)
-                {
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 50)
-                {
-                    if (value.Length > 0)
-                    {
-                        var file = LoadNbt(value);
-                    }
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 51)
-                {
-                    var file = LoadNbt(value);
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 58)
-                {
-                    var file = LoadNbt(value);
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 56)
-                {
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 53)
-                {
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 57)
-                {
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 59)
-                {
-                }
-                else if ((key.Length == 9 || key.Length == 13) && key[key.Length - 1] == 118)
-                {
-                }
-                else if (!str_key.Any(x => Char.IsControl(x)) && !key.Any(x => x == 255))
-                {
-                    var file = LoadNbt(value);
-                }
-                else
-                    throw new Exception();
-            }
-
             CloseDB();
             return ids;
-        }
-
-        private Tuple<long, NbtFile> LoadNbt(byte[] data, int skip = 0)
-        {
-            var file = new NbtFile();
-            file.BigEndian = false;
-            long l = file.LoadFromBuffer(data, skip, data.Length - skip, NbtCompression.None);
-            return Tuple.Create(l, file);
         }
 
         private void LoadMaps(IEnumerable<long> ids)
