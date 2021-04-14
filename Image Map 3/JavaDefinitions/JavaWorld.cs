@@ -38,6 +38,8 @@ namespace ImageMap
             var dataversion = leveldat["DataVersion"];
             if (dataversion is NbtInt intversion)
             {
+                if (intversion.Value >= 2709)
+                    return Java1p17Version.Instance;
                 if (intversion.Value >= 2562) // 1.16 pre-6
                     return Java1p16Version.Instance;
                 if (intversion.Value >= 1128) // 17w17a
