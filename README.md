@@ -88,5 +88,7 @@ Beta 1.8+
 <img src="https://i.imgur.com/lLU3Dyc.png" height=48>&nbsp;  
 1.16 pre-6+  
 <img src="https://i.imgur.com/groRMjk.png" height=48>&nbsp;  
-21w15a (1.17)+  
+21w15a  
 <img src="https://i.imgur.com/WW3wsiG.png" height=48>&nbsp;  
+21w16a (1.17)+  
+<img src="https://i.imgur.com/EA39eVT.png" height=48>&nbsp;  

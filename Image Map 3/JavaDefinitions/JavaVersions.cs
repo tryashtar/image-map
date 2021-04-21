@@ -428,10 +428,10 @@ namespace ImageMap
     }
 
     // 21w15a+
-    public class Java1p17Version : AbstractJavaVersion
+    public class Java1p17SnapshotVersion : AbstractJavaVersion
     {
-        public static Java1p17Version Instance = new Java1p17Version();
-        private Java1p17Version() { }
+        public static Java1p17SnapshotVersion Instance = new Java1p17SnapshotVersion();
+        private Java1p17SnapshotVersion() { }
 
         public override NbtCompound CreateMapItem(byte slot, long mapid) => Java1p14Version.Instance.CreateMapItem(slot, mapid);
         public override NbtCompound CreateMapCompound(long mapid, byte[] colors) => Java1p16Version.Instance.CreateMapCompound(mapid, colors);
@@ -444,6 +444,29 @@ namespace ImageMap
             {
                 Color.FromArgb(100, 100, 100),
                 Color.FromArgb(216, 175, 147)
+            });
+            return old_colors.Concat(new_colors);
+        }
+
+        public override string ToString() => "21w15a";
+    }
+
+    // 21w16a+
+    public class Java1p17Version : AbstractJavaVersion
+    {
+        public static Java1p17Version Instance = new Java1p17Version();
+        private Java1p17Version() { }
+
+        public override NbtCompound CreateMapItem(byte slot, long mapid) => Java1p14Version.Instance.CreateMapItem(slot, mapid);
+        public override NbtCompound CreateMapCompound(long mapid, byte[] colors) => Java1p16Version.Instance.CreateMapCompound(mapid, colors);
+
+        public override IEnumerable<Color> GetAlternateColors(Color color) => Java1p8Version.Instance.GetAlternateColors(color);
+        public override IEnumerable<Color> GetBaseColors()
+        {
+            var old_colors = Java1p17SnapshotVersion.Instance.GetBaseColors();
+            var new_colors = FixShading(new List<Color>
+            {
+                Color.FromArgb(127, 167, 150)
             });
             return old_colors.Concat(new_colors);
         }

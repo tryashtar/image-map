@@ -33,6 +33,7 @@ namespace ImageMap
                 Java1p8Version.Instance,
                 Java1p12Version.Instance,
                 Java1p16Version.Instance,
+                Java1p17SnapshotVersion.Instance,
                 Java1p17Version.Instance,
             };
             foreach (var version in versions)
