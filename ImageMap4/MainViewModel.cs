@@ -60,7 +60,7 @@ public class MainViewModel : ObservableObject
         {
             foreach (var dir in Directory.GetDirectories(bedrock_dir))
             {
-                if (File.Exists(Path.Combine(dir, "level.dat")))
+                if (File.Exists(Path.Combine(dir, "level.dat")) && Directory.Exists(Path.Combine(dir, "db")))
                     BedrockWorlds.Add(new BedrockWorld(dir));
             }
         }

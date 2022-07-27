@@ -129,9 +129,12 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="0"
-                               Text="Importing" />
+                    <StackPanel Grid.Column="0"
+                                Grid.Row="0">
+                        <TextBlock Text="Importing" />
+                        <Button Content="Open"
+                                HorizontalAlignment="Left" />
+                    </StackPanel>
                     <TextBlock Grid.Column="1"
                                Grid.Row="0"
                                Text="Existing" />
