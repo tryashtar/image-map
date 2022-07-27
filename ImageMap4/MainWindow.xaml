@@ -6,14 +6,16 @@
         xmlns:local="clr-namespace:ImageMap4"
         mc:Ignorable="d"
         Title="Image Map 4"
-        Height="450"
-        Width="800"
+        Height="540"
+        Width="900"
         FontSize="16">
     <Window.DataContext>
         <local:MainViewModel />
     </Window.DataContext>
     <Window.Resources>
         <ResourceDictionary>
+            <BitmapImage x:Key="MapBackground"
+                         UriSource="../Icons/item_frame.png" />
             <Style TargetType="ListViewItem"
                    x:Key="WorldCard">
                 <Style.Triggers>
@@ -51,6 +53,23 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <DataTemplate x:Key="MapCard">
+                <StackPanel Margin="3"
+                            Background="#DDDDDD">
+                    <Grid Margin="2">
+                        <Image Source="{StaticResource MapBackground}"
+                               Height="128"
+                               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                        <Image Source="{Binding Path=IconPath}"
+                               Height="128"
+                               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                    </Grid>
+                    <TextBlock Text="{Binding ID}"
+                               Foreground="Black"
+                               FontWeight="Medium"
+                               Margin="4,2,0,0" />
+                </StackPanel>
+            </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -116,16 +135,17 @@
                     <TextBlock Grid.Column="1"
                                Grid.Row="0"
                                Text="Existing" />
-                    <ListView Grid.Column="0"
-                              Grid.Row="1"
-                              ItemsSource="{Binding ImportingMaps}"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ItemContainerStyle="{StaticResource MapCard}" />
-                    <ListView Grid.Column="1"
-                              Grid.Row="1"
-                              ItemsSource="{Binding ExistingMaps}"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ItemContainerStyle="{StaticResource MapCard}" />
+                    <ScrollViewer Grid.Column="1"
+                                  Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding ExistingMaps}"
+                                      ItemTemplate="{StaticResource MapCard}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Grid>
             </TabItem>
         </TabControl>

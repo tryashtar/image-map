@@ -7,17 +7,39 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ImageMap4;
-public class MainViewModel
+public class MainViewModel : ObservableObject
 {
     public ObservableCollection<World> JavaWorlds { get; }
     public ObservableCollection<World> BedrockWorlds { get; }
-    public World SelectedWorld { get; set; }
+    public ObservableCollection<Map> ImportingMaps { get; private set; }
+    public ObservableCollection<Map> ExistingMaps { get; private set; }
+    private World _selectedWorld;
+    public World SelectedWorld
+    {
+        get => _selectedWorld;
+        set
+        {
+            _selectedWorld = value;
+            OnPropertyChanged();
+            RefreshMaps();
+        }
+    }
 
     public MainViewModel()
     {
         JavaWorlds = new();
         BedrockWorlds = new();
+        ImportingMaps = new();
+        ExistingMaps = new();
         RefreshWorlds();
+    }
+
+    public void RefreshMaps()
+    {
+        ImportingMaps = new();
+        ExistingMaps = new(SelectedWorld.GetMaps());
+        OnPropertyChanged(nameof(ImportingMaps));
+        OnPropertyChanged(nameof(ExistingMaps));
     }
 
     public void RefreshWorlds()

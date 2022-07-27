@@ -18,6 +18,8 @@ public abstract class World
     {
         Folder = folder;
     }
+
+    public abstract IEnumerable<Map> GetMaps();
 }
 
 public class JavaWorld : World
@@ -29,6 +31,20 @@ public class JavaWorld : World
         Name = LevelDat.RootTag["Data"]?["LevelName"]?.StringValue;
         WorldIcon = Path.Combine(Folder, "icon.png");
     }
+
+    public override IEnumerable<Map> GetMaps()
+    {
+        var maps = Path.Combine(Folder, "data");
+        foreach (var file in Directory.EnumerateFiles(maps, "*.dat"))
+        {
+            string name = Path.GetFileNameWithoutExtension(file);
+            if (name.StartsWith("map_"))
+            {
+                long id = long.Parse(name[4..]);
+                yield return new Map(id, WorldIcon);
+            }
+        }
+    }
 }
 
 public class BedrockWorld : World
@@ -39,6 +55,20 @@ public class BedrockWorld : World
         if (File.Exists(file))
             Name = File.ReadAllText(file);
         WorldIcon = Path.Combine(Folder, "world_icon.jpeg");
+    }
+
+    public override IEnumerable<Map> GetMaps()
+    {
+        var maps = Path.Combine(Folder, "data");
+        foreach (var file in Directory.EnumerateFiles(maps, "*.dat"))
+        {
+            string name = Path.GetFileNameWithoutExtension(file);
+            if (name.StartsWith("map_"))
+            {
+                long id = long.Parse(name[5..]);
+                yield return new Map(id, WorldIcon);
+            }
+        }
     }
 }
 
