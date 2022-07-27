@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,8 @@ using System.Threading.Tasks;
 namespace ImageMap4;
 public class MainViewModel
 {
-    public List<World> JavaWorlds { get; }
-    public List<World> BedrockWorlds { get; }
+    public ObservableCollection<World> JavaWorlds { get; }
+    public ObservableCollection<World> BedrockWorlds { get; }
     public World SelectedWorld { get; set; }
 
     public MainViewModel()
@@ -29,7 +30,7 @@ public class MainViewModel
             foreach (var dir in Directory.GetDirectories(java_dir))
             {
                 if (File.Exists(Path.Combine(dir, "level.dat")))
-                    JavaWorlds.Add(new World(dir));
+                    JavaWorlds.Add(new JavaWorld(dir));
             }
         }
         var bedrock_dir = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.BedrockFolder);
@@ -38,7 +39,7 @@ public class MainViewModel
             foreach (var dir in Directory.GetDirectories(bedrock_dir))
             {
                 if (File.Exists(Path.Combine(dir, "level.dat")))
-                    BedrockWorlds.Add(new World(dir));
+                    BedrockWorlds.Add(new BedrockWorld(dir));
             }
         }
     }

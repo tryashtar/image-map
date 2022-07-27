@@ -20,11 +20,11 @@
                     <Trigger Property="IsSelected"
                              Value="True">
                         <Setter Property="Background"
-                                Value="#CCCCFF" />
+                                Value="#CCDDFF" />
                     </Trigger>
                 </Style.Triggers>
                 <Setter Property="Background"
-                        Value="#DDDDDD" />
+                        Value="#E5E5E5" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListViewItem">
@@ -32,10 +32,11 @@
                                     Height="50"
                                     CornerRadius="4"
                                     Margin="2,2,2,2">
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,0,30,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Path=WorldIcon}"
+                                           Height="50" />
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Path}"
+                                        <TextBlock Text="{Binding Name}"
                                                    Foreground="Black"
                                                    FontWeight="Medium"
                                                    Margin="4,2,0,0" />
@@ -60,26 +61,30 @@
                         <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Java" />
-                            <Button Content="Select Folder" />
-                        </StackPanel>
-                        <ListView ItemsSource="{Binding JavaWorlds}"
-                                  SelectedItem="{Binding SelectedWorld}"
-                                  Grid.Row="1"
-                                  ItemContainerStyle="{StaticResource WorldCard}" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Bedrock" />
-                            <Button Content="Select Folder" />
-                        </StackPanel>
-                        <ListView ItemsSource="{Binding BedrockWorlds}"
-                                  SelectedItem="{Binding SelectedWorld}"
-                                  Grid.Row="1"
-                                  ItemContainerStyle="{StaticResource WorldCard}" />
-                    </StackPanel>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Button Grid.Column="0"
+                            Grid.Row="0"
+                            Content="Java Worlds"
+                            Click="JavaFolder_Click" />
+                    <Button Grid.Column="1"
+                            Grid.Row="0"
+                            Content="Bedrock Worlds"
+                            Click="BedrockFolder_Click" />
+                    <ListView Grid.Column="0"
+                              Grid.Row="1"
+                              ItemsSource="{Binding JavaWorlds}"
+                              SelectedItem="{Binding SelectedWorld}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ItemContainerStyle="{StaticResource WorldCard}" />
+                    <ListView Grid.Column="1"
+                              Grid.Row="1"
+                              ItemsSource="{Binding BedrockWorlds}"
+                              SelectedItem="{Binding SelectedWorld}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ItemContainerStyle="{StaticResource WorldCard}" />
                 </Grid>
             </TabItem>
             <TabItem Header="Maps">
@@ -96,6 +101,32 @@
                         </Style.Triggers>
                     </Style>
                 </TabItem.Style>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="0"
+                               Text="Importing" />
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="0"
+                               Text="Existing" />
+                    <ListView Grid.Column="0"
+                              Grid.Row="1"
+                              ItemsSource="{Binding ImportingMaps}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ItemContainerStyle="{StaticResource MapCard}" />
+                    <ListView Grid.Column="1"
+                              Grid.Row="1"
+                              ItemsSource="{Binding ExistingMaps}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ItemContainerStyle="{StaticResource MapCard}" />
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>
