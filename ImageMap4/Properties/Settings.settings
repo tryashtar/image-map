@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ImageMap4.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="JavaFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%appdata%\.minecraft\saves</Value>
+    </Setting>
+    <Setting Name="BedrockFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%localappdata%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
