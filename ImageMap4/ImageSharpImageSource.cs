@@ -5,7 +5,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Color = System.Windows.Media.Color;
 
 namespace ImageMap4;
 
@@ -43,7 +42,7 @@ public sealed class ImageSharpImageSource<TPixel> : BitmapSource
         int x,
         int y,
         int stride,
-        Color c)
+        System.Windows.Media.Color c)
     {
         bits[x * 3 + y * stride] = c.R;
         bits[x * 3 + y * stride + 1] = c.G;

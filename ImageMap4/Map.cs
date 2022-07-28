@@ -6,8 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
+using System.Windows.Media;
 
 namespace ImageMap4;
 
-public record Map(long ID, BitmapSource IconPath);
+public record Map(long ID, ImageSource IconPath);

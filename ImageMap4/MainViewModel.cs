@@ -37,7 +37,7 @@ public class MainViewModel : ObservableObject
     public void RefreshMaps()
     {
         ImportingMaps = new();
-        ExistingMaps = new(SelectedWorld.GetMaps());
+        ExistingMaps = new(SelectedWorld.GetMaps().OrderBy(x => x.ID));
         OnPropertyChanged(nameof(ImportingMaps));
         OnPropertyChanged(nameof(ExistingMaps));
     }
