@@ -8,7 +8,7 @@
         Title="Image Map 4"
         Height="540"
         Width="900"
-        FontSize="16">
+        FontSize="18">
     <Window.DataContext>
         <local:MainViewModel />
     </Window.DataContext>
@@ -16,8 +16,8 @@
         <ResourceDictionary>
             <BitmapImage x:Key="MapBackground"
                          UriSource="../Icons/item_frame.png" />
-            <Style TargetType="ListViewItem"
-                   x:Key="WorldCard">
+            <Style x:Key="WorldCard"
+                   TargetType="ListViewItem">
                 <Style.Triggers>
                     <Trigger Property="IsSelected"
                              Value="True">
@@ -31,20 +31,21 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="ListViewItem">
                             <Border Background="{TemplateBinding Background}"
-                                    Height="50"
+                                    Height="60"
                                     CornerRadius="4"
                                     Margin="2,2,2,2">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="{Binding Path=WorldIcon}"
-                                           Height="50" />
+                                           Height="60" />
                                     <StackPanel>
                                         <TextBlock Text="{Binding Name}"
                                                    Foreground="Black"
                                                    FontWeight="Medium"
+                                                   FontSize="17"
                                                    Margin="4,2,0,0" />
                                         <TextBlock Text="{Binding FolderName}"
                                                    Foreground="Gray"
-                                                   FontSize="12"
+                                                   FontSize="15"
                                                    Margin="4,2,0,0" />
                                     </StackPanel>
                                 </StackPanel>
@@ -64,10 +65,11 @@
                                Height="128"
                                RenderOptions.BitmapScalingMode="NearestNeighbor" />
                     </Grid>
-                    <TextBlock Text="{Binding ID}"
+                    <TextBlock Text="{Binding ID, StringFormat=map_{0}}"
                                Foreground="Black"
                                FontWeight="Medium"
-                               Margin="4,2,0,0" />
+                               FontSize="14"
+                               Margin="4,0,0,4" />
                 </StackPanel>
             </DataTemplate>
         </ResourceDictionary>
@@ -80,25 +82,27 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
                     <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Button Grid.Column="0"
-                        Grid.Row="0"
+                        Grid.Row="1"
+                        Padding="5"
                         Content="Java Worlds"
                         Click="JavaFolder_Click" />
                 <Button Grid.Column="1"
-                        Grid.Row="0"
+                        Grid.Row="1"
+                        Padding="5"
                         Content="Bedrock Worlds"
                         Click="BedrockFolder_Click" />
                 <ListView Grid.Column="0"
-                          Grid.Row="1"
+                          Grid.Row="0"
                           ItemsSource="{Binding JavaWorlds}"
                           SelectedItem="{Binding SelectedWorld}"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ItemContainerStyle="{StaticResource WorldCard}" />
                 <ListView Grid.Column="1"
-                          Grid.Row="1"
+                          Grid.Row="0"
                           ItemsSource="{Binding BedrockWorlds}"
                           SelectedItem="{Binding SelectedWorld}"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -127,17 +131,18 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Column="0"
-                            Grid.Row="0">
-                    <TextBlock Text="Importing" />
-                    <Button Content="Open"
-                            HorizontalAlignment="Left"
-                            Click="OpenButton_Click"/>
-                </StackPanel>
+                <TextBlock Grid.Column="0"
+                           Grid.Row="0"
+                           Text="Importing" />
+                <Button Grid.Column="0"
+                        Grid.Row="2"
+                        Content="Open"
+                        Click="OpenButton_Click" />
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
-                           Text="Existing" />
+                           Text="In World" />
                 <ScrollViewer Grid.Column="1"
                               Grid.Row="1">
                     <ItemsControl ItemsSource="{Binding ExistingMaps}"

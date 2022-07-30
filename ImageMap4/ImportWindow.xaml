@@ -15,7 +15,6 @@
     </Window.DataContext>
     <Window.Resources>
         <ResourceDictionary>
-            <local:StretchConverter x:Key="StretchConverter" />
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -39,7 +38,9 @@
             <Image Grid.Row="1"
                    Grid.Column="1"
                    Source="{Binding CurrentSource}"
-                   Stretch="{Binding FillFrames, Converter={StaticResource StretchConverter}}" />
+                   Stretch="{Binding StretchChoice.Stretch}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center" />
             <local:SquareGrid x:Name="SplitGrid"
                               Grid.Row="1"
                               Grid.Column="1"
@@ -85,8 +86,10 @@
                                   Maximum="100"
                                   Width="60"
                                   Margin="10" />
-                <CheckBox Content="Stretch to fill frames"
-                          IsChecked="{Binding FillFrames}"
+                <ComboBox ItemsSource="{Binding StretchOptions}"
+                          SelectedItem="{Binding StretchChoice}"
+                          DisplayMemberPath="Name"
+                          Width="100"
                           Margin="10"
                           Padding="5"
                           VerticalContentAlignment="Center" />

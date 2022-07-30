@@ -26,12 +26,19 @@ public class ImportViewModel : ObservableObject
         set { _gridHeight = value; OnPropertyChanged(); }
     }
 
-    private bool _fillFrames;
-    public bool FillFrames
+    public record StretchOption(Stretch Stretch, string Name);
+    private StretchOption _stretchChoice;
+    public StretchOption StretchChoice
     {
-        get { return _fillFrames; }
-        set { _fillFrames = value; OnPropertyChanged(); }
+        get { return _stretchChoice; }
+        set { _stretchChoice = value; OnPropertyChanged(); }
     }
+    public ReadOnlyCollection<StretchOption> StretchOptions { get; } = new List<StretchOption>
+    {
+        new StretchOption(Stretch.Uniform, "Uniform"),
+        new StretchOption(Stretch.Fill, "Stretch"),
+        new StretchOption(Stretch.UniformToFill, "Crop")
+    }.AsReadOnly();
 
 
     private readonly List<Image<Rgba32>> ImageQueue = new();

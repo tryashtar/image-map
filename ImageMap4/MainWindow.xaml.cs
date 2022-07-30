@@ -30,6 +30,8 @@ public partial class MainWindow : Window
     private void JavaFolder_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new VistaFolderBrowserDialog();
+        dialog.Description = "Select the folder where your Java worlds are saved";
+        dialog.UseDescriptionForTitle = true;
         dialog.SelectedPath = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.JavaFolder);
         if (dialog.ShowDialog() == true)
         {
@@ -42,6 +44,8 @@ public partial class MainWindow : Window
     private void BedrockFolder_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new VistaFolderBrowserDialog();
+        dialog.Description = "Select the folder where your Bedrock worlds are saved";
+        dialog.UseDescriptionForTitle = true;
         dialog.SelectedPath = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.BedrockFolder);
         if (dialog.ShowDialog() == true)
         {

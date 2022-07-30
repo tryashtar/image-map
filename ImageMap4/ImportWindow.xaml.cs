@@ -1,21 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using Microsoft.Win32;
-using Ookii.Dialogs.Wpf;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.ComponentModel;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
 
@@ -26,7 +14,6 @@ namespace ImageMap4;
 public partial class ImportWindow : Window
 {
     private ImportViewModel ViewModel => (ImportViewModel)DataContext;
-    private Stretch ImageStretch => ViewModel.FillFrames ? Stretch.Fill : Stretch.Uniform;
     public ImportWindow(IEnumerable<string> images)
     {
         InitializeComponent();
@@ -75,18 +62,5 @@ public partial class ImportWindow : Window
     {
         ViewModel.CurrentImage.Mutate(x => x.Rotate(90));
         ViewModel.OnPropertyChanged(nameof(ViewModel.CurrentSource));
-    }
-}
-
-public class StretchConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        return (bool)value ? Stretch.Fill : Stretch.Uniform;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new InvalidOperationException();
     }
 }
