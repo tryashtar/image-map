@@ -10,6 +10,7 @@ namespace ImageMap4;
 public interface IJavaVersion
 {
     Image<Rgba32> Decode(byte[] colors);
+    //byte[,][] Encode(Image<Rgba32> image, int width, int height);
 }
 
 public record struct Color(byte Red, byte Green, byte Blue, bool Visible = true)
@@ -55,6 +56,12 @@ public abstract class AbstractJavaVersion : IJavaVersion
         }
         return Image.LoadPixelData<Rgba32>(pixels, 128, 128);
     }
+
+    //public byte[,][] Encode(Image<Rgba32> image, int width, int height)
+    //{
+    //    var results = new byte[width, height][];
+    //
+    //}
 
     public abstract IEnumerable<Color> GetBaseColors();
     public abstract IEnumerable<Color> GetAlternateColors(Color color);

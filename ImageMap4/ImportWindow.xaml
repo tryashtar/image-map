@@ -1,0 +1,111 @@
+﻿<Window x:Class="ImageMap4.ImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ImageMap4"
+        xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="Import"
+        Height="540"
+        Width="900"
+        FontSize="16">
+    <Window.DataContext>
+        <local:ImportViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <ResourceDictionary>
+            <local:StretchConverter x:Key="StretchConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="SpaceGrid"
+              Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Image Grid.Row="1"
+                   Grid.Column="1"
+                   Source="{Binding CurrentSource}"
+                   Stretch="{Binding FillFrames, Converter={StaticResource StretchConverter}}" />
+            <local:SquareGrid x:Name="SplitGrid"
+                              Grid.Row="1"
+                              Grid.Column="1"
+                              Rows="{Binding GridHeight}"
+                              Columns="{Binding GridWidth}"
+                              SnapsToDevicePixels="True" />
+        </Grid>
+        <StackPanel Grid.Row="1">
+            <StackPanel Orientation="
+                  Horizontal"
+                        HorizontalAlignment="
+                  Center">
+                <Button Content="↻ Rotate Image"
+                        Margin="10"
+                        Padding="5"
+                        Click="RotateButton_Click" />
+                <ComboBox Width="160"
+                          Margin="10"
+                          Padding="5" />
+                <ComboBox Width="160"
+                          Margin="10"
+                          Padding="5" />
+                <CheckBox Content="Dithering"
+                          Margin="10"
+                          Padding="5"
+                          VerticalContentAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <TextBlock Text="Width:"
+                           Margin="10"
+                           Padding="5" />
+                <tk:IntegerUpDown Value="{Binding GridWidth}"
+                                  Minimum="1"
+                                  Maximum="100"
+                                  Width="60"
+                                  Margin="10" />
+                <TextBlock Text="Height:"
+                           Margin="10"
+                           Padding="5" />
+                <tk:IntegerUpDown Value="{Binding GridHeight}"
+                                  Minimum="1"
+                                  Maximum="100"
+                                  Width="60"
+                                  Margin="10" />
+                <CheckBox Content="Stretch to fill frames"
+                          IsChecked="{Binding FillFrames}"
+                          Margin="10"
+                          Padding="5"
+                          VerticalContentAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <Button Content="Confirm"
+                        Margin="10"
+                        Padding="5" />
+                <Button Content="Cancel"
+                        Margin="10"
+                        Padding="5" />
+                <Button Content="Confirm All"
+                        Margin="10"
+                        Padding="5" />
+                <Button Content="Cancel All"
+                        Margin="10"
+                        Padding="5" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

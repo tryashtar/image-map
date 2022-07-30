@@ -65,4 +65,9 @@ public class MainViewModel : ObservableObject
             }
         }
     }
+
+    public void AddImports(IEnumerable<Map> maps)
+    {
+
+    }
 }

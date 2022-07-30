@@ -21,6 +21,7 @@ namespace ImageMap4;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private MainViewModel ViewModel => (MainViewModel)this.DataContext;
     public MainWindow()
     {
         InitializeComponent();
@@ -48,5 +49,22 @@ public partial class MainWindow : Window
             Properties.Settings.Default.Save();
             ((MainViewModel)this.DataContext).RefreshWorlds();
         }
+    }
+
+    private void OpenButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog();
+        dialog.Multiselect = true;
+        dialog.Title = "Select images to import";
+        dialog.Filter = "Image Files|*.png; *.bmp, *.jpg, *.jpeg, *.gif|All Files|*";
+        if (dialog.ShowDialog() == true)
+            OpenImages(dialog.FileNames);
+    }
+
+    private void OpenImages(IEnumerable<string> images)
+    {
+        var import = new ImportWindow(images);
+        import.ShowDialog();
+        ViewModel.AddImports(import.Maps);
     }
 }

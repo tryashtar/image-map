@@ -72,85 +72,84 @@
             </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
-        <TabControl>
-            <TabItem Header="Worlds">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Button Grid.Column="0"
-                            Grid.Row="0"
-                            Content="Java Worlds"
-                            Click="JavaFolder_Click" />
-                    <Button Grid.Column="1"
-                            Grid.Row="0"
-                            Content="Bedrock Worlds"
-                            Click="BedrockFolder_Click" />
-                    <ListView Grid.Column="0"
-                              Grid.Row="1"
-                              ItemsSource="{Binding JavaWorlds}"
-                              SelectedItem="{Binding SelectedWorld}"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ItemContainerStyle="{StaticResource WorldCard}" />
-                    <ListView Grid.Column="1"
-                              Grid.Row="1"
-                              ItemsSource="{Binding BedrockWorlds}"
-                              SelectedItem="{Binding SelectedWorld}"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ItemContainerStyle="{StaticResource WorldCard}" />
-                </Grid>
-            </TabItem>
-            <TabItem Header="Maps">
-                <TabItem.Style>
-                    <Style TargetType="TabItem">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedWorld}"
-                                         Value="{x:Null}">
-                                <DataTrigger.Setters>
-                                    <Setter Property="Visibility"
-                                            Value="Collapsed" />
-                                </DataTrigger.Setters>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TabItem.Style>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <StackPanel Grid.Column="0"
-                                Grid.Row="0">
-                        <TextBlock Text="Importing" />
-                        <Button Content="Open"
-                                HorizontalAlignment="Left" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="1"
-                               Grid.Row="0"
-                               Text="Existing" />
-                    <ScrollViewer Grid.Column="1"
-                                  Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding ExistingMaps}"
-                                      ItemTemplate="{StaticResource MapCard}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-        </TabControl>
-    </Grid>
+    <TabControl>
+        <TabItem Header="Worlds">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Button Grid.Column="0"
+                        Grid.Row="0"
+                        Content="Java Worlds"
+                        Click="JavaFolder_Click" />
+                <Button Grid.Column="1"
+                        Grid.Row="0"
+                        Content="Bedrock Worlds"
+                        Click="BedrockFolder_Click" />
+                <ListView Grid.Column="0"
+                          Grid.Row="1"
+                          ItemsSource="{Binding JavaWorlds}"
+                          SelectedItem="{Binding SelectedWorld}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ItemContainerStyle="{StaticResource WorldCard}" />
+                <ListView Grid.Column="1"
+                          Grid.Row="1"
+                          ItemsSource="{Binding BedrockWorlds}"
+                          SelectedItem="{Binding SelectedWorld}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ItemContainerStyle="{StaticResource WorldCard}" />
+            </Grid>
+        </TabItem>
+        <TabItem Header="Maps">
+            <TabItem.Style>
+                <Style TargetType="TabItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedWorld}"
+                                     Value="{x:Null}">
+                            <DataTrigger.Setters>
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TabItem.Style>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Column="0"
+                            Grid.Row="0">
+                    <TextBlock Text="Importing" />
+                    <Button Content="Open"
+                            HorizontalAlignment="Left"
+                            Click="OpenButton_Click"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Text="Existing" />
+                <ScrollViewer Grid.Column="1"
+                              Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding ExistingMaps}"
+                                  ItemTemplate="{StaticResource MapCard}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>
