@@ -47,5 +47,29 @@ namespace ImageMap4.Properties {
                 this["BedrockFolder"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int StretchChoice {
+            get {
+                return ((int)(this["StretchChoice"]));
+            }
+            set {
+                this["StretchChoice"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ScaleChoice {
+            get {
+                return ((int)(this["ScaleChoice"]));
+            }
+            set {
+                this["ScaleChoice"] = value;
+            }
+        }
     }
 }

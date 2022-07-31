@@ -8,9 +8,10 @@
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         mc:Ignorable="d"
         Title="Import"
-        Height="540"
-        Width="900"
-        FontSize="16">
+        Height="640"
+        Width="500"
+        FontSize="16"
+        Closing="Window_Closing">
     <Window.DataContext>
         <local:ImportViewModel />
     </Window.DataContext>
@@ -21,6 +22,41 @@
             </ResourceDictionary.MergedDictionaries>
             <local:EqualityConverter x:Key="EqualityConverter" />
             <local:GreaterThanConverter x:Key="GreaterThanConverter" />
+            <Style x:Key="VisibleWhenMultiple"
+                   TargetType="FrameworkElement">
+                <Setter Property="Visibility"
+                        Value="Collapsed" />
+                <Style.Triggers>
+                    <DataTrigger Value="True">
+                        <DataTrigger.Binding>
+                            <Binding Path="Images.Count"
+                                     Converter="{StaticResource GreaterThanConverter}">
+                                <Binding.ConverterParameter>
+                                    <sys:Int32>1</sys:Int32>
+                                </Binding.ConverterParameter>
+                            </Binding>
+                        </DataTrigger.Binding>
+                        <DataTrigger.Setters>
+                            <Setter Property="Visibility"
+                                    Value="Visible" />
+                        </DataTrigger.Setters>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="VisibleWhenJava"
+                   TargetType="FrameworkElement">
+                <Setter Property="Visibility"
+                        Value="Collapsed" />
+                <Style.Triggers>
+                    <DataTrigger Value="True"
+                                 Binding="{Binding JavaMode}">
+                        <DataTrigger.Setters>
+                            <Setter Property="Visibility"
+                                    Value="Visible" />
+                        </DataTrigger.Setters>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -29,7 +65,8 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid x:Name="SpaceGrid"
-              Grid.Row="0">
+              Grid.Row="0"
+              Background="LightGray">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -45,7 +82,8 @@
                    Source="{Binding CurrentImage.Source}"
                    Stretch="{Binding StretchChoice.Stretch}"
                    VerticalAlignment="Center"
-                   HorizontalAlignment="Center" />
+                   HorizontalAlignment="Center"
+                   RenderOptions.BitmapScalingMode="{Binding ScaleChoice.Mode}" />
             <local:SquareGrid x:Name="SplitGrid"
                               Grid.Row="1"
                               Grid.Column="1"
@@ -55,9 +93,9 @@
         </Grid>
         <StackPanel Grid.Row="1">
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <Button Margin="10,10,0,10"
-                        Height="40"
+                        HorizontalAlignment="Center"
+                        Margin="0,10,0,0">
+                <Button Height="40"
                         Command="{Binding RotateCommand}">
                     <Button.CommandParameter>
                         <sys:Single>90</sys:Single>
@@ -66,14 +104,14 @@
                           Fill="Black"
                           Stretch="Uniform" />
                 </Button>
-                <Button Margin="10,10,0,10"
+                <Button Margin="10,0,0,0"
                         Height="40"
                         Command="{Binding HorizontalFlipCommand}">
                     <Path Data="{StaticResource FlipIcon}"
                           Fill="Black"
                           Stretch="Uniform" />
                 </Button>
-                <Button Margin="10"
+                <Button Margin="10,0,0,0"
                         Height="40"
                         Command="{Binding VerticalFlipCommand}">
                     <Path Data="{StaticResource FlipIcon}"
@@ -84,88 +122,90 @@
                         </Path.LayoutTransform>
                     </Path>
                 </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,5,0,5">
+                <StackPanel Margin="0,3,10,0">
+                    <TextBlock Text="Width:" />
+                    <tk:IntegerUpDown Value="{Binding GridWidth}"
+                                      Minimum="1"
+                                      Maximum="100"
+                                      Width="60"
+                                      Height="31" />
+                </StackPanel>
+                <StackPanel Margin="0,3,10,0">
+                    <TextBlock Text="Height:" />
+                    <tk:IntegerUpDown Value="{Binding GridHeight}"
+                                      Minimum="1"
+                                      Maximum="100"
+                                      Width="60"
+                                      Height="31" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,5,0,5">
+                <StackPanel Margin="0,3,10,0">
+                    <TextBlock Text="Scaling:" />
+                    <ComboBox ItemsSource="{Binding ScaleOptions}"
+                              SelectedItem="{Binding ScaleChoice}"
+                              DisplayMemberPath="Name"
+                              Width="100"
+                              Padding="5"
+                              VerticalContentAlignment="Center" />
+                </StackPanel>
+                <StackPanel Margin="0,3,10,0">
+                    <TextBlock Text="Fill:" />
+                    <ComboBox ItemsSource="{Binding StretchOptions}"
+                              SelectedItem="{Binding StretchChoice}"
+                              DisplayMemberPath="Name"
+                              Width="100"
+                              Padding="5"
+                              VerticalContentAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,5,0,5"
+                        Style="{StaticResource VisibleWhenJava}">
                 <ComboBox Width="160"
-                          Margin="10"
-                          Padding="5" />
-                <ComboBox Width="160"
-                          Margin="10"
                           Padding="5" />
                 <CheckBox Content="Dithering"
-                          Margin="10"
                           Padding="5"
                           VerticalContentAlignment="Center" />
             </StackPanel>
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <TextBlock Text="Width:"
-                           Margin="10"
-                           Padding="5" />
-                <tk:IntegerUpDown Value="{Binding GridWidth}"
-                                  Minimum="1"
-                                  Maximum="100"
-                                  Width="60"
-                                  Margin="10" />
-                <TextBlock Text="Height:"
-                           Margin="10"
-                           Padding="5" />
-                <tk:IntegerUpDown Value="{Binding GridHeight}"
-                                  Minimum="1"
-                                  Maximum="100"
-                                  Width="60"
-                                  Margin="10" />
-                <ComboBox ItemsSource="{Binding StretchOptions}"
-                          SelectedItem="{Binding StretchChoice}"
-                          DisplayMemberPath="Name"
-                          Width="100"
-                          Margin="10"
-                          Padding="5"
-                          VerticalContentAlignment="Center" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
+                        HorizontalAlignment="Center"
+                        Margin="0,5,0,10">
                 <Button Content="Confirm"
-                        Margin="10"
                         Padding="5" />
-                <Button Content="Cancel"
-                        Margin="10"
-                        Padding="5" />
+                <Button Content="Discard"
+                        Padding="5"
+                        Margin="10,0,0,0" />
                 <Button Content="Confirm All"
-                        Margin="10"
-                        Padding="5" />
-                <Button Content="Cancel All"
-                        Margin="10"
-                        Padding="5" />
+                        Padding="5"
+                        Margin="10,0,0,0"
+                        Style="{StaticResource VisibleWhenMultiple}" />
+                <Button Content="Discard All"
+                        Padding="5"
+                        Margin="10,0,0,0"
+                        Style="{StaticResource VisibleWhenMultiple}" />
             </StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Hidden"
                           HorizontalScrollBarVisibility="Auto"
-                          Background="DarkGray">
-                <ScrollViewer.Style>
-                    <Style TargetType="ScrollViewer">
-                        <Setter Property="Visibility"
-                                Value="Collapsed" />
-                        <Style.Triggers>
-                            <DataTrigger Value="True">
-                                <DataTrigger.Binding>
-                                    <Binding Path="Images.Count"
-                                             Converter="{StaticResource GreaterThanConverter}">
-                                        <Binding.ConverterParameter>
-                                            <sys:Int32>1</sys:Int32>
-                                        </Binding.ConverterParameter>
-                                    </Binding>
-                                </DataTrigger.Binding>
-                                <DataTrigger.Setters>
-                                    <Setter Property="Visibility"
-                                            Value="Visible" />
-                                </DataTrigger.Setters>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ScrollViewer.Style>
+                          Background="DarkGray"
+                          Style="{StaticResource VisibleWhenMultiple}">
                 <ItemsControl ItemsSource="{Binding Images}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border BorderBrush="LightGreen"
                                     Margin="10,10,0,10">
+                                <Border.InputBindings>
+                                    <MouseBinding Gesture="LeftClick"
+                                                  Command="{Binding DataContext.SwitchImageCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                  CommandParameter="{Binding}" />
+                                </Border.InputBindings>
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="BorderThickness"
@@ -192,13 +232,7 @@
                                         Background="LightGray"
                                         Height="64"
                                         Width="64">
-                                    <Image Source="{Binding Source}">
-                                        <Image.InputBindings>
-                                            <MouseBinding Gesture="LeftClick"
-                                                          Command="{Binding DataContext.SwitchImageCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                          CommandParameter="{Binding}" />
-                                        </Image.InputBindings>
-                                    </Image>
+                                    <Image Source="{Binding Source}" />
                                 </Border>
                             </Border>
                         </DataTemplate>

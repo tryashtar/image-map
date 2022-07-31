@@ -14,9 +14,10 @@ namespace ImageMap4;
 public partial class ImportWindow : Window
 {
     private ImportViewModel ViewModel => (ImportViewModel)DataContext;
-    public ImportWindow(IEnumerable<string> images)
+    public ImportWindow(IEnumerable<string> images, bool java)
     {
         InitializeComponent();
+        ViewModel.JavaMode = java;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         SpaceGrid.SizeChanged += SpaceGrid_SizeChanged;
         ViewModel.AddImages(images);
@@ -58,4 +59,10 @@ public partial class ImportWindow : Window
     }
 
     public List<Map> Maps;
+
+    private void Window_Closing(object sender, CancelEventArgs e)
+    {
+        Properties.Settings.Default.StretchChoice = ViewModel.StretchOptions.IndexOf(ViewModel.StretchChoice);
+        Properties.Settings.Default.ScaleChoice = ViewModel.ScaleOptions.IndexOf(ViewModel.ScaleChoice);
+    }
 }

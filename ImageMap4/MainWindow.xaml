@@ -8,7 +8,8 @@
         Title="Image Map 4"
         Height="540"
         Width="900"
-        FontSize="18">
+        FontSize="18"
+        Closing="Window_Closing">
     <Window.DataContext>
         <local:MainViewModel />
     </Window.DataContext>
@@ -140,7 +141,7 @@
                 </StackPanel>
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
-                           Text="In World" />
+                           Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}" />
                 <ScrollViewer Grid.Column="1"
                               Grid.Row="1">
                     <ItemsControl ItemsSource="{Binding ExistingMaps}"

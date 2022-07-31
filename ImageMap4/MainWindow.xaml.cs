@@ -67,8 +67,13 @@ public partial class MainWindow : Window
 
     private void OpenImages(IEnumerable<string> images)
     {
-        var import = new ImportWindow(images);
+        var import = new ImportWindow(images, ViewModel.SelectedWorld is JavaWorld);
         import.ShowDialog();
         ViewModel.AddImports(import.Maps);
+    }
+
+    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        Properties.Settings.Default.Save();
     }
 }

@@ -19,6 +19,13 @@ public class ImportViewModel : ObservableObject
     public ICommand VerticalFlipCommand { get; }
     public ICommand SwitchImageCommand { get; }
 
+    private bool _javaMode;
+    public bool JavaMode
+    {
+        get { return _javaMode; }
+        set { _javaMode = value; OnPropertyChanged(); }
+    }
+
     private int _gridWidth = 1;
     public int GridWidth
     {
@@ -47,6 +54,20 @@ public class ImportViewModel : ObservableObject
         new StretchOption(Stretch.UniformToFill, "Crop")
     }.AsReadOnly();
 
+    public record ScalingOption(BitmapScalingMode? Mode, string Name);
+    private ScalingOption _scaleChoice;
+    public ScalingOption ScaleChoice
+    {
+        get { return _scaleChoice; }
+        set { _scaleChoice = value; OnPropertyChanged(); }
+    }
+    public ReadOnlyCollection<ScalingOption> ScaleOptions { get; } = new List<ScalingOption>
+    {
+        new ScalingOption(null, "Automatic"),
+        new ScalingOption(BitmapScalingMode.NearestNeighbor, "Pixel Art"),
+        new ScalingOption(BitmapScalingMode.HighQuality, "Bicubic")
+    }.AsReadOnly();
+
     public record ImagePair(Image<Rgba32> Image, ImageSource Source)
     {
         public ImagePair(Image<Rgba32> image) : this(image, new ImageSharpImageSource<Rgba32>(image)) { }
@@ -57,26 +78,35 @@ public class ImportViewModel : ObservableObject
     private int CurrentIndex = 0;
     public ImagePair CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
 
+    private void MutatedCurrentImage()
+    {
+        // current image changed, need to recreate ImageSource
+        ImageQueue[CurrentIndex] = new ImagePair(ImageQueue[CurrentIndex].Image);
+        OnPropertyChanged(nameof(CurrentImage));
+    }
+
     public ImportViewModel()
     {
+        _stretchChoice = StretchOptions[Properties.Settings.Default.StretchChoice];
+        _scaleChoice = ScaleOptions[Properties.Settings.Default.ScaleChoice];
         RotateCommand = new RelayCommand<float>(val =>
         {
             CurrentImage.Image.Mutate(x => x.Rotate(val));
-            OnPropertyChanged(nameof(CurrentImage));
+            MutatedCurrentImage();
         });
         HorizontalFlipCommand = new RelayCommand(() =>
         {
             CurrentImage.Image.Mutate(x => x.Flip(FlipMode.Horizontal));
-            OnPropertyChanged(nameof(CurrentImage));
+            MutatedCurrentImage();
         });
         VerticalFlipCommand = new RelayCommand(() =>
         {
             CurrentImage.Image.Mutate(x => x.Flip(FlipMode.Vertical));
-            OnPropertyChanged(nameof(CurrentImage));
+            MutatedCurrentImage();
         });
         SwitchImageCommand = new RelayCommand<ImagePair>(pair =>
         {
-            CurrentIndex = ImageQueue.IndexOf(pair);
+            CurrentIndex = ImageQueue.FindIndex(x => x.Image == pair.Image);
             OnPropertyChanged(nameof(CurrentImage));
         });
     }
