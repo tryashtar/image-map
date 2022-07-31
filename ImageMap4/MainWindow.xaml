@@ -131,15 +131,13 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Column="0"
-                           Grid.Row="0"
-                           Text="Importing" />
-                <Button Grid.Column="0"
-                        Grid.Row="2"
-                        Content="Open"
-                        Click="OpenButton_Click" />
+                <StackPanel Grid.Column="0"
+                            Grid.Row="0">
+                    <TextBlock Text="Importing" />
+                    <Button Content="Open"
+                            Click="OpenButton_Click" />
+                </StackPanel>
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="In World" />

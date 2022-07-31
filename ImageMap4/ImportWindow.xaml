@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageMap4"
         xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
         mc:Ignorable="d"
         Title="Import"
         Height="540"
@@ -15,6 +16,11 @@
     </Window.DataContext>
     <Window.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Icons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <local:EqualityConverter x:Key="EqualityConverter" />
+            <local:GreaterThanConverter x:Key="GreaterThanConverter" />
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -22,7 +28,6 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
         <Grid x:Name="SpaceGrid"
               Grid.Row="0">
             <Grid.ColumnDefinitions>
@@ -37,7 +42,7 @@
             </Grid.RowDefinitions>
             <Image Grid.Row="1"
                    Grid.Column="1"
-                   Source="{Binding CurrentSource}"
+                   Source="{Binding CurrentImage.Source}"
                    Stretch="{Binding StretchChoice.Stretch}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center" />
@@ -49,14 +54,36 @@
                               SnapsToDevicePixels="True" />
         </Grid>
         <StackPanel Grid.Row="1">
-            <StackPanel Orientation="
-                  Horizontal"
-                        HorizontalAlignment="
-                  Center">
-                <Button Content="↻ Rotate Image"
-                        Margin="10"
-                        Padding="5"
-                        Click="RotateButton_Click" />
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <Button Margin="10,10,0,10"
+                        Height="40"
+                        Command="{Binding RotateCommand}">
+                    <Button.CommandParameter>
+                        <sys:Single>90</sys:Single>
+                    </Button.CommandParameter>
+                    <Path Data="{StaticResource RotateIcon}"
+                          Fill="Black"
+                          Stretch="Uniform" />
+                </Button>
+                <Button Margin="10,10,0,10"
+                        Height="40"
+                        Command="{Binding HorizontalFlipCommand}">
+                    <Path Data="{StaticResource FlipIcon}"
+                          Fill="Black"
+                          Stretch="Uniform" />
+                </Button>
+                <Button Margin="10"
+                        Height="40"
+                        Command="{Binding VerticalFlipCommand}">
+                    <Path Data="{StaticResource FlipIcon}"
+                          Fill="Black"
+                          Stretch="Uniform">
+                        <Path.LayoutTransform>
+                            <RotateTransform Angle="-90" />
+                        </Path.LayoutTransform>
+                    </Path>
+                </Button>
                 <ComboBox Width="160"
                           Margin="10"
                           Padding="5" />
@@ -109,6 +136,80 @@
                         Margin="10"
                         Padding="5" />
             </StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                          HorizontalScrollBarVisibility="Auto"
+                          Background="DarkGray">
+                <ScrollViewer.Style>
+                    <Style TargetType="ScrollViewer">
+                        <Setter Property="Visibility"
+                                Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Value="True">
+                                <DataTrigger.Binding>
+                                    <Binding Path="Images.Count"
+                                             Converter="{StaticResource GreaterThanConverter}">
+                                        <Binding.ConverterParameter>
+                                            <sys:Int32>1</sys:Int32>
+                                        </Binding.ConverterParameter>
+                                    </Binding>
+                                </DataTrigger.Binding>
+                                <DataTrigger.Setters>
+                                    <Setter Property="Visibility"
+                                            Value="Visible" />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ScrollViewer.Style>
+                <ItemsControl ItemsSource="{Binding Images}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="LightGreen"
+                                    Margin="10,10,0,10">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderThickness"
+                                                Value="4" />
+                                        <Style.Triggers>
+                                            <DataTrigger Value="False">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                        <Binding Path="DataContext.CurrentImage.Image"
+                                                                 RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                        <Binding Path="Image" />
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
+                                                <DataTrigger.Setters>
+                                                    <Setter Property="BorderThickness"
+                                                            Value="0" />
+                                                </DataTrigger.Setters>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Border BorderBrush="Black"
+                                        BorderThickness="2"
+                                        Background="LightGray"
+                                        Height="64"
+                                        Width="64">
+                                    <Image Source="{Binding Source}">
+                                        <Image.InputBindings>
+                                            <MouseBinding Gesture="LeftClick"
+                                                          Command="{Binding DataContext.SwitchImageCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                          CommandParameter="{Binding}" />
+                                        </Image.InputBindings>
+                                    </Image>
+                                </Border>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
         </StackPanel>
     </Grid>
 </Window>

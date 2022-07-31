@@ -38,8 +38,9 @@ public partial class ImportWindow : Window
 
     private void FixSpace()
     {
+        // ensures cells of grid are perfect squares
         var grid_ratio = (double)ViewModel.GridWidth / ViewModel.GridHeight;
-        var space_ratio = SpaceGrid.ActualWidth / SpaceGrid.ActualHeight;
+        var space_ratio = SpaceGrid.ActualWidth / Math.Max(1, SpaceGrid.ActualHeight); // avoid divide by zero
         if (space_ratio > grid_ratio)
         {
             SpaceGrid.RowDefinitions[0].Height = new GridLength(0);
@@ -57,10 +58,4 @@ public partial class ImportWindow : Window
     }
 
     public List<Map> Maps;
-
-    private void RotateButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.CurrentImage.Mutate(x => x.Rotate(90));
-        ViewModel.OnPropertyChanged(nameof(ViewModel.CurrentSource));
-    }
 }

@@ -1,5 +1,6 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,11 +8,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ImageMap4;
 public class ImportViewModel : ObservableObject
 {
+    public ICommand RotateCommand { get; }
+    public ICommand HorizontalFlipCommand { get; }
+    public ICommand VerticalFlipCommand { get; }
+    public ICommand SwitchImageCommand { get; }
+
     private int _gridWidth = 1;
     public int GridWidth
     {
@@ -40,16 +47,45 @@ public class ImportViewModel : ObservableObject
         new StretchOption(Stretch.UniformToFill, "Crop")
     }.AsReadOnly();
 
+    public record ImagePair(Image<Rgba32> Image, ImageSource Source)
+    {
+        public ImagePair(Image<Rgba32> image) : this(image, new ImageSharpImageSource<Rgba32>(image)) { }
+    }
 
-    private readonly List<Image<Rgba32>> ImageQueue = new();
+    private readonly List<ImagePair> ImageQueue = new();
+    public ReadOnlyCollection<ImagePair> Images => ImageQueue.AsReadOnly();
     private int CurrentIndex = 0;
+    public ImagePair CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
 
-    public Image<Rgba32>? CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
-    public ImageSource? CurrentSource => ImageQueue.Count == 0 ? null : new ImageSharpImageSource<Rgba32>(ImageQueue[CurrentIndex]);
+    public ImportViewModel()
+    {
+        RotateCommand = new RelayCommand<float>(val =>
+        {
+            CurrentImage.Image.Mutate(x => x.Rotate(val));
+            OnPropertyChanged(nameof(CurrentImage));
+        });
+        HorizontalFlipCommand = new RelayCommand(() =>
+        {
+            CurrentImage.Image.Mutate(x => x.Flip(FlipMode.Horizontal));
+            OnPropertyChanged(nameof(CurrentImage));
+        });
+        VerticalFlipCommand = new RelayCommand(() =>
+        {
+            CurrentImage.Image.Mutate(x => x.Flip(FlipMode.Vertical));
+            OnPropertyChanged(nameof(CurrentImage));
+        });
+        SwitchImageCommand = new RelayCommand<ImagePair>(pair =>
+        {
+            CurrentIndex = ImageQueue.IndexOf(pair);
+            OnPropertyChanged(nameof(CurrentImage));
+        });
+    }
+
     public void AddImages(IEnumerable<string> paths)
     {
         var images = paths.Select(x => Image.Load<Rgba32>(x));
-        ImageQueue.AddRange(images);
-        OnPropertyChanged(nameof(CurrentSource));
+        ImageQueue.AddRange(images.Select(x => new ImagePair(x)));
+        OnPropertyChanged(nameof(CurrentImage));
+        OnPropertyChanged(nameof(Images));
     }
 }
