@@ -152,6 +152,11 @@ public class BedrockWorld : World
                 Sampler = settings.Sampler,
                 Mode = settings.ResizeMode
             });
+            x.Resize(new ResizeOptions()
+            {
+                Size = new(128 * settings.Width, 128 * settings.Height),
+                Mode = ResizeMode.BoxPad
+            });
         });
         for (int y = 0; y < settings.Height; y++)
         {
@@ -162,12 +167,9 @@ public class BedrockWorld : World
                 {
                     image.ProcessPixelRows(tile, (sa, ta) =>
                     {
-                        if (i < sa.Height)
-                        {
-                            var source = sa.GetRowSpan(128 * y + i);
-                            var target = ta.GetRowSpan(i + (128 - sa.Height) / 2);
-                            source.Slice(128 * x, 128).CopyTo(target);
-                        }
+                        var source = sa.GetRowSpan(128 * y + i);
+                        var target = ta.GetRowSpan(i);
+                        source.Slice(128 * x, 128).CopyTo(target);
                     });
                 }
                 yield return new Map(0, new ImageSharpImageSource<Rgba32>(tile));
