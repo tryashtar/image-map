@@ -13,14 +13,14 @@ namespace ImageMap4;
 /// </summary>
 public partial class ImportWindow : Window
 {
-    private ImportViewModel ViewModel => (ImportViewModel)DataContext;
-    public ImportWindow(IEnumerable<string> images, bool java)
+    public ImportViewModel ViewModel => (ImportViewModel)DataContext;
+    public ImportWindow(bool java)
     {
         InitializeComponent();
         ViewModel.JavaMode = java;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        ViewModel.OnClosed += (s, e) => this.Close();
         SpaceGrid.SizeChanged += SpaceGrid_SizeChanged;
-        ViewModel.AddImages(images);
     }
 
     private void SpaceGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -34,6 +34,12 @@ public partial class ImportWindow : Window
         {
             SplitGrid.InvalidateVisual();
             FixSpace();
+        }
+        if (e.PropertyName == nameof(ImportViewModel.CurrentImage))
+        {
+            var item = NavigationBar.ItemContainerGenerator.ContainerFromItem(ViewModel.CurrentImage);
+            if (item is FrameworkElement el)
+                el.BringIntoView();
         }
     }
 
@@ -56,13 +62,5 @@ public partial class ImportWindow : Window
             SpaceGrid.RowDefinitions[0].Height = new GridLength(0.5 * grid_ratio / space_ratio - 0.5, GridUnitType.Star);
             SpaceGrid.RowDefinitions[2].Height = new GridLength(0.5 * grid_ratio / space_ratio - 0.5, GridUnitType.Star);
         }
-    }
-
-    public List<Map> Maps;
-
-    private void Window_Closing(object sender, CancelEventArgs e)
-    {
-        Properties.Settings.Default.StretchChoice = ViewModel.StretchOptions.IndexOf(ViewModel.StretchChoice);
-        Properties.Settings.Default.ScaleChoice = ViewModel.ScaleOptions.IndexOf(ViewModel.ScaleChoice);
     }
 }

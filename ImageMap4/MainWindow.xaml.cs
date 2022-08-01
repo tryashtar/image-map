@@ -60,16 +60,22 @@ public partial class MainWindow : Window
         var dialog = new OpenFileDialog();
         dialog.Multiselect = true;
         dialog.Title = "Select images to import";
-        dialog.Filter = "Image Files|*.png; *.bmp, *.jpg, *.jpeg, *.gif|All Files|*";
+        dialog.Filter = "Image Files|*.png; *.bmp; *.jpg; *.jpeg; *.gif|All Files|*";
         if (dialog.ShowDialog() == true)
             OpenImages(dialog.FileNames);
     }
 
+    private ImportWindow ImportWindow;
     private void OpenImages(IEnumerable<string> images)
     {
-        var import = new ImportWindow(images, ViewModel.SelectedWorld is JavaWorld);
-        import.ShowDialog();
-        ViewModel.AddImports(import.Maps);
+        if (ImportWindow == null || !ImportWindow.IsVisible)
+        {
+            ImportWindow = new(ViewModel.SelectedWorld is JavaWorld);
+            ImportWindow.Owner = this;
+        }
+        ImportWindow.Show();
+        ImportWindow.Activate();
+        ImportWindow.ViewModel.AddImages(images);
     }
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

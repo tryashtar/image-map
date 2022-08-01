@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace ImageMap4;
 public class ImportViewModel : ObservableObject
@@ -18,6 +19,19 @@ public class ImportViewModel : ObservableObject
     public ICommand HorizontalFlipCommand { get; }
     public ICommand VerticalFlipCommand { get; }
     public ICommand SwitchImageCommand { get; }
+    public ICommand DiscardCommand { get; }
+    public ICommand DiscardAllCommand { get; }
+    public ICommand ConfirmCommand { get; }
+    public ICommand ConfirmAllCommand { get; }
+    public ICommand NavigateCommand { get; }
+    public event EventHandler OnClosed;
+
+    private bool _hadMultiple;
+    public bool HadMultiple
+    {
+        get { return _hadMultiple; }
+        set { _hadMultiple = value; OnPropertyChanged(); }
+    }
 
     private bool _javaMode;
     public bool JavaMode
@@ -41,11 +55,10 @@ public class ImportViewModel : ObservableObject
     }
 
     public record StretchOption(Stretch Stretch, string Name);
-    private StretchOption _stretchChoice;
     public StretchOption StretchChoice
     {
-        get { return _stretchChoice; }
-        set { _stretchChoice = value; OnPropertyChanged(); }
+        get { return StretchOptions[Properties.Settings.Default.StretchChoice]; }
+        set { Properties.Settings.Default.StretchChoice = StretchOptions.IndexOf(value); OnPropertyChanged(); }
     }
     public ReadOnlyCollection<StretchOption> StretchOptions { get; } = new List<StretchOption>
     {
@@ -55,11 +68,10 @@ public class ImportViewModel : ObservableObject
     }.AsReadOnly();
 
     public record ScalingOption(BitmapScalingMode? Mode, string Name);
-    private ScalingOption _scaleChoice;
     public ScalingOption ScaleChoice
     {
-        get { return _scaleChoice; }
-        set { _scaleChoice = value; OnPropertyChanged(); }
+        get { return ScaleOptions[Properties.Settings.Default.ScaleChoice]; }
+        set { Properties.Settings.Default.ScaleChoice = ScaleOptions.IndexOf(value); OnPropertyChanged(); }
     }
     public ReadOnlyCollection<ScalingOption> ScaleOptions { get; } = new List<ScalingOption>
     {
@@ -68,54 +80,93 @@ public class ImportViewModel : ObservableObject
         new ScalingOption(BitmapScalingMode.HighQuality, "Bicubic")
     }.AsReadOnly();
 
-    public record ImagePair(Image<Rgba32> Image, ImageSource Source)
-    {
-        public ImagePair(Image<Rgba32> image) : this(image, new ImageSharpImageSource<Rgba32>(image)) { }
-    }
-
-    private readonly List<ImagePair> ImageQueue = new();
-    public ReadOnlyCollection<ImagePair> Images => ImageQueue.AsReadOnly();
+    private readonly List<PreviewImage> ImageQueue = new();
+    public ReadOnlyCollection<PreviewImage> Images => ImageQueue.AsReadOnly();
     private int CurrentIndex = 0;
-    public ImagePair CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
-
-    private void MutatedCurrentImage()
-    {
-        // current image changed, need to recreate ImageSource
-        ImageQueue[CurrentIndex] = new ImagePair(ImageQueue[CurrentIndex].Image);
-        OnPropertyChanged(nameof(CurrentImage));
-    }
+    public PreviewImage CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
 
     public ImportViewModel()
     {
-        _stretchChoice = StretchOptions[Properties.Settings.Default.StretchChoice];
-        _scaleChoice = ScaleOptions[Properties.Settings.Default.ScaleChoice];
         RotateCommand = new RelayCommand<float>(val =>
         {
-            CurrentImage.Image.Mutate(x => x.Rotate(val));
-            MutatedCurrentImage();
+            CurrentImage.Rotation = (CurrentImage.Rotation + val) % 360;
         });
         HorizontalFlipCommand = new RelayCommand(() =>
         {
-            CurrentImage.Image.Mutate(x => x.Flip(FlipMode.Horizontal));
-            MutatedCurrentImage();
+            CurrentImage.ScaleX *= -1;
         });
         VerticalFlipCommand = new RelayCommand(() =>
         {
-            CurrentImage.Image.Mutate(x => x.Flip(FlipMode.Vertical));
-            MutatedCurrentImage();
+            CurrentImage.ScaleY *= -1;
         });
-        SwitchImageCommand = new RelayCommand<ImagePair>(pair =>
+        SwitchImageCommand = new RelayCommand<PreviewImage>(preview =>
         {
-            CurrentIndex = ImageQueue.FindIndex(x => x.Image == pair.Image);
+            CurrentIndex = ImageQueue.IndexOf(preview);
+            OnPropertyChanged(nameof(CurrentImage));
+        });
+        DiscardCommand = new RelayCommand(() =>
+        {
+            ImageQueue.RemoveAt(CurrentIndex);
+            if (CurrentIndex >= ImageQueue.Count)
+                CurrentIndex--;
+            OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(Images));
+            CloseIfDone();
+        });
+        DiscardAllCommand = new RelayCommand(() =>
+        {
+            ImageQueue.Clear();
+            CurrentIndex = 0;
+            OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(Images));
+            CloseIfDone();
+        });
+        NavigateCommand = new RelayCommand<int>(x =>
+        {
+            CurrentIndex = ((CurrentIndex + x) % ImageQueue.Count + ImageQueue.Count) % ImageQueue.Count;
             OnPropertyChanged(nameof(CurrentImage));
         });
     }
 
+    private void CloseIfDone()
+    {
+        if (ImageQueue.Count == 0)
+            OnClosed?.Invoke(this, EventArgs.Empty);
+    }
+
     public void AddImages(IEnumerable<string> paths)
     {
-        var images = paths.Select(x => Image.Load<Rgba32>(x));
-        ImageQueue.AddRange(images.Select(x => new ImagePair(x)));
+        ImageQueue.AddRange(paths.Select(x => new PreviewImage(x)));
         OnPropertyChanged(nameof(CurrentImage));
         OnPropertyChanged(nameof(Images));
+        HadMultiple = ImageQueue.Count > 1;
+    }
+}
+
+public class PreviewImage : ObservableObject
+{
+    public ImageSource Source { get; }
+    private double _rotation;
+    public double Rotation
+    {
+        get { return _rotation; }
+        set { _rotation = value; OnPropertyChanged(); OnPropertyChanged(nameof(Source)); }
+    }
+    private double _scaleX = 1;
+    public double ScaleX
+    {
+        get { return _scaleX; }
+        set { _scaleX = value; OnPropertyChanged(); OnPropertyChanged(nameof(Source)); }
+    }
+    private double _scaleY = 1;
+    public double ScaleY
+    {
+        get { return _scaleY; }
+        set { _scaleY = value; OnPropertyChanged(); OnPropertyChanged(nameof(Source)); }
+    }
+
+    public PreviewImage(string path)
+    {
+        Source = new BitmapImage(new Uri(path));
     }
 }
