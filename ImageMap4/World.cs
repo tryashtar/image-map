@@ -24,7 +24,49 @@ public abstract class World
     }
 
     public abstract IEnumerable<Map> GetMaps();
-    public abstract IEnumerable<Map> MakeMaps(ImportSettings settings);
+    protected abstract void PrepareImage(Image<Rgba32> image);
+    public IEnumerable<Map> MakeMaps(ImportSettings settings)
+    {
+        using var image = Image.Load<Rgba32>(settings.Preview.Source);
+        image.Mutate(x =>
+        {
+            x.Rotate((float)settings.Preview.Rotation);
+            if (settings.Preview.ScaleX == -1)
+                x.Flip(FlipMode.Horizontal);
+            if (settings.Preview.ScaleY == -1)
+                x.Flip(FlipMode.Vertical);
+            x.Resize(new ResizeOptions()
+            {
+                Size = new(128 * settings.Width, 128 * settings.Height),
+                Sampler = settings.Sampler,
+                Mode = settings.ResizeMode
+            });
+            // uniform scale crops to content, so we need to re-add transparency to get correct size
+            x.Resize(new ResizeOptions()
+            {
+                Size = new(128 * settings.Width, 128 * settings.Height),
+                Mode = ResizeMode.BoxPad
+            });
+        });
+        PrepareImage(image);
+        for (int y = 0; y < settings.Height; y++)
+        {
+            for (int x = 0; x < settings.Width; x++)
+            {
+                var tile = new Image<Rgba32>(128, 128);
+                for (int i = 0; i < 128; i++)
+                {
+                    image.ProcessPixelRows(tile, (sa, ta) =>
+                    {
+                        var source = sa.GetRowSpan(128 * y + i);
+                        var target = ta.GetRowSpan(i);
+                        source.Slice(128 * x, 128).CopyTo(target);
+                    });
+                }
+                yield return new Map(0, new ImageSharpImageSource<Rgba32>(tile));
+            }
+        }
+    }
 }
 
 public class JavaWorld : World
@@ -83,9 +125,9 @@ public class JavaWorld : World
         }
     }
 
-    public override IEnumerable<Map> MakeMaps(ImportSettings settings)
+    protected override void PrepareImage(Image<Rgba32> image)
     {
-        throw new NotImplementedException();
+        
     }
 }
 
@@ -136,45 +178,9 @@ public class BedrockWorld : World
         }
     }
 
-    public override IEnumerable<Map> MakeMaps(ImportSettings settings)
+    protected override void PrepareImage(Image<Rgba32> image)
     {
-        using var image = Image.Load<Rgba32>(settings.Preview.Source);
-        image.Mutate(x =>
-        {
-            x.Rotate((float)settings.Preview.Rotation);
-            if (settings.Preview.ScaleX == -1)
-                x.Flip(FlipMode.Horizontal);
-            if (settings.Preview.ScaleY == -1)
-                x.Flip(FlipMode.Vertical);
-            x.Resize(new ResizeOptions()
-            {
-                Size = new(128 * settings.Width, 128 * settings.Height),
-                Sampler = settings.Sampler,
-                Mode = settings.ResizeMode
-            });
-            x.Resize(new ResizeOptions()
-            {
-                Size = new(128 * settings.Width, 128 * settings.Height),
-                Mode = ResizeMode.BoxPad
-            });
-        });
-        for (int y = 0; y < settings.Height; y++)
-        {
-            for (int x = 0; x < settings.Width; x++)
-            {
-                var tile = new Image<Rgba32>(128, 128);
-                for (int i = 0; i < 128; i++)
-                {
-                    image.ProcessPixelRows(tile, (sa, ta) =>
-                    {
-                        var source = sa.GetRowSpan(128 * y + i);
-                        var target = ta.GetRowSpan(i);
-                        source.Slice(128 * x, 128).CopyTo(target);
-                    });
-                }
-                yield return new Map(0, new ImageSharpImageSource<Rgba32>(tile));
-            }
-        }
+
     }
 
     private LevelDB OpenDB()

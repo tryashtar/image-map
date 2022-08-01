@@ -82,8 +82,7 @@ public class ImportViewModel : ObservableObject
         new ScalingOption("Bicubic", BitmapScalingMode.HighQuality, KnownResamplers.Bicubic)
     }.AsReadOnly();
 
-    private readonly List<PreviewImage> ImageQueue = new();
-    public ReadOnlyCollection<PreviewImage> Images => ImageQueue.AsReadOnly();
+    public ObservableCollection<PreviewImage> ImageQueue { get; } = new();
     private int CurrentIndex = 0;
     public PreviewImage CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
 
@@ -112,7 +111,6 @@ public class ImportViewModel : ObservableObject
             if (CurrentIndex >= ImageQueue.Count)
                 CurrentIndex--;
             OnPropertyChanged(nameof(CurrentImage));
-            OnPropertyChanged(nameof(Images));
             CloseIfDone();
         });
         DiscardAllCommand = new RelayCommand(() =>
@@ -120,7 +118,6 @@ public class ImportViewModel : ObservableObject
             ImageQueue.Clear();
             CurrentIndex = 0;
             OnPropertyChanged(nameof(CurrentImage));
-            OnPropertyChanged(nameof(Images));
             CloseIfDone();
         });
         ConfirmCommand = new RelayCommand(() =>
@@ -130,7 +127,6 @@ public class ImportViewModel : ObservableObject
             if (CurrentIndex >= ImageQueue.Count)
                 CurrentIndex--;
             OnPropertyChanged(nameof(CurrentImage));
-            OnPropertyChanged(nameof(Images));
             CloseIfDone();
         });
         ConfirmAllCommand = new RelayCommand(() =>
@@ -142,7 +138,6 @@ public class ImportViewModel : ObservableObject
             ImageQueue.Clear();
             CurrentIndex = 0;
             OnPropertyChanged(nameof(CurrentImage));
-            OnPropertyChanged(nameof(Images));
             CloseIfDone();
         });
         NavigateCommand = new RelayCommand<int>(x =>
@@ -165,9 +160,11 @@ public class ImportViewModel : ObservableObject
 
     public void AddImages(IEnumerable<string> paths)
     {
-        ImageQueue.AddRange(paths.Select(x => new PreviewImage(x)));
+        foreach (var path in paths)
+        {
+            ImageQueue.Add(new PreviewImage(path));
+        }
         OnPropertyChanged(nameof(CurrentImage));
-        OnPropertyChanged(nameof(Images));
         HadMultiple = ImageQueue.Count > 1;
     }
 }

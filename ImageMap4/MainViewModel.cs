@@ -72,6 +72,5 @@ public class MainViewModel : ObservableObject
         {
             ImportingMaps.Add(item);
         }
-        OnPropertyChanged(nameof(ImportingMaps));
     }
 }

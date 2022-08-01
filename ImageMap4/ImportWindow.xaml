@@ -237,7 +237,7 @@
                           Background="DarkGray"
                           Style="{StaticResource VisibleWhenMultiple}">
                 <ItemsControl x:Name="NavigationBar"
-                              ItemsSource="{Binding Images}">
+                              ItemsSource="{Binding ImageQueue}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border BorderBrush="LightGreen"
