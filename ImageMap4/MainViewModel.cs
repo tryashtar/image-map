@@ -66,8 +66,12 @@ public class MainViewModel : ObservableObject
         }
     }
 
-    public void AddImports(IEnumerable<Map> maps)
+    public void AddImport(ImportSettings settings)
     {
-
+        foreach (var item in SelectedWorld.MakeMaps(settings))
+        {
+            ImportingMaps.Add(item);
+        }
+        OnPropertyChanged(nameof(ImportingMaps));
     }
 }

@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.ComponentModel;
 
 namespace ImageMap4;
 /// <summary>
@@ -72,13 +73,14 @@ public partial class MainWindow : Window
         {
             ImportWindow = new(ViewModel.SelectedWorld is JavaWorld);
             ImportWindow.Owner = this;
+            ImportWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.AddImport(e);
         }
         ImportWindow.Show();
         ImportWindow.Activate();
         ImportWindow.ViewModel.AddImages(images);
     }
 
-    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    private void Window_Closing(object sender, CancelEventArgs e)
     {
         Properties.Settings.Default.Save();
     }

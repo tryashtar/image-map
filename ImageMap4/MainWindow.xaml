@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageMap4"
         mc:Ignorable="d"
-        Title="Image Map 4"
+        Title="Image Map"
         Height="540"
         Width="900"
         FontSize="18"
@@ -57,19 +57,19 @@
             </Style>
             <DataTemplate x:Key="MapCard">
                 <StackPanel Margin="3"
+                            Width="128"
                             Background="#DDDDDD">
-                    <Grid Margin="2">
+                    <Grid>
                         <Image Source="{StaticResource MapBackground}"
-                               Height="128"
-                               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                               RenderOptions.BitmapScalingMode="NearestNeighbor"
+                               Margin="1" />
                         <Image Source="{Binding Path=IconPath}"
-                               Height="128"
                                RenderOptions.BitmapScalingMode="NearestNeighbor" />
                     </Grid>
                     <TextBlock Text="{Binding ID, StringFormat=map_{0}}"
                                Foreground="Black"
                                FontWeight="Medium"
-                               FontSize="14"
+                               FontSize="13"
                                Margin="4,0,0,4" />
                 </StackPanel>
             </DataTemplate>
@@ -139,6 +139,17 @@
                     <Button Content="Open"
                             Click="OpenButton_Click" />
                 </StackPanel>
+                <ScrollViewer Grid.Column="0"
+                              Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding ImportingMaps}"
+                                  ItemTemplate="{StaticResource MapCard}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}" />

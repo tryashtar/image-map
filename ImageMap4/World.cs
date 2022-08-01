@@ -2,6 +2,7 @@
 using LevelDBWrapper;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,6 +24,7 @@ public abstract class World
     }
 
     public abstract IEnumerable<Map> GetMaps();
+    public abstract IEnumerable<Map> MakeMaps(ImportSettings settings);
 }
 
 public class JavaWorld : World
@@ -80,6 +82,11 @@ public class JavaWorld : World
             }
         }
     }
+
+    public override IEnumerable<Map> MakeMaps(ImportSettings settings)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class BedrockWorld : World
@@ -126,6 +133,45 @@ public class BedrockWorld : World
             else
                 break;
             iterator.Next();
+        }
+    }
+
+    public override IEnumerable<Map> MakeMaps(ImportSettings settings)
+    {
+        using var image = Image.Load<Rgba32>(settings.Preview.Source);
+        image.Mutate(x =>
+        {
+            x.Rotate((float)settings.Preview.Rotation);
+            if (settings.Preview.ScaleX == -1)
+                x.Flip(FlipMode.Horizontal);
+            if (settings.Preview.ScaleY == -1)
+                x.Flip(FlipMode.Vertical);
+            x.Resize(new ResizeOptions()
+            {
+                Size = new(128 * settings.Width, 128 * settings.Height),
+                Sampler = settings.Sampler,
+                Mode = settings.ResizeMode
+            });
+        });
+        for (int y = 0; y < settings.Height; y++)
+        {
+            for (int x = 0; x < settings.Width; x++)
+            {
+                var tile = new Image<Rgba32>(128, 128);
+                for (int i = 0; i < 128; i++)
+                {
+                    image.ProcessPixelRows(tile, (sa, ta) =>
+                    {
+                        if (i < sa.Height)
+                        {
+                            var source = sa.GetRowSpan(128 * y + i);
+                            var target = ta.GetRowSpan(i + (128 - sa.Height) / 2);
+                            source.Slice(128 * x, 128).CopyTo(target);
+                        }
+                    });
+                }
+                yield return new Map(0, new ImageSharpImageSource<Rgba32>(tile));
+            }
         }
     }
 

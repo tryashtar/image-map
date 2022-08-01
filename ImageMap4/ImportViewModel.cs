@@ -1,6 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,6 +26,7 @@ public class ImportViewModel : ObservableObject
     public ICommand ConfirmAllCommand { get; }
     public ICommand NavigateCommand { get; }
     public event EventHandler OnClosed;
+    public event EventHandler<ImportSettings> OnConfirmed;
 
     private bool _hadMultiple;
     public bool HadMultiple
@@ -54,7 +56,7 @@ public class ImportViewModel : ObservableObject
         set { _gridHeight = value; OnPropertyChanged(); }
     }
 
-    public record StretchOption(Stretch Stretch, string Name);
+    public record StretchOption(string Name, Stretch Stretch, ResizeMode Mode);
     public StretchOption StretchChoice
     {
         get { return StretchOptions[Properties.Settings.Default.StretchChoice]; }
@@ -62,12 +64,12 @@ public class ImportViewModel : ObservableObject
     }
     public ReadOnlyCollection<StretchOption> StretchOptions { get; } = new List<StretchOption>
     {
-        new StretchOption(Stretch.Uniform, "Uniform"),
-        new StretchOption(Stretch.Fill, "Stretch"),
-        new StretchOption(Stretch.UniformToFill, "Crop")
+        new StretchOption("Uniform", Stretch.Uniform, ResizeMode.Max),
+        new StretchOption("Stretch", Stretch.Fill, ResizeMode.Stretch),
+        new StretchOption("Crop", Stretch.UniformToFill, ResizeMode.Crop)
     }.AsReadOnly();
 
-    public record ScalingOption(BitmapScalingMode? Mode, string Name);
+    public record ScalingOption(string Name, BitmapScalingMode Mode, IResampler Sampler);
     public ScalingOption ScaleChoice
     {
         get { return ScaleOptions[Properties.Settings.Default.ScaleChoice]; }
@@ -75,9 +77,9 @@ public class ImportViewModel : ObservableObject
     }
     public ReadOnlyCollection<ScalingOption> ScaleOptions { get; } = new List<ScalingOption>
     {
-        new ScalingOption(null, "Automatic"),
-        new ScalingOption(BitmapScalingMode.NearestNeighbor, "Pixel Art"),
-        new ScalingOption(BitmapScalingMode.HighQuality, "Bicubic")
+        new ScalingOption("Automatic", BitmapScalingMode.HighQuality, KnownResamplers.Bicubic),
+        new ScalingOption("Pixel Art", BitmapScalingMode.NearestNeighbor, KnownResamplers.NearestNeighbor),
+        new ScalingOption("Bicubic", BitmapScalingMode.HighQuality, KnownResamplers.Bicubic)
     }.AsReadOnly();
 
     private readonly List<PreviewImage> ImageQueue = new();
@@ -121,11 +123,38 @@ public class ImportViewModel : ObservableObject
             OnPropertyChanged(nameof(Images));
             CloseIfDone();
         });
+        ConfirmCommand = new RelayCommand(() =>
+        {
+            ConfirmImage(CurrentImage);
+            ImageQueue.RemoveAt(CurrentIndex);
+            if (CurrentIndex >= ImageQueue.Count)
+                CurrentIndex--;
+            OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(Images));
+            CloseIfDone();
+        });
+        ConfirmAllCommand = new RelayCommand(() =>
+        {
+            foreach (var item in ImageQueue)
+            {
+                ConfirmImage(item);
+            }
+            ImageQueue.Clear();
+            CurrentIndex = 0;
+            OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(Images));
+            CloseIfDone();
+        });
         NavigateCommand = new RelayCommand<int>(x =>
         {
             CurrentIndex = ((CurrentIndex + x) % ImageQueue.Count + ImageQueue.Count) % ImageQueue.Count;
             OnPropertyChanged(nameof(CurrentImage));
         });
+    }
+
+    private void ConfirmImage(PreviewImage preview)
+    {
+        OnConfirmed?.Invoke(this, new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode));
     }
 
     private void CloseIfDone()
@@ -145,7 +174,7 @@ public class ImportViewModel : ObservableObject
 
 public class PreviewImage : ObservableObject
 {
-    public ImageSource Source { get; }
+    public string Source { get; }
     private double _rotation;
     public double Rotation
     {
@@ -167,6 +196,8 @@ public class PreviewImage : ObservableObject
 
     public PreviewImage(string path)
     {
-        Source = new BitmapImage(new Uri(path));
+        Source = path;
     }
 }
+
+public record ImportSettings(PreviewImage Preview, int Width, int Height, IResampler Sampler, ResizeMode ResizeMode);
