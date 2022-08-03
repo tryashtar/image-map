@@ -5,10 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace ImageMap4;
 public class MainViewModel : ObservableObject
 {
+    public ICommand TransferAllCommand { get; }
     public ObservableCollection<World> JavaWorlds { get; }
     public ObservableCollection<World> BedrockWorlds { get; }
     public ObservableCollection<Map> ImportingMaps { get; private set; }
@@ -37,6 +39,15 @@ public class MainViewModel : ObservableObject
         BedrockWorlds = new();
         ImportingMaps = new();
         ExistingMaps = new();
+        TransferAllCommand = new RelayCommand(() =>
+        {
+            SelectedWorld.AddMaps(ImportingMaps);
+            foreach (var item in ImportingMaps)
+            {
+                ExistingMaps.Add(item);
+            }
+            ImportingMaps.Clear();
+        });
         RefreshWorlds();
     }
 

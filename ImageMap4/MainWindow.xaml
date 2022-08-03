@@ -165,10 +165,13 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Column="0"
-                            Grid.Row="0">
+                            Grid.Row="0"
+                            Margin="5">
                     <TextBlock Text="Importing" />
                     <Button Content="Open"
                             Click="OpenButton_Click" />
+                    <Button Content="Send All to World"
+                            Command="{Binding TransferAllCommand}" />
                 </StackPanel>
                 <ScrollViewer Grid.Column="0"
                               Grid.Row="1">
@@ -182,7 +185,8 @@
                     </ItemsControl>
                 </ScrollViewer>
                 <StackPanel Grid.Column="1"
-                            Grid.Row="0">
+                            Grid.Row="0"
+                            Margin="5">
                     <TextBlock Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}" />
                     <CheckBox Content="Show Empty Maps"
                               IsChecked="{Binding ShowEmptyMaps}"

@@ -1,3 +1,4 @@
+using fNbt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -11,16 +12,19 @@ public interface IJavaVersion
 {
     Image<Rgba32> Decode(byte[] colors);
     ReadOnlyMemory<Color> GetPalette();
-    //byte[,][] Encode(Image<Rgba32> image, int width, int height);
+    byte[] EncodeColors(Image<Rgba32> image);
+    NbtCompound CreateMapCompound(MapData map);
 }
 
 public abstract class AbstractJavaVersion : IJavaVersion
 {
     private readonly Dictionary<byte, Rgba32> ColorMap;
+    private readonly Dictionary<Color, byte> ReverseColorMap;
     public AbstractJavaVersion()
     {
         var colors = GetBaseColors();
         ColorMap = new();
+        ReverseColorMap = new();
         byte id = 0;
         foreach (var color in colors)
         {
@@ -28,6 +32,8 @@ public abstract class AbstractJavaVersion : IJavaVersion
             foreach (var alt in alts)
             {
                 ColorMap[id] = alt;
+                if (!ReverseColorMap.ContainsKey(alt))
+                    ReverseColorMap[alt] = id;
                 id++;
             }
         }
@@ -54,14 +60,24 @@ public abstract class AbstractJavaVersion : IJavaVersion
         return Image.LoadPixelData<Rgba32>(pixels, 128, 128);
     }
 
-    //public byte[,][] Encode(Image<Rgba32> image, int width, int height)
-    //{
-    //    var results = new byte[width, height][];
-    //
-    //}
+    public byte[] EncodeColors(Image<Rgba32> image)
+    {
+        byte[] result = new byte[image.Width * image.Height];
+        for (int y = 0; y < image.Height; y++)
+        {
+            for (int x = 0; x < image.Width; x++)
+            {
+                var b = image[x, y];
+                result[y * image.Height + x] = ReverseColorMap[b];
+            }
+        }
+        return result;
+    }
 
-    public abstract IEnumerable<Rgba32> GetBaseColors();
-    public abstract IEnumerable<Rgba32> GetAlternateColors(Rgba32 color);
+    public abstract NbtCompound CreateMapCompound(MapData map);
+
+    protected abstract IEnumerable<Rgba32> GetBaseColors();
+    protected abstract IEnumerable<Rgba32> GetAlternateColors(Rgba32 color);
 
     protected static IEnumerable<Rgba32> AlternatesFromMultipliers(Rgba32 color, params byte[] multipliers)
     {
@@ -87,7 +103,7 @@ public abstract class AbstractJavaVersion : IJavaVersion
 public class JavaB1p8Version : AbstractJavaVersion
 {
     // second and fourth colors are identical
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 180, 220, 255, 220);
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 180, 220, 255, 220);
     public static readonly ReadOnlyCollection<Rgba32> Colors = new List<Rgba32>
     {
         Color.Transparent,
@@ -105,15 +121,28 @@ public class JavaB1p8Version : AbstractJavaVersion
         new Rgba32(64, 64, 255),
         new Rgba32(104, 83, 50)
     }.AsReadOnly();
-    public override IEnumerable<Rgba32> GetBaseColors() => Colors;
+    protected override IEnumerable<Rgba32> GetBaseColors() => Colors;
     public override string ToString() => "Beta 1.8+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtShort("height", (short)map.Image.Width),
+            new NbtShort("width", (short)map.Image.Height)
+        };
+    }
 }
 
 // 13w42a+
 public class Java1p7SnapshotVersion : AbstractJavaVersion
 {
     // second and fourth colors are identical
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 216);
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 216);
     public static readonly ReadOnlyCollection<Rgba32> Colors;
     static Java1p7SnapshotVersion()
     {
@@ -145,22 +174,48 @@ public class Java1p7SnapshotVersion : AbstractJavaVersion
         }));
         Colors = colors.AsReadOnly();
     }
-    public override IEnumerable<Rgba32> GetBaseColors() => Colors;
+    protected override IEnumerable<Rgba32> GetBaseColors() => Colors;
     public override string ToString() => "13w42a+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtShort("height", (short)map.Image.Width),
+            new NbtShort("width", (short)map.Image.Height)
+        };
+    }
 }
 
 // 13w43a+
 public class Java1p7Version : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
-    public override IEnumerable<Rgba32> GetBaseColors() => Java1p7SnapshotVersion.Colors;
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetBaseColors() => Java1p7SnapshotVersion.Colors;
     public override string ToString() => "1.7+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtShort("height", (short)map.Image.Width),
+            new NbtShort("width", (short)map.Image.Height)
+        };
+    }
 }
 
 // 1.8.1-pre1+
 public class Java1p8Version : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
     public static readonly ReadOnlyCollection<Rgba32> Colors = FixShading(new List<Rgba32>
     {
         Color.Transparent,
@@ -200,14 +255,27 @@ public class Java1p8Version : AbstractJavaVersion
         new Rgba32(126, 84, 48),
         new Rgba32(110, 2, 0)
     }).ToList().AsReadOnly();
-    public override IEnumerable<Rgba32> GetBaseColors() => Colors;
+    protected override IEnumerable<Rgba32> GetBaseColors() => Colors;
     public override string ToString() => "1.8+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtShort("height", (short)map.Image.Width),
+            new NbtShort("width", (short)map.Image.Height)
+        };
+    }
 }
 
 // 17w17a+
 public class Java1p12Version : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
     public static readonly ReadOnlyCollection<Rgba32> Colors;
     static Java1p12Version()
     {
@@ -233,30 +301,72 @@ public class Java1p12Version : AbstractJavaVersion
         }));
         Colors = colors.AsReadOnly();
     }
-    public override IEnumerable<Rgba32> GetBaseColors() => Colors;
+    protected override IEnumerable<Rgba32> GetBaseColors() => Colors;
     public override string ToString() => "1.12+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtShort("height", (short)map.Image.Width),
+            new NbtShort("width", (short)map.Image.Height),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
 }
 
 // 17w47a+
 public class Java1p13Version : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
-    public override IEnumerable<Rgba32> GetBaseColors() => Java1p12Version.Colors;
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetBaseColors() => Java1p12Version.Colors;
     public override string ToString() => "1.13+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
 }
 
 // 19w02a+
 public class Java1p14Version : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
-    public override IEnumerable<Rgba32> GetBaseColors() => Java1p12Version.Colors;
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetBaseColors() => Java1p12Version.Colors;
     public override string ToString() => "1.14+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtByte("locked", 1),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
 }
 
 // 1.16 pre-6+
 public class Java1p16Version : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
     public static readonly ReadOnlyCollection<Rgba32> Colors;
     static Java1p16Version()
     {
@@ -273,14 +383,28 @@ public class Java1p16Version : AbstractJavaVersion
         }));
         Colors = colors.AsReadOnly();
     }
-    public override IEnumerable<Rgba32> GetBaseColors() => Colors;
+    protected override IEnumerable<Rgba32> GetBaseColors() => Colors;
     public override string ToString() => "1.16+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtString("dimension", "minecraft:overworld"),
+            new NbtByte("locked", 1),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
 }
 
 // 21w15a+
 public class Java1p17SnapshotVersion : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
     public static readonly ReadOnlyCollection<Rgba32> Colors;
     static Java1p17SnapshotVersion()
     {
@@ -292,14 +416,28 @@ public class Java1p17SnapshotVersion : AbstractJavaVersion
         }));
         Colors = colors.AsReadOnly();
     }
-    public override IEnumerable<Rgba32> GetBaseColors() => Colors;
+    protected override IEnumerable<Rgba32> GetBaseColors() => Colors;
     public override string ToString() => "21w15a";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtString("dimension", "minecraft:overworld"),
+            new NbtByte("locked", 1),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
 }
 
 // 21w16a+
 public class Java1p17Version : AbstractJavaVersion
 {
-    public override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
+    protected override IEnumerable<Rgba32> GetAlternateColors(Rgba32 color) => AlternatesFromMultipliers(color, 176, 216, 250, 132);
     public static readonly ReadOnlyCollection<Rgba32> Colors;
     static Java1p17Version()
     {
@@ -310,6 +448,20 @@ public class Java1p17Version : AbstractJavaVersion
         }));
         Colors = colors.AsReadOnly();
     }
-    public override IEnumerable<Rgba32> GetBaseColors() => Colors;
+    protected override IEnumerable<Rgba32> GetBaseColors() => Colors;
     public override string ToString() => "1.17+";
+    public override NbtCompound CreateMapCompound(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtString("dimension", "minecraft:overworld"),
+            new NbtByte("locked", 1),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
 }
