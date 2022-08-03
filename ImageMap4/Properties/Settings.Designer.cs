@@ -71,5 +71,17 @@ namespace ImageMap4.Properties {
                 this["ScaleChoice"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int DitherChoice {
+            get {
+                return ((int)(this["DitherChoice"]));
+            }
+            set {
+                this["DitherChoice"] = value;
+            }
+        }
     }
 }

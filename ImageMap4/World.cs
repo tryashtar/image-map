@@ -3,6 +3,7 @@ using LevelDBWrapper;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Quantization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,7 +25,7 @@ public abstract class World
     }
 
     public abstract IEnumerable<Map> GetMaps();
-    protected abstract void PrepareImage(Image<Rgba32> image);
+    protected abstract void ProcessImage(Image<Rgba32> image, ProcessSettings settings);
     public IEnumerable<MapData> MakeMaps(ImportSettings settings)
     {
         using var image = Image.Load<Rgba32>(settings.Preview.Source);
@@ -49,7 +50,7 @@ public abstract class World
             });
         });
         var original = Split(image, settings.Width, settings.Height);
-        PrepareImage(image);
+        ProcessImage(image, settings.ProcessSettings);
         var finished = Split(image, settings.Width, settings.Height);
         for (int y = 0; y < settings.Height; y++)
         {
@@ -60,7 +61,7 @@ public abstract class World
         }
     }
 
-    private Image<Rgba32>[,] Split(Image<Rgba32> source, int columns, int rows)
+    private static Image<Rgba32>[,] Split(Image<Rgba32> source, int columns, int rows)
     {
         var result = new Image<Rgba32>[columns, rows];
         int width = source.Width / columns;
@@ -142,9 +143,11 @@ public class JavaWorld : World
         }
     }
 
-    protected override void PrepareImage(Image<Rgba32> image)
+    protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
-        image.Mutate(x => x.Contrast(3));
+        var palette = Version.GetPalette();
+        var quantizer = new PaletteQuantizer(palette, new QuantizerOptions() { Dither = settings.Dither });
+        image.Mutate(x => x.Quantize(quantizer));
     }
 }
 
@@ -183,7 +186,7 @@ public class BedrockWorld : World
         }
     }
 
-    protected override void PrepareImage(Image<Rgba32> image)
+    protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
 
     }

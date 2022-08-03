@@ -1,6 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Dithering;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using System;
 using System.Collections.Generic;
@@ -82,6 +83,19 @@ public class ImportViewModel : ObservableObject
         new ScalingOption("Bicubic", BitmapScalingMode.HighQuality, KnownResamplers.Bicubic)
     }.AsReadOnly();
 
+    public record DitherOption(string Name, IDither? Dither);
+    public DitherOption DitherChoice
+    {
+        get { return DitherOptions[Properties.Settings.Default.DitherChoice]; }
+        set { Properties.Settings.Default.DitherChoice = DitherOptions.IndexOf(value); OnPropertyChanged(); }
+    }
+    public ReadOnlyCollection<DitherOption> DitherOptions { get; } = new List<DitherOption>
+    {
+        new DitherOption("None", null),
+        new DitherOption("Floyd Steinberg", KnownDitherings.FloydSteinberg),
+        new DitherOption("Burks", KnownDitherings.Burks)
+    }.AsReadOnly();
+
     public ObservableCollection<PreviewImage> ImageQueue { get; } = new();
     private int CurrentIndex = 0;
     public PreviewImage CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
@@ -149,7 +163,8 @@ public class ImportViewModel : ObservableObject
 
     private void ConfirmImage(PreviewImage preview)
     {
-        OnConfirmed?.Invoke(this, new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode));
+        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode, new ProcessSettings(DitherChoice.Dither));
+        OnConfirmed?.Invoke(this, settings);
     }
 
     private void CloseIfDone()
@@ -197,4 +212,6 @@ public class PreviewImage : ObservableObject
     }
 }
 
-public record ImportSettings(PreviewImage Preview, int Width, int Height, IResampler Sampler, ResizeMode ResizeMode);
+public record ImportSettings(PreviewImage Preview, int Width, int Height, IResampler Sampler, ResizeMode ResizeMode, ProcessSettings ProcessSettings);
+
+public record ProcessSettings(IDither? Dither);
