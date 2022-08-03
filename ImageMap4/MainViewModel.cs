@@ -68,9 +68,11 @@ public class MainViewModel : ObservableObject
 
     public void AddImport(ImportSettings settings)
     {
+        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.ID).DefaultIfEmpty(-1).Max() + 1;
         foreach (var item in SelectedWorld.MakeMaps(settings))
         {
-            ImportingMaps.Add(item);
+            ImportingMaps.Add(new Map(id, item));
+            id++;
         }
     }
 }

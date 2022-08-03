@@ -25,7 +25,7 @@ public abstract class World
 
     public abstract IEnumerable<Map> GetMaps();
     protected abstract void PrepareImage(Image<Rgba32> image);
-    public IEnumerable<Map> MakeMaps(ImportSettings settings)
+    public IEnumerable<MapData> MakeMaps(ImportSettings settings)
     {
         using var image = Image.Load<Rgba32>(settings.Preview.Source);
         image.Mutate(x =>
@@ -48,24 +48,41 @@ public abstract class World
                 Mode = ResizeMode.BoxPad
             });
         });
+        var original = Split(image, settings.Width, settings.Height);
         PrepareImage(image);
+        var finished = Split(image, settings.Width, settings.Height);
         for (int y = 0; y < settings.Height; y++)
         {
             for (int x = 0; x < settings.Width; x++)
             {
-                var tile = new Image<Rgba32>(128, 128);
-                for (int i = 0; i < 128; i++)
-                {
-                    image.ProcessPixelRows(tile, (sa, ta) =>
-                    {
-                        var source = sa.GetRowSpan(128 * y + i);
-                        var target = ta.GetRowSpan(i);
-                        source.Slice(128 * x, 128).CopyTo(target);
-                    });
-                }
-                yield return new Map(0, new ImageSharpImageSource<Rgba32>(tile));
+                yield return new MapData(finished[x, y], original[x, y], null);
             }
         }
+    }
+
+    private Image<Rgba32>[,] Split(Image<Rgba32> source, int columns, int rows)
+    {
+        var result = new Image<Rgba32>[columns, rows];
+        int width = source.Width / columns;
+        int height = source.Height / rows;
+        for (int y = 0; y < rows; y++)
+        {
+            for (int x = 0; x < columns; x++)
+            {
+                var tile = new Image<Rgba32>(width, height);
+                for (int i = 0; i < height; i++)
+                {
+                    source.ProcessPixelRows(tile, (sa, ta) =>
+                    {
+                        var source = sa.GetRowSpan(height * y + i);
+                        var target = ta.GetRowSpan(i);
+                        source.Slice(width * x, width).CopyTo(target);
+                    });
+                }
+                result[x, y] = tile;
+            }
+        }
+        return result;
     }
 }
 
@@ -119,7 +136,7 @@ public class JavaWorld : World
                     nbt.LoadFromFile(file, NbtCompression.GZip, null);
                     var colors = nbt.RootTag.Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
                     var image = Version.Decode(colors);
-                    yield return new Map(id, new ImageSharpImageSource<Rgba32>(image));
+                    yield return new Map(id, new MapData(image, colors));
                 }
             }
         }
@@ -127,7 +144,7 @@ public class JavaWorld : World
 
     protected override void PrepareImage(Image<Rgba32> image)
     {
-        
+        image.Mutate(x => x.Contrast(3));
     }
 }
 
@@ -157,20 +174,8 @@ public class BedrockWorld : World
                 var nbt = new NbtFile() { BigEndian = false };
                 nbt.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
                 var colors = nbt.RootTag.Get<NbtByteArray>("colors").Value;
-                bool blank = true;
-                for (int i = 0; i < colors.Length; i++)
-                {
-                    if (colors[i] != 0)
-                    {
-                        blank = false;
-                        break;
-                    }
-                }
-                if (!blank)
-                {
-                    var image = Image.LoadPixelData<Rgba32>(colors, 128, 128);
-                    yield return new Map(id, new ImageSharpImageSource<Rgba32>(image));
-                }
+                var image = Image.LoadPixelData<Rgba32>(colors, 128, 128);
+                yield return new Map(id, new MapData(image, colors));
             }
             else
                 break;
