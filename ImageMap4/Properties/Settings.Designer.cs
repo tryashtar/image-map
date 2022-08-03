@@ -95,5 +95,17 @@ namespace ImageMap4.Properties {
                 this["AlgorithmChoice"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowEmptyMaps {
+            get {
+                return ((bool)(this["ShowEmptyMaps"]));
+            }
+            set {
+                this["ShowEmptyMaps"] = value;
+            }
+        }
     }
 }

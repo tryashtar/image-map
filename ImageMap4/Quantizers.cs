@@ -112,6 +112,11 @@ public class PixelMap<TPixel> : IDisposable where TPixel : unmanaged, IPixel<TPi
         for (int i = 0; i < this.rgbaPalette.Length; i++)
         {
             Rgba32 candidate = this.rgbaPalette[i];
+
+            // custom bit here: transparency is special
+            if (rgba.A != candidate.A)
+                continue;
+
             double distance = algorithm.Distance(rgba, candidate);
             if (distance == 0)
             {

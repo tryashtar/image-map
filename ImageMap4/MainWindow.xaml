@@ -59,6 +59,24 @@
                 <StackPanel Margin="3"
                             Width="128"
                             Background="#DDDDDD">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility"
+                                    Value="Visible" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Data.IsEmpty}"
+                                                   Value="True" />
+                                        <Condition Binding="{Binding DataContext.ShowEmptyMaps, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   Value="False" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility"
+                                            Value="Collapsed" />
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <Grid>
                         <Image Source="{StaticResource MapBackground}"
                                RenderOptions.BitmapScalingMode="NearestNeighbor"
@@ -163,9 +181,14 @@
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
                 </ScrollViewer>
-                <TextBlock Grid.Column="1"
-                           Grid.Row="0"
-                           Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}" />
+                <StackPanel Grid.Column="1"
+                            Grid.Row="0">
+                    <TextBlock Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}" />
+                    <CheckBox Content="Show Empty Maps"
+                              IsChecked="{Binding ShowEmptyMaps}"
+                              FontSize="16"
+                              VerticalContentAlignment="Center" />
+                </StackPanel>
                 <ScrollViewer Grid.Column="1"
                               Grid.Row="1">
                     <ItemsControl ItemsSource="{Binding ExistingMaps}"

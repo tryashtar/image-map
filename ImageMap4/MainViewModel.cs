@@ -25,6 +25,12 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    public bool ShowEmptyMaps
+    {
+        get { return Properties.Settings.Default.ShowEmptyMaps; }
+        set { Properties.Settings.Default.ShowEmptyMaps = value; OnPropertyChanged(); }
+    }
+
     public MainViewModel()
     {
         JavaWorlds = new();

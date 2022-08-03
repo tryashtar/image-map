@@ -18,6 +18,7 @@ public class MapData
     public ImageSource OriginalSource { get; }
     public ImageSource ImageSource { get; }
     public byte[] Colors { get; }
+    public bool IsEmpty { get; }
     public MapData(Image<Rgba32> image, byte[] colors)
     {
         Image = image;
@@ -25,6 +26,7 @@ public class MapData
         Colors = colors;
         ImageSource = new ImageSharpImageSource<Rgba32>(Image);
         OriginalSource = ImageSource;
+        IsEmpty = CheckIsEmpty();
     }
     public MapData(Image<Rgba32> image, Image<Rgba32> original, byte[] colors)
     {
@@ -33,6 +35,16 @@ public class MapData
         Colors = colors;
         ImageSource = new ImageSharpImageSource<Rgba32>(Image);
         OriginalSource = new ImageSharpImageSource<Rgba32>(Original);
+        IsEmpty = CheckIsEmpty();
+    }
+    private bool CheckIsEmpty()
+    {
+        for (int i = 0; i < Colors.Length; i++)
+        {
+            if (Colors[i] != 0)
+                return false;
+        }
+        return true;
     }
 }
 public record Map(long ID, MapData Data);
