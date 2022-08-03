@@ -146,7 +146,7 @@ public class JavaWorld : World
     protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
         var palette = Version.GetPalette();
-        var quantizer = new PaletteQuantizer(palette, new QuantizerOptions() { Dither = settings.Dither });
+        var quantizer = new CustomQuantizer(new QuantizerOptions() { Dither = settings.Dither }, palette, settings.Algorithm);
         image.Mutate(x => x.Quantize(quantizer));
     }
 }

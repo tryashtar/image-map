@@ -205,7 +205,17 @@
                         HorizontalAlignment="Center"
                         Margin="0,5,0,5"
                         Style="{StaticResource VisibleWhenJava}">
-                <StackPanel>
+                <StackPanel Margin="0,3,10,0">
+                    <TextBlock Text="Algorithm:"
+                               HorizontalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding AlgorithmOptions}"
+                              SelectedItem="{Binding AlgorithmChoice}"
+                              DisplayMemberPath="Name"
+                              Width="140"
+                              Padding="5"
+                              VerticalContentAlignment="Center" />
+                </StackPanel>
+                <StackPanel Margin="0,3,0,0">
                     <TextBlock Text="Dithering:"
                                HorizontalAlignment="Center" />
                     <ComboBox ItemsSource="{Binding DitherOptions}"

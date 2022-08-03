@@ -96,6 +96,21 @@ public class ImportViewModel : ObservableObject
         new DitherOption("Burks", KnownDitherings.Burks)
     }.AsReadOnly();
 
+    public record AlgorithmOption(string Name, IColorAlgorithm Algorithm);
+    public AlgorithmOption AlgorithmChoice
+    {
+        get { return AlgorithmOptions[Properties.Settings.Default.AlgorithmChoice]; }
+        set { Properties.Settings.Default.AlgorithmChoice = AlgorithmOptions.IndexOf(value); OnPropertyChanged(); }
+    }
+    public ReadOnlyCollection<AlgorithmOption> AlgorithmOptions { get; } = new List<AlgorithmOption>
+    {
+        new AlgorithmOption("Good Fast", new SimpleAlgorithm()),
+        new AlgorithmOption("Euclidean", new EuclideanAlgorithm()),
+        new AlgorithmOption("CIEDE2000", new Ciede2000Algorithm()),
+        new AlgorithmOption("CIE76", new Cie76Algorithm()),
+        new AlgorithmOption("CMC", new CmcAlgorithm())
+    }.AsReadOnly();
+
     public ObservableCollection<PreviewImage> ImageQueue { get; } = new();
     private int CurrentIndex = 0;
     public PreviewImage CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
@@ -163,7 +178,7 @@ public class ImportViewModel : ObservableObject
 
     private void ConfirmImage(PreviewImage preview)
     {
-        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode, new ProcessSettings(DitherChoice.Dither));
+        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm));
         OnConfirmed?.Invoke(this, settings);
     }
 
@@ -214,4 +229,4 @@ public class PreviewImage : ObservableObject
 
 public record ImportSettings(PreviewImage Preview, int Width, int Height, IResampler Sampler, ResizeMode ResizeMode, ProcessSettings ProcessSettings);
 
-public record ProcessSettings(IDither? Dither);
+public record ProcessSettings(IDither? Dither, IColorAlgorithm Algorithm);

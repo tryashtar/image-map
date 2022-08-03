@@ -83,5 +83,17 @@ namespace ImageMap4.Properties {
                 this["DitherChoice"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int AlgorithmChoice {
+            get {
+                return ((int)(this["AlgorithmChoice"]));
+            }
+            set {
+                this["AlgorithmChoice"] = value;
+            }
+        }
     }
 }
