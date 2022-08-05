@@ -28,6 +28,11 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
+    private void Window_Closing(object sender, CancelEventArgs e)
+    {
+        Properties.Settings.Default.Save();
+    }
+
     private void JavaFolder_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new VistaFolderBrowserDialog();
@@ -80,8 +85,15 @@ public partial class MainWindow : Window
         ImportWindow.ViewModel.AddImages(images);
     }
 
-    private void Window_Closing(object sender, CancelEventArgs e)
+    private StructureWindow StructureWindow;
+    private void GenerateStructureButton_Click(object sender, RoutedEventArgs e)
     {
-        Properties.Settings.Default.Save();
+        if (StructureWindow == null || !StructureWindow.IsVisible)
+        {
+            StructureWindow = new();
+            StructureWindow.Owner = this;
+        }
+        StructureWindow.Show();
+        StructureWindow.Activate();
     }
 }

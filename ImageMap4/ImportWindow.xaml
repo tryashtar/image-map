@@ -80,41 +80,28 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid x:Name="SpaceGrid"
-              Grid.Row="0"
-              Background="LightGray">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Image Grid.Row="1"
-                   Grid.Column="1"
-                   Source="{Binding CurrentImage.Source}"
-                   Stretch="{Binding StretchChoice.Stretch}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   RenderOptions.BitmapScalingMode="{Binding ScaleChoice.Mode}">
-                <Image.LayoutTransform>
-                    <TransformGroup>
-                        <RotateTransform Angle="{Binding CurrentImage.Rotation}" />
-                        <ScaleTransform ScaleX="{Binding CurrentImage.ScaleX}" />
-                        <ScaleTransform ScaleY="{Binding CurrentImage.ScaleY}" />
-                    </TransformGroup>
-                </Image.LayoutTransform>
-            </Image>
-            <local:SquareGrid x:Name="SplitGrid"
-                              Grid.Row="1"
-                              Grid.Column="1"
-                              Rows="{Binding GridHeight}"
-                              Columns="{Binding GridWidth}"
-                              SnapsToDevicePixels="True" />
-        </Grid>
+        <local:SquareGrid Grid.Row="0"
+                          Background="LightGray"
+                          Rows="{Binding GridHeight}"
+                          Columns="{Binding GridWidth}">
+            <local:SquareGrid.Inside>
+                <Image Grid.Row="1"
+                       Grid.Column="1"
+                       Source="{Binding CurrentImage.Source}"
+                       Stretch="{Binding StretchChoice.Stretch}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="{Binding ScaleChoice.Mode}">
+                    <Image.LayoutTransform>
+                        <TransformGroup>
+                            <RotateTransform Angle="{Binding CurrentImage.Rotation}" />
+                            <ScaleTransform ScaleX="{Binding CurrentImage.ScaleX}" />
+                            <ScaleTransform ScaleY="{Binding CurrentImage.ScaleY}" />
+                        </TransformGroup>
+                    </Image.LayoutTransform>
+                </Image>
+            </local:SquareGrid.Inside>
+        </local:SquareGrid>
         <StackPanel Grid.Row="1">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center"
