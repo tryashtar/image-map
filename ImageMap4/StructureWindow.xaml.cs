@@ -18,6 +18,7 @@ namespace ImageMap4;
 /// </summary>
 public partial class StructureWindow : Window
 {
+    public StructureViewModel ViewModel => (StructureViewModel)DataContext;
     public StructureWindow()
     {
         InitializeComponent();

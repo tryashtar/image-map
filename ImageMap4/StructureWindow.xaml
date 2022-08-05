@@ -4,9 +4,82 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageMap4"
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="StructureWindow" Height="450" Width="800">
+        Title="Create Structure"
+        Height="450"
+        Width="800"
+        FontSize="16"
+        WindowStartupLocation="CenterOwner">
+    <Window.DataContext>
+        <local:StructureViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Shared.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <local:SquareGrid Grid.Row="0"
+                              Background="LightGray"
+                              Rows="{Binding GridHeight}"
+                              Columns="{Binding GridWidth}">
+            </local:SquareGrid>
+            <StackPanel Grid.Row="1">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,5,0,5">
+                    <StackPanel Margin="0,3,10,0">
+                        <TextBlock Text="Width:" />
+                        <tk:IntegerUpDown Value="{Binding GridWidth}"
+                                          Minimum="1"
+                                          Maximum="100"
+                                          Width="60"
+                                          Height="31" />
+                    </StackPanel>
+                    <StackPanel Margin="0,3,0,0">
+                        <TextBlock Text="Height:" />
+                        <tk:IntegerUpDown Value="{Binding GridHeight}"
+                                          Minimum="1"
+                                          Maximum="100"
+                                          Width="60"
+                                          Height="31" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,5,0,10">
+                    <Button Content="Confirm"
+                            Padding="5"
+                            Command="{Binding ConfirmCommand}" />
+                    <Button Content="Cancel"
+                            Padding="5"
+                            Margin="10,0,0,0"
+                            Command="{Binding CancelCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+        <ScrollViewer Grid.Column="1">
+            <ItemsControl ItemsSource="{Binding Parent.ExistingMaps}"
+                          ItemTemplate="{StaticResource MapCard}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
     </Grid>
 </Window>

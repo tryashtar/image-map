@@ -92,6 +92,7 @@ public partial class MainWindow : Window
         {
             StructureWindow = new();
             StructureWindow.Owner = this;
+            StructureWindow.ViewModel.Parent = this.ViewModel;
         }
         StructureWindow.Show();
         StructureWindow.Activate();

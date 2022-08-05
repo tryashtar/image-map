@@ -1,0 +1,54 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <BitmapImage x:Key="MapBackground"
+                 UriSource="../Icons/item_frame.png" />
+    <DataTemplate x:Key="MapCard">
+        <StackPanel Margin="3"
+                    Width="128"
+                    Background="#DDDDDD">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Visibility"
+                            Value="Visible" />
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Data.IsEmpty}"
+                                           Value="True" />
+                                <Condition Binding="{Binding DataContext.ShowEmptyMaps, RelativeSource={RelativeSource AncestorType=Window}}"
+                                           Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Visibility"
+                                    Value="Collapsed" />
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <Grid>
+                <Image Source="{StaticResource MapBackground}"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       Margin="1" />
+                <Image RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Setter Property="Source"
+                                    Value="{Binding Data.ImageSource}" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter Property="Source"
+                                            Value="{Binding Data.OriginalSource}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+            </Grid>
+            <TextBlock Text="{Binding ID, StringFormat=map_{0}}"
+                       Foreground="Black"
+                       FontWeight="Medium"
+                       FontSize="13"
+                       Margin="4,0,0,4" />
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>
