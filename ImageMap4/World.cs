@@ -31,7 +31,7 @@ public abstract class World
     protected abstract byte[] EncodeColors(Image<Rgba32> image);
     public IEnumerable<MapData> MakeMaps(ImportSettings settings)
     {
-        using var image = Image.Load<Rgba32>(settings.Preview.Source);
+        using var image = settings.Preview.Source.Image.Value;
         image.Mutate(x =>
         {
             x.Rotate((float)settings.Preview.Rotation);

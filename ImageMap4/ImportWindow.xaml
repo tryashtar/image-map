@@ -88,7 +88,7 @@
             <local:SquareGrid.Inside>
                 <Image Grid.Row="1"
                        Grid.Column="1"
-                       Source="{Binding CurrentImage.Source}"
+                       Source="{Binding CurrentImage.Source.Source.Value}"
                        Stretch="{Binding StretchChoice.Stretch}"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
@@ -276,7 +276,7 @@
                                         Background="LightGray"
                                         Height="64"
                                         Width="64">
-                                    <Image Source="{Binding Source}"
+                                    <Image Source="{Binding Source.Source.Value}"
                                            RenderOptions.BitmapScalingMode="HighQuality">
                                         <Image.LayoutTransform>
                                             <TransformGroup>

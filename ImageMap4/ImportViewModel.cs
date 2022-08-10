@@ -119,7 +119,7 @@ public class ImportViewModel : ObservableObject
     {
         RotateCommand = new RelayCommand<float>(val =>
         {
-            CurrentImage.Rotation = (CurrentImage.Rotation + val) % 360;
+            CurrentImage.Rotation = (CurrentImage.Rotation + val * Math.Sign(CurrentImage.ScaleX * CurrentImage.ScaleY)) % 360;
         });
         HorizontalFlipCommand = new RelayCommand(() =>
         {
@@ -188,42 +188,50 @@ public class ImportViewModel : ObservableObject
             OnClosed?.Invoke(this, EventArgs.Empty);
     }
 
-    public void AddImages(IEnumerable<string> paths)
+    public void AddImages(IEnumerable<PendingSource> sources)
     {
-        foreach (var path in paths)
+        foreach (var source in sources)
         {
-            ImageQueue.Add(new PreviewImage(path));
+            ImageQueue.Add(new PreviewImage(source));
         }
         OnPropertyChanged(nameof(CurrentImage));
         HadMultiple = ImageQueue.Count > 1;
     }
 }
 
+public record PendingSource(Lazy<ImageSource> Source, Lazy<Image<Rgba32>> Image)
+{
+    public static PendingSource FromPath(string path)
+    {
+        return new PendingSource(new(() => new BitmapImage(new Uri(path))), new(() => SixLabors.ImageSharp.Image.Load<Rgba32>(path)));
+    }
+}
+
 public class PreviewImage : ObservableObject
 {
-    public string Source { get; }
+    public PendingSource Source { get; }
     private double _rotation;
     public double Rotation
     {
         get { return _rotation; }
-        set { _rotation = value; OnPropertyChanged(); OnPropertyChanged(nameof(Source)); }
+        set { _rotation = value; OnPropertyChanged(); }
     }
     private double _scaleX = 1;
     public double ScaleX
     {
         get { return _scaleX; }
-        set { _scaleX = value; OnPropertyChanged(); OnPropertyChanged(nameof(Source)); }
+        set { _scaleX = value; OnPropertyChanged(); }
     }
     private double _scaleY = 1;
     public double ScaleY
     {
         get { return _scaleY; }
-        set { _scaleY = value; OnPropertyChanged(); OnPropertyChanged(nameof(Source)); }
+        set { _scaleY = value; OnPropertyChanged(); }
     }
 
-    public PreviewImage(string path)
+    public PreviewImage(PendingSource source)
     {
-        Source = path;
+        Source = source;
     }
 }
 

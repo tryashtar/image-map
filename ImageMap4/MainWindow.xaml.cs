@@ -15,17 +15,44 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel;
+using GongSolutions.Wpf.DragDrop;
+using System.IO;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace ImageMap4;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IDropTarget
 {
     private MainViewModel ViewModel => (MainViewModel)this.DataContext;
+    public ICommand PasteCommand { get; }
     public MainWindow()
     {
         InitializeComponent();
+        PasteCommand = new RelayCommand(() =>
+        {
+            if (Clipboard.ContainsFileDropList())
+            {
+                var files = Clipboard.GetFileDropList();
+                OpenImages(files.Cast<string>().Select(PendingSource.FromPath));
+            }
+            else if (Clipboard.ContainsImage())
+            {
+                var source = Clipboard.GetImage();
+                using var stream = new MemoryStream();
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(source));
+                encoder.Save(stream);
+                stream.Position = 0;
+                var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+                OpenImages(new[]
+                {
+                    new PendingSource(new(source), new(image))
+                });
+            }
+        });
     }
 
     private void Window_Closing(object sender, CancelEventArgs e)
@@ -68,11 +95,11 @@ public partial class MainWindow : Window
         dialog.Title = "Select images to import";
         dialog.Filter = "Image Files|*.png; *.bmp; *.jpg; *.jpeg; *.gif|All Files|*";
         if (dialog.ShowDialog() == true)
-            OpenImages(dialog.FileNames);
+            OpenImages(dialog.FileNames.Select(PendingSource.FromPath));
     }
 
-    private ImportWindow ImportWindow;
-    private void OpenImages(IEnumerable<string> images)
+    private ImportWindow? ImportWindow;
+    private void OpenImages(IEnumerable<PendingSource> images)
     {
         if (ImportWindow == null || !ImportWindow.IsVisible)
         {
@@ -85,7 +112,7 @@ public partial class MainWindow : Window
         ImportWindow.ViewModel.AddImages(images);
     }
 
-    private StructureWindow StructureWindow;
+    private StructureWindow? StructureWindow;
     private void GenerateStructureButton_Click(object sender, RoutedEventArgs e)
     {
         if (StructureWindow == null || !StructureWindow.IsVisible)
@@ -96,5 +123,38 @@ public partial class MainWindow : Window
         }
         StructureWindow.Show();
         StructureWindow.Activate();
+    }
+
+
+    void IDropTarget.DragOver(IDropInfo dropInfo)
+    {
+        GetDropAction(dropInfo);
+    }
+
+    void IDropTarget.Drop(IDropInfo dropInfo)
+    {
+        GetDropAction(dropInfo)();
+    }
+
+    private Action GetDropAction(IDropInfo info)
+    {
+        if (info.TargetCollection == ViewModel.ImportingMaps && info.Data is IDataObject data && data.GetDataPresent(DataFormats.FileDrop))
+        {
+            info.Effects = DragDropEffects.Copy;
+            return () =>
+            {
+                var files = (IEnumerable<string>)data.GetData(DataFormats.FileDrop);
+                var list = new List<string>();
+                foreach (var file in files)
+                {
+                    if (File.Exists(file))
+                        list.Add(file);
+                    else if (Directory.Exists(file))
+                        list.AddRange(Directory.GetFiles(file));
+                }
+                OpenImages(list.Select(PendingSource.FromPath));
+            };
+        }
+        return () => { };
     }
 }

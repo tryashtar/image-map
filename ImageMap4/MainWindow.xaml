@@ -1,9 +1,12 @@
 <Window x:Class="ImageMap4.MainWindow"
+        x:Name="This"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageMap4"
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d"
         Title="Image Map"
         Height="540"
@@ -13,6 +16,11 @@
     <Window.DataContext>
         <local:MainViewModel />
     </Window.DataContext>
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Ctrl"
+                    Key="V"
+                    Command="{Binding PasteCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+    </Window.InputBindings>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -85,12 +93,62 @@
                           SelectedItem="{Binding SelectedWorld}"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ItemContainerStyle="{StaticResource WorldCard}" />
+                <TextBlock Grid.Column="0"
+                           Grid.Row="0"
+                           Text="Click the button below to select your Java Minecraft 'saves' folder"
+                           Margin="20"
+                           Foreground="Gray"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility"
+                                    Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Value="0"
+                                             Binding="{Binding JavaWorlds.Count}">
+                                    <DataTrigger.Setters>
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <ListView Grid.Column="1"
                           Grid.Row="0"
                           ItemsSource="{Binding BedrockWorlds}"
                           SelectedItem="{Binding SelectedWorld}"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ItemContainerStyle="{StaticResource WorldCard}" />
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Text="Click the button below to select your Bedrock 'minecraftWorlds' folder"
+                           Margin="20"
+                           Foreground="Gray"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility"
+                                    Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Value="0"
+                                             Binding="{Binding BedrockWorlds.Count}">
+                                    <DataTrigger.Setters>
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </Grid>
         </TabItem>
         <TabItem Header="Maps">
@@ -128,7 +186,10 @@
                 <ScrollViewer Grid.Column="0"
                               Grid.Row="1">
                     <ItemsControl ItemsSource="{Binding ImportingMaps}"
-                                  ItemTemplate="{StaticResource MapCard}">
+                                  ItemTemplate="{StaticResource MapCard}"
+                                  Background="Transparent"
+                                  dd:DragDrop.IsDropTarget="True"
+                                  dd:DragDrop.DropHandler="{Binding ElementName=This}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel />
@@ -136,6 +197,32 @@
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
                 </ScrollViewer>
+                <TextBlock Grid.Column="0"
+                           Grid.Row="1"
+                           Text="Open, drag, or paste images here to import and convert them to maps."
+                           IsHitTestVisible="False"
+                           Margin="20"
+                           Foreground="Gray"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility"
+                                    Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Value="0"
+                                             Binding="{Binding ImportingMaps.Count}">
+                                    <DataTrigger.Setters>
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <StackPanel Grid.Column="1"
                             Grid.Row="0"
                             Margin="5">
