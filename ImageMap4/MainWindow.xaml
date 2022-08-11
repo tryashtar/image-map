@@ -183,20 +183,11 @@
                     <Button Content="Send All to World"
                             Command="{Binding TransferAllCommand}" />
                 </StackPanel>
-                <ScrollViewer Grid.Column="0"
-                              Grid.Row="1">
-                    <ItemsControl ItemsSource="{Binding ImportingMaps}"
-                                  ItemTemplate="{StaticResource MapCard}"
-                                  Background="Transparent"
-                                  dd:DragDrop.IsDropTarget="True"
-                                  dd:DragDrop.DropHandler="{Binding ElementName=This}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </ScrollViewer>
+                <local:MapList Grid.Column="0"
+                               Grid.Row="1"
+                               dd:DragDrop.IsDropTarget="True"
+                               dd:DragDrop.DropHandler="{Binding ElementName=This}"
+                               Maps="{Binding ImportingMaps}" />
                 <TextBlock Grid.Column="0"
                            Grid.Row="1"
                            Text="Open, drag, or paste images here to import and convert them to maps."
@@ -236,17 +227,10 @@
                                 Click="GenerateStructureButton_Click" />
                     </StackPanel>
                 </StackPanel>
-                <ScrollViewer Grid.Column="1"
-                              Grid.Row="1">
-                    <ItemsControl ItemsSource="{Binding ExistingMaps}"
-                                  ItemTemplate="{StaticResource MapCard}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </ScrollViewer>
+                <local:MapList Grid.Column="1"
+                               Grid.Row="1"
+                               Maps="{Binding ExistingMaps}" />
+
             </Grid>
         </TabItem>
     </TabControl>

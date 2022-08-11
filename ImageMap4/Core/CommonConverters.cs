@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
 
@@ -31,7 +33,7 @@ public class MultiplyConverter : ParameterConverter<double, double, double>
         return value * parameter;
     }
 
-    public static readonly MultiplyConverter Instance = new MultiplyConverter();
+    public static readonly MultiplyConverter Instance = new();
 }
 
 public class GreaterThanConverter : ParameterConverter<int, bool, int>
@@ -39,5 +41,18 @@ public class GreaterThanConverter : ParameterConverter<int, bool, int>
     public override bool Convert(int value, int parameter)
     {
         return value > parameter;
+    }
+}
+
+public class ContainsConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        return ((dynamic)values[0]).Contains((dynamic)values[1]);
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new InvalidOperationException();
     }
 }
