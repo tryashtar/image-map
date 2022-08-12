@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         Title="Image Map"
         Height="540"
-        Width="900"
+        Width="940"
         FontSize="18"
         Closing="Window_Closing">
     <Window.DataContext>

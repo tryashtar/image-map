@@ -15,8 +15,8 @@ public class MainViewModel : ObservableObject
     public ICommand TransferAllCommand { get; }
     public ObservableCollection<World> JavaWorlds { get; }
     public ObservableCollection<World> BedrockWorlds { get; }
-    public ObservableCollection<Map> ImportingMaps { get; private set; }
-    public ObservableCollection<Map> ExistingMaps { get; private set; }
+    public ObservableCollection<Selectable<Map>> ImportingMaps { get; private set; }
+    public ObservableCollection<Selectable<Map>> ExistingMaps { get; private set; }
     private World _selectedWorld;
     public World SelectedWorld
     {
@@ -43,10 +43,10 @@ public class MainViewModel : ObservableObject
         ExistingMaps = new();
         TransferAllCommand = new RelayCommand(() =>
         {
-            SelectedWorld.AddMaps(ImportingMaps);
+            SelectedWorld.AddMaps(ImportingMaps.Select(x => x.Item));
             foreach (var item in ImportingMaps)
             {
-                ExistingMaps.Add(item);
+                ExistingMaps.Add(new Selectable<Map>(item.Item));
             }
             ImportingMaps.Clear();
         });
@@ -56,7 +56,7 @@ public class MainViewModel : ObservableObject
     public void RefreshMaps()
     {
         ImportingMaps = new();
-        ExistingMaps = new(SelectedWorld.GetMaps().OrderBy(x => x.ID));
+        ExistingMaps = new(SelectedWorld.GetMaps().OrderBy(x => x.ID).Select(x => new Selectable<Map>(x)));
         OnPropertyChanged(nameof(ImportingMaps));
         OnPropertyChanged(nameof(ExistingMaps));
     }
@@ -87,10 +87,10 @@ public class MainViewModel : ObservableObject
 
     public void AddImport(ImportSettings settings)
     {
-        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.ID).DefaultIfEmpty(-1).Max() + 1;
+        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).DefaultIfEmpty(-1).Max() + 1;
         foreach (var item in SelectedWorld.MakeMaps(settings))
         {
-            ImportingMaps.Add(new Map(id, item));
+            ImportingMaps.Add(new Selectable<Map>(new Map(id, item)));
             id++;
         }
     }

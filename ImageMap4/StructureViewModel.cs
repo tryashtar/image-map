@@ -21,19 +21,20 @@ public class StructureViewModel : ObservableObject
     public ICommand CancelCommand { get; }
     public event EventHandler OnClosed;
     public event EventHandler<ImportSettings> OnConfirmed;
+    public Map[,] Grid { get; private set; } = new Map[1, 1];
 
     private int _gridWidth = 1;
     public int GridWidth
     {
         get { return _gridWidth; }
-        set { _gridWidth = value; OnPropertyChanged(); }
+        set { _gridWidth = value; UpdateGrid(); OnPropertyChanged(); }
     }
 
     private int _gridHeight = 1;
     public int GridHeight
     {
         get { return _gridHeight; }
-        set { _gridHeight = value; OnPropertyChanged(); }
+        set { _gridHeight = value; UpdateGrid(); OnPropertyChanged(); }
     }
 
     private MainViewModel _parent;
@@ -48,5 +49,16 @@ public class StructureViewModel : ObservableObject
     public StructureViewModel()
     {
 
+    }
+
+    private void UpdateGrid()
+    {
+        Map[,] newgrid = new Map[GridWidth, GridHeight];
+        for (int i = 0; i < Grid.Length; i++)
+        {
+            newgrid[i % GridWidth, i / GridWidth] = Grid[i % Grid.GetLength(0), i / Grid.GetLength(0)];
+        }
+        Grid = newgrid;
+        OnPropertyChanged(nameof(Grid));
     }
 }

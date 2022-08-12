@@ -43,16 +43,3 @@ public class GreaterThanConverter : ParameterConverter<int, bool, int>
         return value > parameter;
     }
 }
-
-public class ContainsConverter : IMultiValueConverter
-{
-    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-    {
-        return ((dynamic)values[0]).Contains((dynamic)values[1]);
-    }
-
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    {
-        throw new InvalidOperationException();
-    }
-}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,22 +23,16 @@ namespace ImageMap4;
 public partial class MapList : UserControl
 {
     public static readonly DependencyProperty MapsProperty =
-           DependencyProperty.Register(nameof(Maps), typeof(ObservableCollection<Map>),
-           typeof(MapList), new FrameworkPropertyMetadata(MapsChanged));
+           DependencyProperty.Register(nameof(Maps), typeof(ObservableCollection<Selectable<Map>>),
+           typeof(MapList), new FrameworkPropertyMetadata());
 
-    public HashSet<Map> SelectedMaps { get; set; }
-
-    public ObservableCollection<Map> Maps
+    public ObservableCollection<Selectable<Map>> Maps
     {
-        get { return (ObservableCollection<Map>)GetValue(MapsProperty); }
+        get { return (ObservableCollection<Selectable<Map>>)GetValue(MapsProperty); }
         set { SetValue(MapsProperty, value); }
     }
 
-    private static void MapsChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-    {
-        var list = (MapList)sender;
-        list.SelectedMaps = new();
-    }
+    private Selectable<Map>? LastClicked;
 
     public MapList()
     {
@@ -46,10 +41,33 @@ public partial class MapList : UserControl
 
     private void Map_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        var map = (Map)((FrameworkElement)sender).DataContext;
-        if (SelectedMaps.Contains(map))
-            SelectedMaps.Remove(map);
-        else
-            SelectedMaps.Add(map);
+        var map = (Selectable<Map>)((FrameworkElement)sender).DataContext;
+        map.IsSelected = !map.IsSelected;
+        if (LastClicked != null && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+        {
+            int first = Maps.IndexOf(LastClicked);
+            int last = Maps.IndexOf(map);
+            for (int i = Math.Min(first, last); i <= Math.Max(first, last); i++)
+            {
+                Maps[i].IsSelected = map.IsSelected;
+            }
+        }
+        LastClicked = map;
+    }
+}
+
+public class Selectable<T> : ObservableObject
+{
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get { return _isSelected; }
+        set { _isSelected = value; OnPropertyChanged(); }
+    }
+
+    public T Item { get; }
+    public Selectable(T item)
+    {
+        Item = item;
     }
 }
