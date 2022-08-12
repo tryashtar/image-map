@@ -35,13 +35,18 @@ public partial class StructureWindow : Window
     private void UpdateGrid()
     {
         StructureGrid.SplitGrid.Children.Clear();
-        var selected = ViewModel.Parent.ExistingMaps.Where(x => x.IsSelected).ToList();
-        for (int i = 0; i < Math.Min(selected.Count, ViewModel.GridWidth * ViewModel.GridHeight); i++)
+        for (int y = 0; y < ViewModel.GridHeight; y++)
         {
-            var item = new Image { Source = selected[i].Item.Data.ImageSource };
-            Grid.SetColumn(item, i % ViewModel.GridWidth);
-            Grid.SetRow(item, i / ViewModel.GridWidth);
-            StructureGrid.SplitGrid.Children.Add(item);
+            for (int x = 0; x < ViewModel.GridWidth; x++)
+            {
+                if (ViewModel.Grid[x, y] != null)
+                {
+                    var item = new Image { Source = ViewModel.Grid[x, y].Data.ImageSource };
+                    Grid.SetColumn(item, x);
+                    Grid.SetRow(item, y);
+                    StructureGrid.SplitGrid.Children.Add(item);
+                }
+            }
         }
     }
 }

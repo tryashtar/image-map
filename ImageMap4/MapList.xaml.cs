@@ -23,12 +23,12 @@ namespace ImageMap4;
 public partial class MapList : UserControl
 {
     public static readonly DependencyProperty MapsProperty =
-           DependencyProperty.Register(nameof(Maps), typeof(ObservableCollection<Selectable<Map>>),
+           DependencyProperty.Register(nameof(Maps), typeof(IList<Selectable<Map>>),
            typeof(MapList), new FrameworkPropertyMetadata());
 
-    public ObservableCollection<Selectable<Map>> Maps
+    public IList<Selectable<Map>> Maps
     {
-        get { return (ObservableCollection<Selectable<Map>>)GetValue(MapsProperty); }
+        get { return (IList<Selectable<Map>>)GetValue(MapsProperty); }
         set { SetValue(MapsProperty, value); }
     }
 

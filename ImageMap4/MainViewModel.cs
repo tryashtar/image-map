@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,10 +14,10 @@ namespace ImageMap4;
 public class MainViewModel : ObservableObject
 {
     public ICommand TransferAllCommand { get; }
-    public ObservableCollection<World> JavaWorlds { get; }
-    public ObservableCollection<World> BedrockWorlds { get; }
-    public ObservableCollection<Selectable<Map>> ImportingMaps { get; private set; }
-    public ObservableCollection<Selectable<Map>> ExistingMaps { get; private set; }
+    public ObservableCollection<World> JavaWorlds { get; } = new();
+    public ObservableCollection<World> BedrockWorlds { get; } = new();
+    public BindingList<Selectable<Map>> ImportingMaps { get; } = new();
+    public BindingList<Selectable<Map>> ExistingMaps { get; } = new();
     private World _selectedWorld;
     public World SelectedWorld
     {
@@ -37,10 +38,6 @@ public class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
-        JavaWorlds = new();
-        BedrockWorlds = new();
-        ImportingMaps = new();
-        ExistingMaps = new();
         TransferAllCommand = new RelayCommand(() =>
         {
             SelectedWorld.AddMaps(ImportingMaps.Select(x => x.Item));
@@ -55,10 +52,12 @@ public class MainViewModel : ObservableObject
 
     public void RefreshMaps()
     {
-        ImportingMaps = new();
-        ExistingMaps = new(SelectedWorld.GetMaps().OrderBy(x => x.ID).Select(x => new Selectable<Map>(x)));
-        OnPropertyChanged(nameof(ImportingMaps));
-        OnPropertyChanged(nameof(ExistingMaps));
+        ImportingMaps.Clear();
+        ExistingMaps.Clear();
+        foreach (var item in SelectedWorld.GetMaps().OrderBy(x => x.ID).Select(x => new Selectable<Map>(x)))
+        {
+            ExistingMaps.Add(item);
+        }
     }
 
     public void RefreshWorlds()
