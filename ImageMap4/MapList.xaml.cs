@@ -22,16 +22,7 @@ namespace ImageMap4;
 /// </summary>
 public partial class MapList : UserControl
 {
-    public static readonly DependencyProperty MapsProperty =
-           DependencyProperty.Register(nameof(Maps), typeof(IList<Selectable<Map>>),
-           typeof(MapList), new FrameworkPropertyMetadata());
-
-    public IList<Selectable<Map>> Maps
-    {
-        get { return (IList<Selectable<Map>>)GetValue(MapsProperty); }
-        set { SetValue(MapsProperty, value); }
-    }
-
+    public IList<Selectable<Map>> Maps => (IList<Selectable<Map>>)DataContext;
     private Selectable<Map>? LastClicked;
 
     public MapList()

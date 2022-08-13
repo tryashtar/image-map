@@ -73,7 +73,7 @@
             </StackPanel>
         </Grid>
         <local:MapList Grid.Column="1"
-                       Maps="{Binding Parent.ExistingMaps}" />
+                       DataContext="{Binding Parent.ExistingMaps}" />
 
     </Grid>
 </Window>

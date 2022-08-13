@@ -188,7 +188,7 @@
                                Grid.Row="1"
                                dd:DragDrop.IsDropTarget="True"
                                dd:DragDrop.DropHandler="{Binding ElementName=This}"
-                               Maps="{Binding ImportingMaps}" />
+                               DataContext="{Binding ImportingMaps}" />
                 <TextBlock Grid.Column="0"
                            Grid.Row="1"
                            Text="Open, drag, or paste images here to import and convert them to maps."
@@ -230,7 +230,7 @@
                 </StackPanel>
                 <local:MapList Grid.Column="1"
                                Grid.Row="1"
-                               Maps="{Binding ExistingMaps}" />
+                               DataContext="{Binding ExistingMaps}" />
 
             </Grid>
         </TabItem>

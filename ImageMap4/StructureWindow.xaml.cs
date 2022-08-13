@@ -67,8 +67,11 @@ public partial class StructureWindow : Window, IDropTarget
         info.Effects = DragDropEffects.Move;
         return () =>
         {
-            int x = Grid.GetColumn(info.VisualTargetItem);
-            int y = Grid.GetRow(info.VisualTargetItem);
+            int from_x = Grid.GetColumn(info.DragInfo.VisualSource);
+            int from_y = Grid.GetRow(info.DragInfo.VisualSource);
+            int to_x = Grid.GetColumn(info.VisualTargetItem);
+            int to_y = Grid.GetRow(info.VisualTargetItem);
+            ViewModel.MoveMap(from_x, from_y, to_x, to_y);
         };
     }
 }

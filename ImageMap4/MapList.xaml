@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:ImageMap4"
+             xmlns:wpftk="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800">
@@ -15,54 +16,52 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ScrollViewer>
-        <ItemsControl ItemsSource="{Binding Maps, ElementName=This}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="3"
-                                MouseDown="Map_MouseDown">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility"
-                                        Value="Visible" />
-                                <Setter Property="Background"
-                                        Value="#DDDDDD" />
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding Item.Data.IsEmpty}"
-                                                       Value="True" />
-                                            <Condition Binding="{Binding DataContext.ShowEmptyMaps, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                       Value="False" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility"
-                                                Value="Collapsed" />
-                                    </MultiDataTrigger>
-                                    <DataTrigger Value="True"
-                                                 Binding="{Binding IsSelected}">
-                                        <Setter Property="Background"
-                                                Value="#68b3ff" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <local:MapPreview DataContext="{Binding Item.Data}"
-                                          Width="128"
-                                          Height="128"
-                                          Margin="4" />
-                        <TextBlock Text="{Binding Item.ID, StringFormat=map_{0}}"
-                                   Foreground="Black"
-                                   FontWeight="Medium"
-                                   FontSize="13"
-                                   Margin="4,0,0,4" />
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+    <wpftk:VirtualizingItemsControl ItemsSource="{Binding}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <wpftk:VirtualizingWrapPanel />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Margin="3"
+                            MouseDown="Map_MouseDown">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility"
+                                    Value="Visible" />
+                            <Setter Property="Background"
+                                    Value="#DDDDDD" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Item.Data.IsEmpty}"
+                                                   Value="True" />
+                                        <Condition Binding="{Binding DataContext.ShowEmptyMaps, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   Value="False" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility"
+                                            Value="Collapsed" />
+                                </MultiDataTrigger>
+                                <DataTrigger Value="True"
+                                             Binding="{Binding IsSelected}">
+                                    <Setter Property="Background"
+                                            Value="#68b3ff" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <local:MapPreview DataContext="{Binding Item.Data}"
+                                      Width="128"
+                                      Height="128"
+                                      Margin="4" />
+                    <TextBlock Text="{Binding Item.ID, StringFormat=map_{0}}"
+                               Foreground="Black"
+                               FontWeight="Medium"
+                               FontSize="13"
+                               Margin="4,0,0,4" />
+                </StackPanel>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </wpftk:VirtualizingItemsControl>
 </UserControl>

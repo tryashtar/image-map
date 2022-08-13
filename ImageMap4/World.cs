@@ -20,6 +20,7 @@ public abstract class World
     public string FolderName => Path.GetFileName(Folder);
     public string Name { get; protected set; }
     public string WorldIcon { get; protected set; }
+    public DateTime AccessDate { get; protected set; }
     public World(string folder)
     {
         Folder = folder;
@@ -100,6 +101,7 @@ public class JavaWorld : World
         Version = DetermineVersionFromLevelDat(LevelDat.RootTag.Get<NbtCompound>("Data"));
         Name = LevelDat.RootTag["Data"]?["LevelName"]?.StringValue;
         WorldIcon = Path.Combine(Folder, "icon.png");
+        AccessDate = File.GetLastWriteTime(LevelDat.FileName);
     }
 
     private static IJavaVersion DetermineVersionFromLevelDat(NbtCompound leveldat)
@@ -183,6 +185,7 @@ public class BedrockWorld : World
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromStream(leveldat, NbtCompression.None);
         Version = DetermineVersionFromLevelDat(nbt.RootTag);
+        AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 
     private static IBedrockVersion DetermineVersionFromLevelDat(NbtCompound leveldat)

@@ -79,7 +79,13 @@ public class StructureViewModel : ObservableObject
         {
             var map = (Selectable<Map>)sender;
             if (map.IsSelected && !FlatGrid.Contains(map.Item))
-                FlatGrid.Add(map.Item);
+            {
+                int index = FlatGrid.IndexOf(null);
+                if (index == -1)
+                    FlatGrid.Add(map.Item);
+                else
+                    FlatGrid[index] = map.Item;
+            }
             else
                 FlatGrid.Remove(map.Item);
             UpdateGrid();
@@ -92,6 +98,19 @@ public class StructureViewModel : ObservableObject
     public StructureViewModel()
     {
 
+    }
+
+    public void MoveMap(int from_x, int from_y, int to_x, int to_y)
+    {
+        int from_index = from_y * GridWidth + from_x;
+        int to_index = to_y * GridWidth + to_x;
+        while(FlatGrid.Count <= to_index)
+        {
+            FlatGrid.Add(null);
+        }
+        FlatGrid[to_index] = FlatGrid[from_index];
+        FlatGrid[from_index] = null;
+        UpdateGrid();
     }
 
     private void UpdateGrid()
