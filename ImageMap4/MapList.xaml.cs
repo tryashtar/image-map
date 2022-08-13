@@ -62,12 +62,13 @@ public class Selectable<T> : ObservableObject
     public bool IsSelected
     {
         get { return _isSelected; }
-        set { _isSelected = value; OnPropertyChanged(); }
+        set { if (_isSelected != value) { _isSelected = value; OnPropertyChanged(); } }
     }
 
     public T Item { get; }
-    public Selectable(T item)
+    public Selectable(T item, bool selected = false)
     {
         Item = item;
+        _isSelected = selected;
     }
 }

@@ -65,7 +65,7 @@ public partial class SquareGrid : UserControl
     {
         // ensures cells of grid are perfect squares
         var grid_ratio = (double)Columns / Rows;
-        var space_ratio = SpaceGrid.ActualWidth / Math.Max(1, SpaceGrid.ActualHeight); // avoid divide by zero
+        var space_ratio = Math.Max(1, SpaceGrid.ActualWidth) / Math.Max(1, SpaceGrid.ActualHeight); // avoid divide by zero
         if (space_ratio > grid_ratio)
         {
             SpaceGrid.RowDefinitions[0].Height = new GridLength(0);

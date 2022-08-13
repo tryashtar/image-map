@@ -23,6 +23,7 @@ public partial class StructureWindow : Window
     public StructureWindow()
     {
         InitializeComponent();
+        UpdateGrid();
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
@@ -39,12 +40,17 @@ public partial class StructureWindow : Window
         {
             for (int x = 0; x < ViewModel.GridWidth; x++)
             {
+                var grid = new Grid();
+                Grid.SetColumn(grid, x);
+                Grid.SetRow(grid, y);
+                var background = new Image { Source = (ImageSource)this.Resources["MapBackground"] };
+                RenderOptions.SetBitmapScalingMode(background, BitmapScalingMode.NearestNeighbor);
+                grid.Children.Add(background);
+                StructureGrid.SplitGrid.Children.Add(grid);
                 if (ViewModel.Grid[x, y] != null)
                 {
                     var item = new Image { Source = ViewModel.Grid[x, y].Data.ImageSource };
-                    Grid.SetColumn(item, x);
-                    Grid.SetRow(item, y);
-                    StructureGrid.SplitGrid.Children.Add(item);
+                    grid.Children.Add(item);
                 }
             }
         }

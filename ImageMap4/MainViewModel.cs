@@ -16,10 +16,10 @@ public class MainViewModel : ObservableObject
     public ICommand TransferAllCommand { get; }
     public ObservableCollection<World> JavaWorlds { get; } = new();
     public ObservableCollection<World> BedrockWorlds { get; } = new();
-    public BindingList<Selectable<Map>> ImportingMaps { get; } = new();
-    public BindingList<Selectable<Map>> ExistingMaps { get; } = new();
-    private World _selectedWorld;
-    public World SelectedWorld
+    public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
+    public ObservableList<Selectable<Map>> ExistingMaps { get; } = new();
+    private World? _selectedWorld;
+    public World? SelectedWorld
     {
         get => _selectedWorld;
         set
