@@ -26,6 +26,11 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Shared.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <ContextMenu x:Key="WorldMenu">
+                <MenuItem Header="Open folder"
+                          Command="{Binding OpenWorldFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                          CommandParameter="{Binding}"/>
+            </ContextMenu>
             <Style x:Key="WorldCard"
                    TargetType="ListViewItem">
                 <Style.Triggers>
@@ -37,6 +42,8 @@
                 </Style.Triggers>
                 <Setter Property="Background"
                         Value="#E5E5E5" />
+                <Setter Property="ContextMenu"
+                        Value="{StaticResource WorldMenu}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListViewItem">

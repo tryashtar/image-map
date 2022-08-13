@@ -19,6 +19,7 @@ using GongSolutions.Wpf.DragDrop;
 using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Diagnostics;
 
 namespace ImageMap4;
 /// <summary>
@@ -28,6 +29,7 @@ public partial class MainWindow : Window, IDropTarget
 {
     private MainViewModel ViewModel => (MainViewModel)this.DataContext;
     public ICommand PasteCommand { get; }
+    public ICommand OpenWorldFolderCommand { get; }
     public MainWindow()
     {
         InitializeComponent();
@@ -52,6 +54,10 @@ public partial class MainWindow : Window, IDropTarget
                     new PendingSource(new(source), new(image))
                 });
             }
+        });
+        OpenWorldFolderCommand = new RelayCommand<World>(x =>
+        {
+            Process.Start("explorer.exe", x.Folder);
         });
     }
 

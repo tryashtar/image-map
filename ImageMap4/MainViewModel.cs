@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -27,9 +28,13 @@ public class MainViewModel : ObservableObject
         {
             _selectedWorld = value;
             OnPropertyChanged();
-            RefreshMaps();
+            MapCTS?.Cancel();
+            MapCTS?.Dispose();
+            MapCTS = new();
+            RefreshMaps(MapCTS.Token);
         }
     }
+    private CancellationTokenSource MapCTS = new();
 
     public bool ShowEmptyMaps
     {
@@ -52,12 +57,13 @@ public class MainViewModel : ObservableObject
     }
 
     private static readonly IComparer<Selectable<Map>> Sorter = new LambdaComparer<Selectable<Map>, long>(x => x.Item.ID);
-    public async Task RefreshMaps()
+    public async Task RefreshMaps(CancellationToken ct)
     {
         ImportingMaps.Clear();
         ExistingMaps.Clear();
         await foreach (var item in SelectedWorld.GetMapsAsync())
         {
+            ct.ThrowIfCancellationRequested();
             var selectable = new Selectable<Map>(item);
             int index = ExistingMaps.BinarySearch(selectable, Sorter);
             if (index < 0)
