@@ -183,7 +183,8 @@
                     <Button Content="Send All to World"
                             Command="{Binding TransferAllCommand}" />
                 </StackPanel>
-                <local:MapList Grid.Column="0"
+                <local:MapList x:Name="ImportList"
+                               Grid.Column="0"
                                Grid.Row="1"
                                dd:DragDrop.IsDropTarget="True"
                                dd:DragDrop.DropHandler="{Binding ElementName=This}"

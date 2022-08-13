@@ -125,7 +125,6 @@ public partial class MainWindow : Window, IDropTarget
         StructureWindow.Activate();
     }
 
-
     void IDropTarget.DragOver(IDropInfo dropInfo)
     {
         GetDropAction(dropInfo);
@@ -138,7 +137,7 @@ public partial class MainWindow : Window, IDropTarget
 
     private Action GetDropAction(IDropInfo info)
     {
-        if (info.TargetCollection == ViewModel.ImportingMaps && info.Data is IDataObject data && data.GetDataPresent(DataFormats.FileDrop))
+        if (info.VisualTarget == ImportList && info.Data is IDataObject data && data.GetDataPresent(DataFormats.FileDrop))
         {
             info.Effects = DragDropEffects.Copy;
             return () =>

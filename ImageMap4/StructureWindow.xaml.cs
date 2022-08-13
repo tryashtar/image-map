@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GongSolutions.Wpf.DragDrop;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace ImageMap4;
 /// <summary>
 /// Interaction logic for StructureWindow.xaml
 /// </summary>
-public partial class StructureWindow : Window
+public partial class StructureWindow : Window, IDropTarget
 {
     public StructureViewModel ViewModel => (StructureViewModel)DataContext;
     public StructureWindow()
@@ -40,19 +41,34 @@ public partial class StructureWindow : Window
         {
             for (int x = 0; x < ViewModel.GridWidth; x++)
             {
-                var grid = new Grid();
-                Grid.SetColumn(grid, x);
-                Grid.SetRow(grid, y);
-                var background = new Image { Source = (ImageSource)this.Resources["MapBackground"] };
-                RenderOptions.SetBitmapScalingMode(background, BitmapScalingMode.NearestNeighbor);
-                grid.Children.Add(background);
-                StructureGrid.SplitGrid.Children.Add(grid);
-                if (ViewModel.Grid[x, y] != null)
-                {
-                    var item = new Image { Source = ViewModel.Grid[x, y].Data.ImageSource };
-                    grid.Children.Add(item);
-                }
+                var preview = new MapPreview() { DataContext = ViewModel.Grid[x, y]?.Data };
+                Grid.SetColumn(preview, x);
+                Grid.SetRow(preview, y);
+                GongSolutions.Wpf.DragDrop.DragDrop.SetIsDropTarget(preview, true);
+                GongSolutions.Wpf.DragDrop.DragDrop.SetDropHandler(preview, this);
+                GongSolutions.Wpf.DragDrop.DragDrop.SetIsDragSource(preview, true);
+                StructureGrid.SplitGrid.Children.Add(preview);
             }
         }
+    }
+
+    void IDropTarget.DragOver(IDropInfo dropInfo)
+    {
+        GetDropAction(dropInfo);
+    }
+
+    void IDropTarget.Drop(IDropInfo dropInfo)
+    {
+        GetDropAction(dropInfo)();
+    }
+
+    private Action GetDropAction(IDropInfo info)
+    {
+        info.Effects = DragDropEffects.Move;
+        return () =>
+        {
+            int x = Grid.GetColumn(info.VisualTargetItem);
+            int y = Grid.GetRow(info.VisualTargetItem);
+        };
     }
 }
