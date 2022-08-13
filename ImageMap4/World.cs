@@ -26,7 +26,7 @@ public abstract class World
         Folder = folder;
     }
 
-    public abstract IEnumerable<Map> GetMaps();
+    public abstract IAsyncEnumerable<Map> GetMapsAsync();
     public abstract void AddMaps(IEnumerable<Map> maps);
     protected abstract void ProcessImage(Image<Rgba32> image, ProcessSettings settings);
     protected abstract byte[] EncodeColors(Image<Rgba32> image);
@@ -127,7 +127,7 @@ public class JavaWorld : World
         throw new InvalidOperationException("Couldn't determine world version, or it's from an old version from before maps existed (pre-beta 1.8)");
     }
 
-    public override IEnumerable<Map> GetMaps()
+    public override async IAsyncEnumerable<Map> GetMapsAsync()
     {
         var maps = Path.Combine(Folder, "data");
         if (Directory.Exists(maps))
@@ -136,17 +136,21 @@ public class JavaWorld : World
             {
                 string name = Path.GetFileNameWithoutExtension(file);
                 if (name.StartsWith("map_"))
-                {
-                    long id = long.Parse(name[4..]);
-                    var nbt = new NbtFile() { BigEndian = true };
-                    nbt.LoadFromFile(file, NbtCompression.GZip, null);
-                    var colors = nbt.RootTag.Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
-                    var image = Version.Decode(colors);
-                    ProcessImage(image, new ProcessSettings(null, new EuclideanAlgorithm()));
-                    yield return new Map(id, new MapData(image, colors));
-                }
+                    yield return await Task.Run(() => GetMap(file));
             }
         }
+    }
+
+    private Map GetMap(string file)
+    {
+        string name = Path.GetFileNameWithoutExtension(file);
+        long id = long.Parse(name[4..]);
+        var nbt = new NbtFile() { BigEndian = true };
+        nbt.LoadFromFile(file, NbtCompression.GZip, null);
+        var colors = nbt.RootTag.Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
+        var image = Version.Decode(colors);
+        ProcessImage(image, new ProcessSettings(null, new EuclideanAlgorithm()));
+        return new Map(id, new MapData(image, colors));
     }
 
     public override void AddMaps(IEnumerable<Map> maps)
@@ -207,7 +211,7 @@ public class BedrockWorld : World
         throw new InvalidOperationException("Couldn't determine world version");
     }
 
-    public override IEnumerable<Map> GetMaps()
+    public override async IAsyncEnumerable<Map> GetMapsAsync()
     {
         using var db = OpenDB();
         using var iterator = db.CreateIterator();
@@ -216,19 +220,23 @@ public class BedrockWorld : World
         {
             var name = iterator.StringKey();
             if (name.StartsWith("map_"))
-            {
-                long id = long.Parse(name[4..]);
-                var bytes = iterator.Value();
-                var nbt = new NbtFile() { BigEndian = false };
-                nbt.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
-                var colors = nbt.RootTag.Get<NbtByteArray>("colors").Value;
-                var image = Image.LoadPixelData<Rgba32>(colors, 128, 128);
-                yield return new Map(id, new MapData(image, colors));
-            }
+                yield return await Task.Run(() => GetMap(iterator));
             else
                 break;
             iterator.Next();
         }
+    }
+
+    private Map GetMap(Iterator iterator)
+    {
+        var name = iterator.StringKey();
+        long id = long.Parse(name[4..]);
+        var bytes = iterator.Value();
+        var nbt = new NbtFile() { BigEndian = false };
+        nbt.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
+        var colors = nbt.RootTag.Get<NbtByteArray>("colors").Value;
+        var image = Image.LoadPixelData<Rgba32>(colors, 128, 128);
+        return new Map(id, new MapData(image, colors));
     }
 
     public override void AddMaps(IEnumerable<Map> maps)

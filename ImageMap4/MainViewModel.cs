@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using TryashtarUtils.Utility;
 
 namespace ImageMap4;
 public class MainViewModel : ObservableObject
@@ -50,13 +51,18 @@ public class MainViewModel : ObservableObject
         RefreshWorlds();
     }
 
-    public void RefreshMaps()
+    private static readonly IComparer<Selectable<Map>> Sorter = new LambdaComparer<Selectable<Map>, long>(x => x.Item.ID);
+    public async Task RefreshMaps()
     {
         ImportingMaps.Clear();
         ExistingMaps.Clear();
-        foreach (var item in SelectedWorld.GetMaps().OrderBy(x => x.ID).Select(x => new Selectable<Map>(x)))
+        await foreach (var item in SelectedWorld.GetMapsAsync())
         {
-            ExistingMaps.Add(item);
+            var selectable = new Selectable<Map>(item);
+            int index = ExistingMaps.BinarySearch(selectable, Sorter);
+            if (index < 0)
+                index = ~index;
+            ExistingMaps.Insert(index, selectable);
         }
     }
 

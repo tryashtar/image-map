@@ -203,7 +203,12 @@ public record PendingSource(Lazy<ImageSource> Source, Lazy<Image<Rgba32>> Image)
 {
     public static PendingSource FromPath(string path)
     {
-        return new PendingSource(new(() => new BitmapImage(new Uri(path))), new(() => SixLabors.ImageSharp.Image.Load<Rgba32>(path)));
+        return new PendingSource(new(() =>
+        {
+            var img = new BitmapImage(new Uri(path));
+            img.Freeze();
+            return img;
+        }), new(() => SixLabors.ImageSharp.Image.Load<Rgba32>(path)));
     }
 }
 

@@ -25,6 +25,7 @@ public class MapData
         Original = image;
         Colors = colors;
         ImageSource = new ImageSharpImageSource<Rgba32>(Image);
+        ImageSource.Freeze();
         OriginalSource = ImageSource;
         IsEmpty = CheckIsEmpty();
     }
@@ -34,7 +35,9 @@ public class MapData
         Original = original;
         Colors = colors;
         ImageSource = new ImageSharpImageSource<Rgba32>(Image);
+        ImageSource.Freeze();
         OriginalSource = new ImageSharpImageSource<Rgba32>(Original);
+        OriginalSource.Freeze();
         IsEmpty = CheckIsEmpty();
     }
     private bool CheckIsEmpty()
