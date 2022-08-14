@@ -221,11 +221,25 @@
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Open"
                                 Padding="15,5,15,5"
-                                Margin="0,0,10,0"
                                 Click="OpenButton_Click" />
                         <Button Content="Send All to World"
                                 Command="{Binding TransferAllCommand}"
-                                Padding="15,5,15,5" />
+                                Margin="10,0,0,0"
+                                Padding="15,5,15,5">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility"
+                                            Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ImportingMaps.Count}"
+                                                     Value="0">
+                                            <Setter Property="Visibility"
+                                                    Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
                 <Border Grid.Column="0"
@@ -280,7 +294,21 @@
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Generate Structure"
                                 Padding="15,5,15,5"
-                                Click="GenerateStructureButton_Click" />
+                                Click="GenerateStructureButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility"
+                                            Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ExistingMaps.Count}"
+                                                     Value="0">
+                                            <Setter Property="Visibility"
+                                                    Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
                 <local:MapList Grid.Column="1"
