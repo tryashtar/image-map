@@ -52,6 +52,7 @@ public abstract class World
                 Size = new(128 * settings.Width, 128 * settings.Height),
                 Mode = ResizeMode.BoxPad
             });
+            x.BackgroundColor(settings.BackgroundColor);
         });
         var original = Split(image, settings.Width, settings.Height);
         ProcessImage(image, settings.ProcessSettings);

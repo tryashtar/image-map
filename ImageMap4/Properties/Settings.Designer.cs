@@ -107,5 +107,17 @@ namespace ImageMap4.Properties {
                 this["ShowEmptyMaps"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int BackgroundColorChoice {
+            get {
+                return ((int)(this["BackgroundColorChoice"]));
+            }
+            set {
+                this["BackgroundColorChoice"] = value;
+            }
+        }
     }
 }

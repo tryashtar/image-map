@@ -51,7 +51,7 @@ public partial class MainWindow : Window, IDropTarget
                 var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
                 OpenImages(new[]
                 {
-                    new PendingSource(new(source), new(image))
+                    new PendingSource(new(source), new(image), "Pasted image")
                 });
             }
         });

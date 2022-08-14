@@ -9,6 +9,14 @@
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800">
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl"
+                    Key="A"
+                    Command="{Binding SelectAllCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+        <KeyBinding Modifiers="Ctrl"
+                    Key="D"
+                    Command="{Binding DeselectAllCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+    </UserControl.InputBindings>
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

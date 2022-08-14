@@ -26,6 +26,7 @@ public class ImportViewModel : ObservableObject
     public ICommand ConfirmCommand { get; }
     public ICommand ConfirmAllCommand { get; }
     public ICommand NavigateCommand { get; }
+    public ICommand ChangeBackgroundCommand { get; }
     public event EventHandler OnClosed;
     public event EventHandler<ImportSettings> OnConfirmed;
 
@@ -111,6 +112,19 @@ public class ImportViewModel : ObservableObject
         new AlgorithmOption("CMC", new CmcAlgorithm())
     }.AsReadOnly();
 
+    public record BackgroundColorOption(Brush Brush, Rgba32 Pixel);
+    public BackgroundColorOption BackgroundColorChoice
+    {
+        get { return BackgroundColorOptions[Properties.Settings.Default.BackgroundColorChoice]; }
+        set { Properties.Settings.Default.BackgroundColorChoice = BackgroundColorOptions.IndexOf(value); OnPropertyChanged(); }
+    }
+    public ReadOnlyCollection<BackgroundColorOption> BackgroundColorOptions { get; } = new List<BackgroundColorOption>
+    {
+        new BackgroundColorOption(Brushes.Transparent, SixLabors.ImageSharp.Color.Transparent),
+        new BackgroundColorOption(Brushes.White, SixLabors.ImageSharp.Color.White),
+        new BackgroundColorOption(Brushes.Black, SixLabors.ImageSharp.Color.Black)
+    }.AsReadOnly();
+
     public ObservableCollection<PreviewImage> ImageQueue { get; } = new();
     private int CurrentIndex = 0;
     public PreviewImage CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
@@ -174,11 +188,15 @@ public class ImportViewModel : ObservableObject
             CurrentIndex = ((CurrentIndex + x) % ImageQueue.Count + ImageQueue.Count) % ImageQueue.Count;
             OnPropertyChanged(nameof(CurrentImage));
         });
+        ChangeBackgroundCommand = new RelayCommand(() =>
+        {
+            BackgroundColorChoice = BackgroundColorOptions[(BackgroundColorOptions.IndexOf(BackgroundColorChoice) + 1) % BackgroundColorOptions.Count];
+        });
     }
 
     private void ConfirmImage(PreviewImage preview)
     {
-        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm));
+        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm));
         OnConfirmed?.Invoke(this, settings);
     }
 
@@ -199,7 +217,7 @@ public class ImportViewModel : ObservableObject
     }
 }
 
-public record PendingSource(Lazy<ImageSource> Source, Lazy<Image<Rgba32>> Image)
+public record PendingSource(Lazy<ImageSource> Source, Lazy<Image<Rgba32>> Image, string Name)
 {
     public static PendingSource FromPath(string path)
     {
@@ -208,7 +226,8 @@ public record PendingSource(Lazy<ImageSource> Source, Lazy<Image<Rgba32>> Image)
             var img = new BitmapImage(new Uri(path));
             img.Freeze();
             return img;
-        }), new(() => SixLabors.ImageSharp.Image.Load<Rgba32>(path)));
+        }), new(() => SixLabors.ImageSharp.Image.Load<Rgba32>(path)),
+        Path.GetFileName(path));
     }
 }
 
@@ -240,6 +259,6 @@ public class PreviewImage : ObservableObject
     }
 }
 
-public record ImportSettings(PreviewImage Preview, int Width, int Height, IResampler Sampler, ResizeMode ResizeMode, ProcessSettings ProcessSettings);
+public record ImportSettings(PreviewImage Preview, int Width, int Height, IResampler Sampler, ResizeMode ResizeMode, Rgba32 BackgroundColor, ProcessSettings ProcessSettings);
 
 public record ProcessSettings(IDither? Dither, IColorAlgorithm Algorithm);

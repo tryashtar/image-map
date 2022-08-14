@@ -24,10 +24,26 @@ public partial class MapList : UserControl
 {
     public IList<Selectable<Map>> Maps => (IList<Selectable<Map>>)DataContext;
     private Selectable<Map>? LastClicked;
+    public ICommand SelectAllCommand { get; }
+    public ICommand DeselectAllCommand { get; }
 
     public MapList()
     {
         InitializeComponent();
+        SelectAllCommand = new RelayCommand(() =>
+        {
+            foreach (var item in Maps)
+            {
+                item.IsSelected = true;
+            }
+        });
+        DeselectAllCommand = new RelayCommand(() =>
+        {
+            foreach (var item in Maps)
+            {
+                item.IsSelected = false;
+            }
+        });
     }
 
     private void Map_MouseDown(object sender, MouseButtonEventArgs e)
