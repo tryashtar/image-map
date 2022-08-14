@@ -45,8 +45,6 @@
                 <ResourceDictionary Source="Shared.xaml" />
                 <ResourceDictionary Source="Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <local:EqualityConverter x:Key="EqualityConverter" />
-            <local:GreaterThanConverter x:Key="GreaterThanConverter" />
             <Style x:Key="VisibleWhenMultiple"
                    TargetType="FrameworkElement">
                 <Setter Property="Visibility"
@@ -157,8 +155,8 @@
                         Command="{Binding ChangeBackgroundCommand}">
                     <Border BorderThickness="1"
                             BorderBrush="Black">
-                        <Rectangle Height="20"
-                                   Width="20"
+                        <Rectangle Height="25"
+                                   Width="25"
                                    Fill="{Binding BackgroundColorChoice.Brush}" />
                     </Border>
                 </Button>

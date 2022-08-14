@@ -8,7 +8,6 @@
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d"
-        Title="Image Map"
         Height="540"
         Width="940"
         FontSize="18"
@@ -29,7 +28,7 @@
             <ContextMenu x:Key="WorldMenu">
                 <MenuItem Header="Open folder"
                           Command="{Binding OpenWorldFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                          CommandParameter="{Binding}"/>
+                          CommandParameter="{Binding}" />
             </ContextMenu>
             <Style x:Key="WorldCard"
                    TargetType="ListViewItem">
@@ -73,6 +72,21 @@
             </Style>
         </ResourceDictionary>
     </Window.Resources>
+    <Window.Style>
+        <Style TargetType="Window">
+            <Setter Property="Title"
+                    Value="{Binding SelectedWorld.Name, StringFormat=Image Map – {0}}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedWorld}"
+                             Value="{x:Null}">
+                    <DataTrigger.Setters>
+                        <Setter Property="Title"
+                                Value="Image Map" />
+                    </DataTrigger.Setters>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
     <TabControl>
         <TabItem Header="Worlds">
             <Grid>
@@ -180,16 +194,41 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Column="0"
                             Grid.Row="0"
-                            Margin="5">
-                    <TextBlock Text="Importing" />
-                    <Button Content="Open"
-                            Click="OpenButton_Click" />
-                    <Button Content="Send All to World"
-                            Command="{Binding TransferAllCommand}" />
+                            Margin="10,5,10,5">
+                    <TextBlock Margin="0,0,0,5">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text"
+                                        Value="{Binding ImportingMaps.Count, StringFormat=Importing – {0} maps}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ImportingMaps.Count}"
+                                                 Value="0">
+                                        <Setter Property="Text"
+                                                Value="Importing" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Open"
+                                Padding="15,5,15,5"
+                                Margin="0,0,10,0"
+                                Click="OpenButton_Click" />
+                        <Button Content="Send All to World"
+                                Command="{Binding TransferAllCommand}"
+                                Padding="15,5,15,5" />
+                    </StackPanel>
                 </StackPanel>
+                <Border Grid.Column="0"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        BorderBrush="LightGray"
+                        BorderThickness="0,0,1,0" />
                 <local:MapList x:Name="ImportList"
                                Grid.Column="0"
                                Grid.Row="1"
@@ -224,21 +263,25 @@
                 </TextBlock>
                 <StackPanel Grid.Column="1"
                             Grid.Row="0"
-                            Margin="5">
-                    <TextBlock Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}" />
-                    <StackPanel Orientation="Horizontal">
-                        <CheckBox Content="Show Empty Maps"
+                            Margin="10,5,10,5">
+                    <DockPanel>
+                        <TextBlock Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}"
+                                   Margin="0,0,0,5" />
+                        <CheckBox Content="Show empty maps"
                                   IsChecked="{Binding ShowEmptyMaps}"
                                   FontSize="16"
-                                  VerticalContentAlignment="Center" />
+                                  VerticalContentAlignment="Center"
+                                  HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <StackPanel Orientation="Horizontal">
                         <Button Content="Generate Structure"
+                                Padding="15,5,15,5"
                                 Click="GenerateStructureButton_Click" />
                     </StackPanel>
                 </StackPanel>
                 <local:MapList Grid.Column="1"
                                Grid.Row="1"
                                DataContext="{Binding ExistingMaps}" />
-
             </Grid>
         </TabItem>
     </TabControl>

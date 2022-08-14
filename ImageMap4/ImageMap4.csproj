@@ -6,11 +6,16 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Icons\item_frame.png" />
     <None Remove="Icons\map_background.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
