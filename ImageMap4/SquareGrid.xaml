@@ -19,14 +19,19 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
+        <UniformGrid x:Name="SplitGrid"
+                     Grid.Row="1"
+                     Grid.Column="1"
+                     Rows="{Binding Rows, ElementName=This}"
+                     Columns="{Binding Columns, ElementName=This}"
+                     SnapsToDevicePixels="True" />
         <ContentPresenter Grid.Row="1"
                           Grid.Column="1"
                           Content="{Binding Inside, ElementName=This}" />
-        <local:InternalSquareGrid x:Name="SplitGrid"
-                                  Grid.Row="1"
-                                  Grid.Column="1"
-                                  Rows="{Binding Rows, ElementName=This}"
-                                  Columns="{Binding Columns, ElementName=This}"
-                                  SnapsToDevicePixels="True" />
+        <local:GridlineRenderer Grid.Row="1"
+                                Grid.Column="1"
+                                Rows="{Binding Rows, ElementName=This}"
+                                Columns="{Binding Columns, ElementName=This}"
+                                SnapsToDevicePixels="True" />
     </Grid>
 </UserControl>

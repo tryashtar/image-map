@@ -83,8 +83,24 @@ public partial class SquareGrid : UserControl
     }
 }
 
-internal class InternalSquareGrid : UniformGrid
+internal class GridlineRenderer : FrameworkElement
 {
+    public static readonly DependencyProperty ColumnsProperty =
+            DependencyProperty.Register(nameof(Columns), typeof(int),
+            typeof(GridlineRenderer), new FrameworkPropertyMetadata(1));
+    public static readonly DependencyProperty RowsProperty =
+            DependencyProperty.Register(nameof(Rows), typeof(int),
+            typeof(GridlineRenderer), new FrameworkPropertyMetadata(1));
+    public int Columns
+    {
+        get { return (int)GetValue(ColumnsProperty); }
+        set { SetValue(ColumnsProperty, value); }
+    }
+    public int Rows
+    {
+        get { return (int)GetValue(RowsProperty); }
+        set { SetValue(RowsProperty, value); }
+    }
     protected override void OnRender(DrawingContext dc)
     {
         Pen black = new Pen(Brushes.Black, 4);

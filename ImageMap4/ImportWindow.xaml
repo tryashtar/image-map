@@ -82,14 +82,13 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <local:SquareGrid Grid.Row="0"
+        <local:SquareGrid x:Name="PreviewGrid"
+                          Grid.Row="0"
                           Background="LightGray"
                           Rows="{Binding GridHeight}"
                           Columns="{Binding GridWidth}">
             <local:SquareGrid.Inside>
                 <Grid>
-                    <Image Source="{StaticResource MapBackground}"
-                           RenderOptions.BitmapScalingMode="NearestNeighbor" />
                     <Rectangle Fill="{Binding BackgroundColorChoice.Brush}" />
                     <Image Source="{Binding CurrentImage.Source.Source.Value}"
                            Stretch="{Binding StretchChoice.Stretch}"
