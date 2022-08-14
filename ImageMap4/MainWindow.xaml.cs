@@ -162,4 +162,24 @@ public partial class MainWindow : Window, IDropTarget
         }
         return () => { };
     }
+
+    private void JavaWorldList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (JavaWorldList.SelectedIndex != -1)
+        {
+            BedrockWorldList.SelectedIndex = -1;
+            ViewModel.SelectedWorld = (World)JavaWorldList.SelectedItem;
+            TabList.SelectedItem = MapsTab;
+        }
+    }
+
+    private void BedrockWorldList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (BedrockWorldList.SelectedIndex != -1)
+        {
+            JavaWorldList.SelectedIndex = -1;
+            ViewModel.SelectedWorld = (World)BedrockWorldList.SelectedItem;
+            TabList.SelectedItem = MapsTab;
+        }
+    }
 }

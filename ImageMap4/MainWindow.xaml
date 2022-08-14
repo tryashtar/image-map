@@ -87,8 +87,9 @@
             </Style.Triggers>
         </Style>
     </Window.Style>
-    <TabControl>
-        <TabItem Header="Worlds">
+    <TabControl x:Name="TabList">
+        <TabItem x:Name="WorldsTab"
+                 Header="Worlds">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -108,10 +109,11 @@
                         Padding="5"
                         Content="Bedrock Worlds"
                         Click="BedrockFolder_Click" />
-                <ListView Grid.Column="0"
+                <ListView x:Name="JavaWorldList"
+                          Grid.Column="0"
                           Grid.Row="0"
                           ItemsSource="{Binding JavaWorlds}"
-                          SelectedItem="{Binding SelectedWorld}"
+                          SelectionChanged="JavaWorldList_SelectionChanged"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ItemContainerStyle="{StaticResource WorldCard}" />
                 <TextBlock Grid.Column="0"
@@ -139,10 +141,11 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-                <ListView Grid.Column="1"
+                <ListView x:Name="BedrockWorldList"
+                          Grid.Column="1"
                           Grid.Row="0"
                           ItemsSource="{Binding BedrockWorlds}"
-                          SelectedItem="{Binding SelectedWorld}"
+                          SelectionChanged="BedrockWorldList_SelectionChanged"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ItemContainerStyle="{StaticResource WorldCard}" />
                 <TextBlock Grid.Column="1"
@@ -172,7 +175,8 @@
                 </TextBlock>
             </Grid>
         </TabItem>
-        <TabItem Header="Maps">
+        <TabItem x:Name="MapsTab"
+                 Header="Maps">
             <TabItem.Style>
                 <Style TargetType="TabItem">
                     <Style.Triggers>
