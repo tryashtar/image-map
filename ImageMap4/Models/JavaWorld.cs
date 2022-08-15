@@ -14,11 +14,15 @@ public class JavaWorld : World
 {
     public readonly NbtFile LevelDat;
     public IJavaVersion Version { get; }
+    public override string Name { get; }
+    public override string WorldIcon { get; }
+    public override DateTime AccessDate { get; }
+
     public JavaWorld(string folder) : base(folder)
     {
         LevelDat = new NbtFile(Path.Combine(Folder, "level.dat"));
-        Version = DetermineVersionFromLevelDat(LevelDat.RootTag.Get<NbtCompound>("Data"));
-        Name = LevelDat.RootTag["Data"]?["LevelName"]?.StringValue;
+        Version = DetermineVersionFromLevelDat(LevelDat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
+        Name = LevelDat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
         WorldIcon = Path.Combine(Folder, "icon.png");
         AccessDate = File.GetLastWriteTime(LevelDat.FileName);
     }
@@ -48,7 +52,7 @@ public class JavaWorld : World
         throw new InvalidOperationException("Couldn't determine world version, or it's from an old version from before maps existed (pre-beta 1.8)");
     }
 
-    public override void AddStructure(StructureGrid structure, Inventory inventory)
+    public override void AddStructure(StructureGrid structure, Inventory? inventory)
     {
         throw new NotImplementedException();
     }
@@ -108,7 +112,7 @@ public class JavaWorld : World
         long id = long.Parse(name[4..]);
         var nbt = new NbtFile() { BigEndian = true };
         nbt.LoadFromFile(file, NbtCompression.GZip, null);
-        var colors = nbt.RootTag.Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
+        var colors = nbt.GetRootTag<NbtCompound>().Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
         var image = Version.Decode(colors);
         ProcessImage(image, new ProcessSettings(null, new EuclideanAlgorithm()));
         return new Map(id, new MapData(image, colors));
@@ -121,7 +125,7 @@ public class JavaWorld : World
             var nbt = new NbtFile { BigEndian = true };
             var data = Version.CreateMapCompound(map.Data);
             data.Name = "data";
-            nbt.RootTag.Add(data);
+            nbt.GetRootTag<NbtCompound>().Add(data);
             nbt.SaveToFile(Path.Combine(Folder, "data", $"map_{map.ID}.dat"), NbtCompression.GZip);
         }
     }

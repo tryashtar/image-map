@@ -13,17 +13,23 @@ namespace ImageMap4;
 public class BedrockWorld : World
 {
     public IBedrockVersion Version { get; }
+    public override string Name { get; }
+    public override string WorldIcon { get; }
+    public override DateTime AccessDate { get; }
+
     public BedrockWorld(string folder) : base(folder)
     {
         string file = Path.Combine(folder, "levelname.txt");
         if (File.Exists(file))
-            Name = File.ReadLines(file).FirstOrDefault();
+            Name = File.ReadLines(file).FirstOrDefault() ?? "";
+        else
+            Name = "";
         WorldIcon = Path.Combine(Folder, "world_icon.jpeg");
         using var leveldat = File.OpenRead(Path.Combine(folder, "level.dat"));
         leveldat.Position = 8;
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromStream(leveldat, NbtCompression.None);
-        Version = DetermineVersionFromLevelDat(nbt.RootTag);
+        Version = DetermineVersionFromLevelDat(nbt.GetRootTag<NbtCompound>());
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 
@@ -46,7 +52,7 @@ public class BedrockWorld : World
         throw new InvalidOperationException("Couldn't determine world version");
     }
 
-    public override void AddStructure(StructureGrid structure, Inventory inventory)
+    public override void AddStructure(StructureGrid structure, Inventory? inventory)
     {
         throw new NotImplementedException();
     }
@@ -88,7 +94,7 @@ public class BedrockWorld : World
         var bytes = iterator.Value();
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
-        var colors = nbt.RootTag.Get<NbtByteArray>("colors").Value;
+        var colors = nbt.GetRootTag<NbtCompound>().Get<NbtByteArray>("colors").Value;
         var image = Image.LoadPixelData<Rgba32>(colors, 128, 128);
         return new Map(id, new MapData(image, colors));
     }

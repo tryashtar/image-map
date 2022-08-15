@@ -21,7 +21,7 @@ public class MainViewModel : ObservableObject
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
     public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
     public ObservableList<Selectable<Map>> ExistingMaps { get; } = new();
-    public ReadOnlyCollection<Inventory> PlayerList { get; private set; }
+    public ReadOnlyCollection<Inventory>? PlayerList { get; private set; }
     public ICollectionView ExistingMapsView
     {
         get { return CollectionViewSource.GetDefaultView(ExistingMaps); }
@@ -36,10 +36,13 @@ public class MainViewModel : ObservableObject
             OnPropertyChanged();
             MapCTS?.Cancel();
             MapCTS?.Dispose();
-            MapCTS = new();
-            RefreshMaps(MapCTS.Token);
-            PlayerList = SelectedWorld.GetInventories().ToList().AsReadOnly();
-            OnPropertyChanged(nameof(PlayerList));
+            if (_selectedWorld != null)
+            {
+                MapCTS = new();
+                _ = RefreshMaps(MapCTS.Token);
+                PlayerList = _selectedWorld.GetInventories().ToList().AsReadOnly();
+                OnPropertyChanged(nameof(PlayerList));
+            }
         }
     }
     private CancellationTokenSource MapCTS = new();
@@ -55,7 +58,7 @@ public class MainViewModel : ObservableObject
         ExistingMapsView.Filter = x => ShowEmptyMaps || !((Selectable<Map>)x).Item.Data.IsEmpty;
         TransferAllCommand = new RelayCommand(() =>
         {
-            SelectedWorld.AddMaps(ImportingMaps.Select(x => x.Item));
+            SelectedWorld?.AddMaps(ImportingMaps.Select(x => x.Item));
             foreach (var item in ImportingMaps)
             {
                 ExistingMaps.Add(new Selectable<Map>(item.Item));
@@ -70,6 +73,8 @@ public class MainViewModel : ObservableObject
     {
         ImportingMaps.Clear();
         ExistingMaps.Clear();
+        if (SelectedWorld == null)
+            return;
         await foreach (var item in SelectedWorld.GetMapsAsync())
         {
             ct.ThrowIfCancellationRequested();
@@ -122,7 +127,9 @@ public class MainViewModel : ObservableObject
     public async Task AddImport(ImportSettings settings)
     {
         long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).DefaultIfEmpty(-1).Max() + 1;
-        var maps = await Task.Run(() => SelectedWorld.MakeMaps(settings));
+        var maps = await Task.Run(() => SelectedWorld?.MakeMaps(settings));
+        if (maps == null)
+            return;
         foreach (var item in maps)
         {
             ImportingMaps.Add(new Selectable<Map>(new Map(id, item)));
@@ -132,6 +139,6 @@ public class MainViewModel : ObservableObject
 
     public void AddStructure(StructureGrid structure)
     {
-        SelectedWorld.AddStructure(structure, null);
+        SelectedWorld?.AddStructure(structure, null);
     }
 }

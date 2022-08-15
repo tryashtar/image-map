@@ -20,10 +20,10 @@ public class StructureViewModel : ObservableObject
 {
     public ICommand ConfirmCommand { get; }
     public ICommand CancelCommand { get; }
-    public event EventHandler OnClosed;
-    public event EventHandler<StructureGrid> OnConfirmed;
+    public event EventHandler? OnClosed;
+    public event EventHandler<StructureGrid>? OnConfirmed;
     public Map?[,] Grid { get; private set; } = new Map?[1, 1];
-    private List<Map> FlatGrid { get; } = new();
+    private List<Map?> FlatGrid { get; } = new();
 
     private int _gridWidth = 1;
     public int GridWidth
@@ -39,18 +39,27 @@ public class StructureViewModel : ObservableObject
         set { _gridHeight = value; UpdateGrid(); OnPropertyChanged(); }
     }
 
-    private MainViewModel _parent;
-    public MainViewModel Parent
+    private MainViewModel? _parent;
+    public MainViewModel? Parent
     {
         get { return _parent; }
         set
         {
-            if (_parent != null)
-                _parent.ExistingMaps.ItemChanged -= ExistingMaps_ItemChanged;
-            _parent = value;
+            SetParent(value);
+            OnPropertyChanged();
+        }
+    }
+
+    private void SetParent(MainViewModel? parent)
+    {
+        if (_parent != null)
+            _parent.ExistingMaps.ItemChanged -= ExistingMaps_ItemChanged;
+        _parent = parent;
+        FlatGrid.Clear();
+        if (_parent != null)
+        {
             _parent.ExistingMaps.ItemChanged += ExistingMaps_ItemChanged;
             var selected = _parent.ExistingMaps.Where(x => x.IsSelected).Select(x => x.Item).ToList();
-            FlatGrid.Clear();
             FlatGrid.AddRange(selected);
             int sqrt = (int)Math.Ceiling(Math.Sqrt(selected.Count));
             for (int i = 0; i < sqrt; i++)
@@ -69,15 +78,13 @@ public class StructureViewModel : ObservableObject
                 if (check(sqrt + i) || check(sqrt - i))
                     break;
             }
-            OnPropertyChanged();
         }
     }
 
     private void ExistingMaps_ItemChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Selectable<Map>.IsSelected))
+        if (e.PropertyName == nameof(Selectable<Map>.IsSelected) && sender is Selectable<Map> map)
         {
-            var map = (Selectable<Map>)sender;
             if (map.IsSelected && !FlatGrid.Contains(map.Item))
             {
                 int index = FlatGrid.IndexOf(null);
@@ -127,7 +134,7 @@ public class StructureViewModel : ObservableObject
 
     private void UpdateGrid()
     {
-        Map[,] newgrid = new Map[GridWidth, GridHeight];
+        Map?[,] newgrid = new Map?[GridWidth, GridHeight];
         for (int i = 0; i < Math.Min(newgrid.Length, FlatGrid.Count); i++)
         {
             int y = Math.DivRem(i, GridWidth, out int x);

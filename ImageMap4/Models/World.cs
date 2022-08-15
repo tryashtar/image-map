@@ -14,9 +14,9 @@ public abstract class World
 {
     public string Folder { get; }
     public string FolderName => Path.GetFileName(Folder);
-    public string Name { get; protected set; }
-    public string WorldIcon { get; protected set; }
-    public DateTime AccessDate { get; protected set; }
+    public abstract string Name { get; }
+    public abstract string WorldIcon { get; }
+    public abstract DateTime AccessDate { get; }
     public World(string folder)
     {
         Folder = folder;
@@ -24,7 +24,7 @@ public abstract class World
 
     public abstract IAsyncEnumerable<Map> GetMapsAsync();
     public abstract void AddMaps(IEnumerable<Map> maps);
-    public abstract void AddStructure(StructureGrid structure, Inventory inventory);
+    public abstract void AddStructure(StructureGrid structure, Inventory? inventory);
     public abstract IEnumerable<Inventory> GetInventories();
     protected abstract void ProcessImage(Image<Rgba32> image, ProcessSettings settings);
     protected abstract byte[] EncodeColors(Image<Rgba32> image);

@@ -59,9 +59,9 @@ public sealed class ImageSharpImageSource<TPixel> : BitmapSource
 
     public override double DpiY => this.source.Metadata.VerticalResolution;
 
-    public override BitmapPalette Palette => null;
+    public override BitmapPalette? Palette => null;
 
-    public override event EventHandler<ExceptionEventArgs> DecodeFailed;
+    public override event EventHandler<ExceptionEventArgs>? DecodeFailed { add { } remove { } }
 
     public override void CopyPixels(Array pixels, int stride, int offset)
     {
@@ -234,7 +234,7 @@ public sealed class ImageSharpImageSource<TPixel> : BitmapSource
             {
                 checked
                 {
-                    object exemplar = pixels.GetValue(0);
+                    object exemplar = pixels.GetValue(0)!;
                     elementSize = Marshal.SizeOf(exemplar);
                     sourceBufferSize = pixels.GetLength(0) * elementSize;
                     elementType = exemplar.GetType();
@@ -251,7 +251,7 @@ public sealed class ImageSharpImageSource<TPixel> : BitmapSource
             {
                 checked
                 {
-                    object exemplar = pixels.GetValue(0, 0);
+                    object exemplar = pixels.GetValue(0, 0)!;
                     elementSize = Marshal.SizeOf(exemplar);
                     sourceBufferSize = pixels.GetLength(0) * pixels.GetLength(1) * elementSize;
                     elementType = exemplar.GetType();
@@ -266,9 +266,9 @@ public sealed class ImageSharpImageSource<TPixel> : BitmapSource
 
     public override bool IsDownloading => false;
 
-    public override event EventHandler DownloadCompleted;
+    public override event EventHandler? DownloadCompleted { add { } remove { } }
 
-    public override event EventHandler<DownloadProgressEventArgs> DownloadProgress;
+    public override event EventHandler<DownloadProgressEventArgs>? DownloadProgress { add { } remove { } }
 
-    public override event EventHandler<ExceptionEventArgs> DownloadFailed;
+    public override event EventHandler<ExceptionEventArgs>? DownloadFailed { add { } remove { } }
 }

@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageMap4", "ImageMap4\ImageMap4.csproj", "{2870DB3D-2A9E-4621-A02A-44F1EE367FED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageMap4", "ImageMap4\ImageMap4.csproj", "{2870DB3D-2A9E-4621-A02A-44F1EE367FED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TryashtarUtils.Nbt", "utils.nbt\TryashtarUtils.Nbt.csproj", "{AB7C0C61-41F4-4B3E-8935-38BF58298B6F}"
 EndProject

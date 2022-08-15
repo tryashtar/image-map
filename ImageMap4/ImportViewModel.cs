@@ -27,8 +27,8 @@ public class ImportViewModel : ObservableObject
     public ICommand ConfirmAllCommand { get; }
     public ICommand NavigateCommand { get; }
     public ICommand ChangeBackgroundCommand { get; }
-    public event EventHandler OnClosed;
-    public event EventHandler<ImportSettings> OnConfirmed;
+    public event EventHandler? OnClosed;
+    public event EventHandler<ImportSettings>? OnConfirmed;
 
     private bool _hadMultiple;
     public bool HadMultiple
@@ -127,21 +127,24 @@ public class ImportViewModel : ObservableObject
 
     public ObservableCollection<PreviewImage> ImageQueue { get; } = new();
     private int CurrentIndex = 0;
-    public PreviewImage CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
+    public PreviewImage? CurrentImage => ImageQueue.Count == 0 ? null : ImageQueue[CurrentIndex];
 
     public ImportViewModel()
     {
         RotateCommand = new RelayCommand<float>(val =>
         {
-            CurrentImage.Rotation = (CurrentImage.Rotation + val * Math.Sign(CurrentImage.ScaleX * CurrentImage.ScaleY)) % 360;
+            if (CurrentImage != null)
+                CurrentImage.Rotation = (CurrentImage.Rotation + val * Math.Sign(CurrentImage.ScaleX * CurrentImage.ScaleY)) % 360;
         });
         HorizontalFlipCommand = new RelayCommand(() =>
         {
-            CurrentImage.ScaleX *= -1;
+            if (CurrentImage != null)
+                CurrentImage.ScaleX *= -1;
         });
         VerticalFlipCommand = new RelayCommand(() =>
         {
-            CurrentImage.ScaleY *= -1;
+            if (CurrentImage != null)
+                CurrentImage.ScaleY *= -1;
         });
         SwitchImageCommand = new RelayCommand<PreviewImage>(preview =>
         {
@@ -165,7 +168,8 @@ public class ImportViewModel : ObservableObject
         });
         ConfirmCommand = new RelayCommand(() =>
         {
-            ConfirmImage(CurrentImage);
+            if (CurrentImage != null)
+                ConfirmImage(CurrentImage);
             ImageQueue.RemoveAt(CurrentIndex);
             if (CurrentIndex >= ImageQueue.Count)
                 CurrentIndex--;

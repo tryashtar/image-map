@@ -111,7 +111,7 @@ public partial class MainWindow : Window, IDropTarget
         {
             ImportWindow = new(ViewModel.SelectedWorld is JavaWorld);
             ImportWindow.Owner = this;
-            ImportWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.AddImport(e);
+            ImportWindow.ViewModel.OnConfirmed += (s, e) => _ = ViewModel.AddImport(e);
         }
         ImportWindow.Show();
         ImportWindow.Activate();

@@ -8,12 +8,12 @@ public abstract class GenericConverter<TFrom, TTo> : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return Convert((TFrom)value);
+        return Convert((TFrom)value)!;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return ConvertBack((TTo)value);
+        return ConvertBack((TTo)value)!;
     }
 
     public abstract TTo Convert(TFrom value);
@@ -32,7 +32,7 @@ public abstract class ParameterConverter<TFrom, TTo, TParam> : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return Convert((TFrom)value, (TParam)parameter);
+        return Convert((TFrom)value, (TParam)parameter)!;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

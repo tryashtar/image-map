@@ -11,7 +11,7 @@ namespace ImageMap4;
 
 public sealed class ObservableList<T> : ObservableCollection<T> where T : INotifyPropertyChanged
 {
-    public event PropertyChangedEventHandler ItemChanged;
+    public event PropertyChangedEventHandler? ItemChanged;
     public ObservableList()
     {
         this.CollectionChanged += WhenCollectionChanged;
@@ -30,7 +30,7 @@ public sealed class ObservableList<T> : ObservableCollection<T> where T : INotif
         }
     }
 
-    private void WhenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    private void WhenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.NewItems != null)
         {
@@ -48,7 +48,7 @@ public sealed class ObservableList<T> : ObservableCollection<T> where T : INotif
         }
     }
 
-    private void ItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+    private void ItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         ItemChanged?.Invoke(sender, e);
     }

@@ -73,7 +73,7 @@ public struct CustomQuantizer<TPixel> : IQuantizer<TPixel> where TPixel : unmana
     public void Dispose()
     {
         this.PixelMap?.Dispose();
-        this.PixelMap = null;
+        this.PixelMap = null!;
     }
 }
 
