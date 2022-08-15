@@ -26,6 +26,7 @@ public partial class StructureWindow : Window, IDropTarget
         InitializeComponent();
         UpdateGrid();
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        ViewModel.OnClosed += (s, e) => this.Close();
     }
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

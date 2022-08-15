@@ -21,7 +21,7 @@ public class StructureViewModel : ObservableObject
     public ICommand ConfirmCommand { get; }
     public ICommand CancelCommand { get; }
     public event EventHandler OnClosed;
-    public event EventHandler<ImportSettings> OnConfirmed;
+    public event EventHandler<StructureGrid> OnConfirmed;
     public Map?[,] Grid { get; private set; } = new Map?[1, 1];
     private List<Map> FlatGrid { get; } = new();
 
@@ -94,7 +94,20 @@ public class StructureViewModel : ObservableObject
 
     public StructureViewModel()
     {
+        ConfirmCommand = new RelayCommand(() =>
+        {
+            OnConfirmed?.Invoke(this, CreateStructure());
+            OnClosed?.Invoke(this, EventArgs.Empty);
+        });
+        CancelCommand = new RelayCommand(() =>
+        {
+            OnClosed?.Invoke(this, EventArgs.Empty);
+        });
+    }
 
+    public StructureGrid CreateStructure()
+    {
+        return new("temp", Grid);
     }
 
     public void MoveMap(int from_x, int from_y, int to_x, int to_y)

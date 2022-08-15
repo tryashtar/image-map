@@ -126,6 +126,7 @@ public partial class MainWindow : Window, IDropTarget
             StructureWindow = new();
             StructureWindow.Owner = this;
             StructureWindow.ViewModel.Parent = this.ViewModel;
+            StructureWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.AddStructure(e);
         }
         StructureWindow.Show();
         StructureWindow.Activate();

@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Quantization;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -28,6 +29,8 @@ public abstract class World
 
     public abstract IAsyncEnumerable<Map> GetMapsAsync();
     public abstract void AddMaps(IEnumerable<Map> maps);
+    public abstract void AddStructure(StructureGrid structure, Inventory inventory);
+    public abstract IEnumerable<Inventory> GetInventories();
     protected abstract void ProcessImage(Image<Rgba32> image, ProcessSettings settings);
     protected abstract byte[] EncodeColors(Image<Rgba32> image);
     public IEnumerable<MapData> MakeMaps(ImportSettings settings)
@@ -118,6 +121,8 @@ public class JavaWorld : World
                 return new Java1p16Version();
             if (intversion.Value >= 1128) // 17w17a
                 return new Java1p12Version();
+            if (intversion.Value >= 503)
+                return new Java1p10Version();
         }
         if (leveldat["GameRules"]?["doEntityDrops"] != null) // 1.8.1 pre-1
             return new Java1p8Version();
@@ -126,6 +131,46 @@ public class JavaWorld : World
         if (leveldat["MapFeatures"] != null)
             return new JavaB1p8Version();
         throw new InvalidOperationException("Couldn't determine world version, or it's from an old version from before maps existed (pre-beta 1.8)");
+    }
+
+    public override void AddStructure(StructureGrid structure, Inventory inventory)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override IEnumerable<Inventory> GetInventories()
+    {
+        yield return new LocalInventory();
+        foreach (var file in Directory.GetFiles(Path.Combine(Folder, "playerdata"), "*.dat"))
+        {
+            if (Path.GetFileNameWithoutExtension(file).Length == 36)
+                yield return new UUIDInventory(file);
+        }
+    }
+
+    private class LocalInventory : Inventory
+    {
+        public override string Name => "Local player";
+        public override void AddItem(NbtCompound item)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private class UUIDInventory : Inventory
+    {
+        private string _name;
+        public override string Name => _name;
+        private string File;
+        public UUIDInventory(string file)
+        {
+            File = file;
+            _name = Path.GetFileNameWithoutExtension(file);
+        }
+        public override void AddItem(NbtCompound item)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public override async IAsyncEnumerable<Map> GetMapsAsync()
@@ -210,6 +255,25 @@ public class BedrockWorld : World
             }
         }
         throw new InvalidOperationException("Couldn't determine world version");
+    }
+
+    public override void AddStructure(StructureGrid structure, Inventory inventory)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override IEnumerable<Inventory> GetInventories()
+    {
+        yield return new LocalInventory();
+    }
+
+    private class LocalInventory : Inventory
+    {
+        public override string Name => "Local player";
+        public override void AddItem(NbtCompound item)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public override async IAsyncEnumerable<Map> GetMapsAsync()

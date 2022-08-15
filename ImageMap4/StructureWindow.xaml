@@ -59,6 +59,13 @@
                                           Height="31" />
                     </StackPanel>
                 </StackPanel>
+                <StackPanel HorizontalAlignment="Center"
+                            Margin="0,0,0,5">
+                    <TextBlock Text="Add to inventory:" />
+                    <ComboBox Width="200"
+                              ItemsSource="{Binding Parent.PlayerList}"
+                              DisplayMemberPath="Name" />
+                </StackPanel>
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Margin="0,5,0,10">

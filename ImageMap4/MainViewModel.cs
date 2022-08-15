@@ -21,6 +21,7 @@ public class MainViewModel : ObservableObject
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
     public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
     public ObservableList<Selectable<Map>> ExistingMaps { get; } = new();
+    public ReadOnlyCollection<Inventory> PlayerList { get; private set; }
     public ICollectionView ExistingMapsView
     {
         get { return CollectionViewSource.GetDefaultView(ExistingMaps); }
@@ -37,6 +38,8 @@ public class MainViewModel : ObservableObject
             MapCTS?.Dispose();
             MapCTS = new();
             RefreshMaps(MapCTS.Token);
+            PlayerList = SelectedWorld.GetInventories().ToList().AsReadOnly();
+            OnPropertyChanged(nameof(PlayerList));
         }
     }
     private CancellationTokenSource MapCTS = new();
@@ -125,5 +128,10 @@ public class MainViewModel : ObservableObject
             ImportingMaps.Add(new Selectable<Map>(new Map(id, item)));
             id++;
         }
+    }
+
+    public void AddStructure(StructureGrid structure)
+    {
+        SelectedWorld.AddStructure(structure, null);
     }
 }
