@@ -11,6 +11,7 @@ using System.Windows.Media;
 
 namespace ImageMap4;
 
+public record Map(long ID, MapData Data);
 public class MapData
 {
     public Image<Rgba32> Image { get; }
@@ -50,4 +51,3 @@ public class MapData
         return true;
     }
 }
-public record Map(long ID, MapData Data);
