@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using TryashtarUtils.Utility;
 
@@ -20,6 +21,10 @@ public class MainViewModel : ObservableObject
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
     public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
     public ObservableList<Selectable<Map>> ExistingMaps { get; } = new();
+    public ICollectionView ExistingMapsView
+    {
+        get { return CollectionViewSource.GetDefaultView(ExistingMaps); }
+    }
     private World? _selectedWorld;
     public World? SelectedWorld
     {
@@ -39,11 +44,12 @@ public class MainViewModel : ObservableObject
     public bool ShowEmptyMaps
     {
         get { return Properties.Settings.Default.ShowEmptyMaps; }
-        set { Properties.Settings.Default.ShowEmptyMaps = value; OnPropertyChanged(); }
+        set { Properties.Settings.Default.ShowEmptyMaps = value; OnPropertyChanged(); ExistingMapsView.Refresh(); }
     }
 
     public MainViewModel()
     {
+        ExistingMapsView.Filter = x => ShowEmptyMaps || !((Selectable<Map>)x).Item.Data.IsEmpty;
         TransferAllCommand = new RelayCommand(() =>
         {
             SelectedWorld.AddMaps(ImportingMaps.Select(x => x.Item));

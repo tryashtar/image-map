@@ -41,16 +41,6 @@
                             <Setter Property="Background"
                                     Value="#DDDDDD" />
                             <Style.Triggers>
-                                <MultiDataTrigger>
-                                    <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding Item.Data.IsEmpty}"
-                                                   Value="True" />
-                                        <Condition Binding="{Binding DataContext.ShowEmptyMaps, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                   Value="False" />
-                                    </MultiDataTrigger.Conditions>
-                                    <Setter Property="Visibility"
-                                            Value="Collapsed" />
-                                </MultiDataTrigger>
                                 <DataTrigger Value="True"
                                              Binding="{Binding IsSelected}">
                                     <Setter Property="Background"

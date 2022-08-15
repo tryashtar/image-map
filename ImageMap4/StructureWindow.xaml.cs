@@ -47,6 +47,7 @@ public partial class StructureWindow : Window, IDropTarget
                 GongSolutions.Wpf.DragDrop.DragDrop.SetIsDropTarget(preview, true);
                 GongSolutions.Wpf.DragDrop.DragDrop.SetDropHandler(preview, this);
                 GongSolutions.Wpf.DragDrop.DragDrop.SetIsDragSource(preview, true);
+                GongSolutions.Wpf.DragDrop.DragDrop.SetUseDefaultDragAdorner(preview, true);
                 StructureGrid.SplitGrid.Children.Add(preview);
             }
         }

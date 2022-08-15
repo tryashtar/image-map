@@ -283,7 +283,7 @@
                             Grid.Row="0"
                             Margin="10,5,10,5">
                     <DockPanel>
-                        <TextBlock Text="{Binding ExistingMaps.Count, StringFormat=In World – {0} maps}"
+                        <TextBlock Text="{Binding ExistingMapsView.Count, StringFormat=In World – {0} maps}"
                                    Margin="0,0,0,5" />
                         <CheckBox Content="Show empty maps"
                                   IsChecked="{Binding ShowEmptyMaps}"
@@ -300,7 +300,7 @@
                                     <Setter Property="Visibility"
                                             Value="Visible" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ExistingMaps.Count}"
+                                        <DataTrigger Binding="{Binding ExistingMapsView.Count}"
                                                      Value="0">
                                             <Setter Property="Visibility"
                                                     Value="Collapsed" />
@@ -313,7 +313,7 @@
                 </StackPanel>
                 <local:MapList Grid.Column="1"
                                Grid.Row="1"
-                               DataContext="{Binding ExistingMaps}" />
+                               DataContext="{Binding ExistingMapsView}" />
             </Grid>
         </TabItem>
     </TabControl>

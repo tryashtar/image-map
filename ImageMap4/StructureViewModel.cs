@@ -92,9 +92,6 @@ public class StructureViewModel : ObservableObject
         }
     }
 
-    public bool ShowEmptyMaps => false;
-
-
     public StructureViewModel()
     {
 
@@ -102,9 +99,11 @@ public class StructureViewModel : ObservableObject
 
     public void MoveMap(int from_x, int from_y, int to_x, int to_y)
     {
+        if (from_x == to_x && from_y == to_y)
+            return;
         int from_index = from_y * GridWidth + from_x;
         int to_index = to_y * GridWidth + to_x;
-        while(FlatGrid.Count <= to_index)
+        while (FlatGrid.Count <= to_index)
         {
             FlatGrid.Add(null);
         }
