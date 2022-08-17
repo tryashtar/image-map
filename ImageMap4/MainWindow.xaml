@@ -74,8 +74,14 @@
     </Window.Resources>
     <Window.Style>
         <Style TargetType="Window">
-            <Setter Property="Title"
-                    Value="{Binding SelectedWorld.Name, StringFormat=Image Map – {0}}" />
+            <Setter Property="Title">
+                <Setter.Value>
+                    <MultiBinding StringFormat="Image Map – {0} ({1}+)">
+                        <Binding Path="SelectedWorld.Name" />
+                        <Binding Path="SelectedWorld.Version.Value.Name" />
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding SelectedWorld}"
                              Value="{x:Null}">

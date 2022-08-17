@@ -1,0 +1,192 @@
+- name: Beta 1.8
+  check:
+    path: [MapFeatures]
+  multipliers: [180, 220, 255, 220]
+  set_base_colors:
+  - transparent
+  - 7fb238
+  - f7e9a3
+  - a7a7a7
+  - ff0000
+  - a0a0ff
+  - a7a7a7
+  - 007c00
+  - ffffff
+  - a4a8b8
+  - b76a2f
+  - 707070
+  - 4040ff
+  - 685332
+  map_item:
+    id: 258s
+    Damage: '@s'
+    Count: 1b
+  map_data:
+    colors: '@colors'
+    scale: 0b
+    dimension: 0b
+    locked: 1b
+    xCenter: 2147483647
+    zCenter: 2147483647
+    height: 128
+    width: 128
+    trackingPosition: 0b
+    unlimitedTracking: 0b
+- name: 13w42a
+  check:
+    path: [Player, HealF]
+  add_base_colors:
+  - ffffff
+  - d87f33
+  - b24cd8
+  - 6699d8
+  - e5e533
+  - 7fcc19
+  - f27fa5
+  - 4c4c4c
+  - 999999
+  - 4c7f99
+  - 7f3fb2
+  - 334cb2
+  - 664c33
+  - 667f33
+  - 993333
+  - 191919
+  - faee4d
+  - 5cdbd5
+  - 4a80ff
+  - 00d93a
+  - 15141f
+  - 700200
+- name: 13w43a
+  check:
+    path: [Player, HealF]
+  multipliers: [180, 220, 255, 135]
+- name: 14w08a
+  check:
+    path: []
+  map_item:
+    id: minecraft:filled_map
+    Damage: '@s'
+    Count: 1b
+- name: 1.8.1-pre1
+  check:
+    path: [GameRules, doEntityDrops]
+  set_base_colors:
+  - transparent
+  - 7fb238
+  - f7e9a3
+  - c7c7c7
+  - ff0000
+  - a0a0ff
+  - a7a7a7
+  - 007c00
+  - ffffff
+  - a4a8b8
+  - 976d4d
+  - 707070
+  - 4040ff
+  - 8f7748
+  - fffcf5
+  - d87f33
+  - b24cd8
+  - 6699d8
+  - e5e533
+  - 7fcc19
+  - f27fa5
+  - 4c4c4c
+  - 999999
+  - 4c7f99
+  - 7f3fb2
+  - 334cb2
+  - 664c33
+  - 667f33
+  - 993333
+  - 191919
+  - faee4d
+  - 5cdbd5
+  - 4a80ff
+  - 00d93a
+  - 815631
+  - 700200
+- name: 16w21a
+  check:
+    data_version: 503
+  structures_supported: true
+  structure_folder: structures
+  map_entity:
+    id: ItemFrame
+    Facing: 1b
+    Fixed: 1b
+    Invulnerable: 1b
+- name: 16w32a
+  check:
+    data_version: 800
+  map_entity:
+    id: item_frame
+    Facing: 1b
+    Fixed: 1b
+    Invulnerable: 1b
+- name: 17w17a
+  check:
+    data_version: 1128
+  add_base_colors:
+  - d1b1a1
+  - 9f5224
+  - 95576c
+  - 706c8a
+  - ba8524
+  - 677535
+  - a04d4e
+  - 392923
+  - 876b62
+  - 575c5c
+  - 7a4958
+  - 4c3e5c
+  - 4c3223
+  - 4c522a
+  - 8e3c2e
+  - 251610
+- name: 17w47a
+  check:
+    data_version: 1451
+  structure_folder: generated
+  map_item:
+    id: minecraft:filled_map
+    Count: 1b
+    tag:
+      map: '@i'
+- name: 20w21a
+  check:
+    data_version: 2554
+  map_data:
+    colors: '@colors'
+    scale: 0b
+    dimension: minecraft:overworld
+    locked: 1b
+    xCenter: 2147483647
+    zCenter: 2147483647
+    trackingPosition: 0b
+    unlimitedTracking: 0b
+- name: 1.16-pre6
+  check:
+    data_version: 2562
+  add_base_colors:
+  - bd3031
+  - 943f61
+  - 5c191d
+  - 167e86
+  - 3a8e8c
+  - 562c3e
+  - 14b485
+- name: 21w15a
+  check:
+    data_version: 2709
+  add_base_colors:
+  - 646464
+  - d8af93
+- name: 21w16a
+  check:
+    data_version: 2711
+  add_base_colors:
+  - 7fa796
