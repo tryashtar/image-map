@@ -12,7 +12,6 @@ namespace ImageMap4;
 
 public class JavaWorld : World
 {
-    public readonly NbtFile LevelDat;
     public IJavaVersion Version { get; }
     public override string Name { get; }
     public override string WorldIcon { get; }
@@ -20,11 +19,11 @@ public class JavaWorld : World
 
     public JavaWorld(string folder) : base(folder)
     {
-        LevelDat = new NbtFile(Path.Combine(Folder, "level.dat"));
-        Version = VersionManager.DetermineJavaVersion(LevelDat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
-        Name = LevelDat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
+        var leveldat = new NbtFile(Path.Combine(Folder, "level.dat"));
+        Version = VersionManager.DetermineJavaVersion(leveldat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
+        Name = leveldat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
         WorldIcon = Path.Combine(Folder, "icon.png");
-        AccessDate = File.GetLastWriteTime(LevelDat.FileName);
+        AccessDate = File.GetLastWriteTime(leveldat.FileName);
     }
 
     public override void AddStructure(StructureGrid structure, Inventory? inventory)

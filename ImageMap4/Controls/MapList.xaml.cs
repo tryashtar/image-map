@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -22,7 +23,7 @@ namespace ImageMap4;
 /// </summary>
 public partial class MapList : UserControl
 {
-    public IList<Selectable<Map>> Maps => (IList<Selectable<Map>>)DataContext;
+    public IEnumerable<Selectable<Map>> Maps => ((IEnumerable)DataContext).Cast<Selectable<Map>>();
     private Selectable<Map>? LastClicked;
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
@@ -50,13 +51,14 @@ public partial class MapList : UserControl
     {
         var map = (Selectable<Map>)((FrameworkElement)sender).DataContext;
         map.IsSelected = !map.IsSelected;
+        var maps = Maps.ToList();
         if (LastClicked != null && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
         {
-            int first = Maps.IndexOf(LastClicked);
-            int last = Maps.IndexOf(map);
+            int first = maps.IndexOf(LastClicked);
+            int last = maps.IndexOf(map);
             for (int i = Math.Min(first, last); i <= Math.Max(first, last); i++)
             {
-                Maps[i].IsSelected = map.IsSelected;
+                maps[i].IsSelected = map.IsSelected;
             }
         }
         LastClicked = map;
