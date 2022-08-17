@@ -29,27 +29,8 @@ public class BedrockWorld : World
         leveldat.Position = 8;
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromStream(leveldat, NbtCompression.None);
-        Version = DetermineVersionFromLevelDat(nbt.GetRootTag<NbtCompound>());
+        Version = VersionManager.DetermineBedrockVersion(nbt.GetRootTag<NbtCompound>());
         AccessDate = File.GetLastWriteTime(leveldat.Name);
-    }
-
-    private static IBedrockVersion DetermineVersionFromLevelDat(NbtCompound leveldat)
-    {
-        var versiontag = leveldat["lastOpenedWithVersion"];
-        if (versiontag is NbtList list)
-        {
-            var minor = list[1];
-            if (minor is NbtInt num)
-            {
-                if (num.Value >= 11)
-                    return new Bedrock1p11Version();
-                if (num.Value >= 7)
-                    return new Bedrock1p7Version();
-                if (num.Value >= 2)
-                    return new Bedrock1p2Version();
-            }
-        }
-        throw new InvalidOperationException("Couldn't determine world version");
     }
 
     public override void AddStructure(StructureGrid structure, Inventory? inventory)

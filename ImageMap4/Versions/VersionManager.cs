@@ -16,7 +16,8 @@ namespace ImageMap4;
 
 public class VersionManager
 {
-    private static readonly List<(VersionCheck check, IJavaVersion version)> Versions = new();
+    private static readonly List<(JavaVersionCheck check, IJavaVersion version)> JavaVersions = new();
+    private static readonly List<(BedrockVersionCheck check, IBedrockVersion version)> BedrockVersions = new();
     static VersionManager()
     {
         var deserializer = new DeserializerBuilder()
@@ -24,19 +25,36 @@ public class VersionManager
             .WithTypeConverter(new YamlColorConverter())
             .WithTypeConverter(new YamlNbtConverter())
             .Build();
-        var updates = deserializer.Deserialize<List<Update>>(Properties.Resources.versions);
-        var builder = new JavaVersionBuilder();
-        foreach (var update in updates)
+        var updates = deserializer.Deserialize<UpdateLists>(Properties.Resources.versions);
+        var java = new JavaVersionBuilder();
+        foreach (var update in updates.Java)
         {
-            builder.Add(update);
-            Versions.Add((update.Check, builder.Build()));
+            java.Add(update);
+            JavaVersions.Add((update.Check, java.Build()));
+        }
+        var bedrock = new BedrockVersionBuilder();
+        foreach (var update in updates.Bedrock)
+        {
+            bedrock.Add(update);
+            BedrockVersions.Add((update.Check, bedrock.Build()));
         }
     }
 
-    public static IJavaVersion DetermineVersion(NbtCompound leveldat)
+    public static IJavaVersion DetermineJavaVersion(NbtCompound leveldat)
     {
-        return Versions.Last(x => x.check.Passes(leveldat)).version;
+        return JavaVersions.Last(x => x.check.Passes(leveldat)).version;
     }
+
+    public static IBedrockVersion DetermineBedrockVersion(NbtCompound leveldat)
+    {
+        return BedrockVersions.Last(x => x.check.Passes(leveldat)).version;
+    }
+}
+
+internal class UpdateLists
+{
+    public List<JavaUpdate> Java;
+    public List<BedrockUpdate> Bedrock;
 }
 
 internal class YamlColorConverter : IYamlTypeConverter
@@ -66,12 +84,12 @@ internal class YamlNbtConverter : IYamlTypeConverter
         return typeof(NbtTag).IsAssignableFrom(type);
     }
 
-    public object? ReadYaml(IParser parser, Type type)
+    public object ReadYaml(IParser parser, Type type)
     {
-        if (parser.TryConsume<MappingStart>(out var _))
+        if (parser.TryConsume<MappingStart>(out _))
         {
             var compound = new NbtCompound();
-            while (!parser.TryConsume<MappingEnd>(out var _))
+            while (!parser.TryConsume<MappingEnd>(out _))
             {
                 var key = parser.Consume<Scalar>().Value;
                 var value = (NbtTag)ReadYaml(parser, typeof(NbtTag));
@@ -80,10 +98,10 @@ internal class YamlNbtConverter : IYamlTypeConverter
             }
             return compound;
         }
-        if (parser.TryConsume<SequenceStart>(out var _))
+        if (parser.TryConsume<SequenceStart>(out _))
         {
             var list = new NbtList();
-            while (!parser.TryConsume<SequenceEnd>(out var _))
+            while (!parser.TryConsume<SequenceEnd>(out _))
             {
                 var value = (NbtTag)ReadYaml(parser, typeof(NbtTag));
                 list.Add(value);
@@ -105,9 +123,10 @@ internal class YamlNbtConverter : IYamlTypeConverter
     }
 }
 
-public class Update
+public class JavaUpdate
 {
-    public VersionCheck Check;
+    public string Name;
+    public JavaVersionCheck Check;
     public byte[]? Multipliers;
     public List<Rgba32>? SetBaseColors;
     public List<Rgba32>? AddBaseColors;
@@ -116,10 +135,35 @@ public class Update
     public NbtCompound? MapEntity;
     public bool? StructuresSupported;
     public string? StructureFolder;
-    public string Name;
 }
 
-public class VersionCheck
+public class BedrockUpdate
+{
+    public string Name;
+    public BedrockVersionCheck Check;
+    public NbtCompound? MapData;
+}
+
+public class BedrockVersionCheck
+{
+    public int[] Version;
+    public bool Passes(NbtCompound leveldat)
+    {
+        var versiontag = leveldat.Get<NbtList>("lastOpenedWithVersion");
+        if (versiontag != null)
+        {
+            for (int i = 0; i < Math.Min(Version.Length, versiontag.Count); i++)
+            {
+                if (versiontag[i].IntValue < Version[i])
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
+}
+
+public class JavaVersionCheck
 {
     public string[]? Path;
     public int? DataVersion;

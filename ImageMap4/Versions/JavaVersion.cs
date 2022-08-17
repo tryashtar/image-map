@@ -32,7 +32,7 @@ public class JavaVersionBuilder
     public bool StructuresSupported = false;
     public string? StructureFolder;
     public string? Name;
-    public void Add(Update update)
+    public void Add(JavaUpdate update)
     {
         if (update.SetBaseColors != null)
         {
@@ -69,7 +69,7 @@ public class JavaVersionBuilder
         }
         NbtCompound data_maker(MapData data)
         {
-            var compound = (NbtCompound)MapItem.Clone();
+            var compound = (NbtCompound)MapData.Clone();
             foreach (var item in compound.GetAllTags().OfType<NbtString>())
             {
                 if (item.Value == "@colors")

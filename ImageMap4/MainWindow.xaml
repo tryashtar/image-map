@@ -63,7 +63,7 @@
                                                    Foreground="Gray"
                                                    FontSize="13"
                                                    Margin="4,0,0,0" />
-                                        <TextBlock Text="{Binding Version.Name, StringFormat={}{0}+}"
+                                        <TextBlock Text="{Binding Version.Name, StringFormat={}{0}}"
                                                    Foreground="Gray"
                                                    FontSize="13"
                                                    Margin="4,0,0,0" />
@@ -80,7 +80,7 @@
         <Style TargetType="Window">
             <Setter Property="Title">
                 <Setter.Value>
-                    <MultiBinding StringFormat="Image Map – {0} ({1}+)">
+                    <MultiBinding StringFormat="Image Map – {0} ({1})">
                         <Binding Path="SelectedWorld.Name" />
                         <Binding Path="SelectedWorld.Version.Name" />
                     </MultiBinding>

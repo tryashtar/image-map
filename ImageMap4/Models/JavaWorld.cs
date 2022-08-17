@@ -21,7 +21,7 @@ public class JavaWorld : World
     public JavaWorld(string folder) : base(folder)
     {
         LevelDat = new NbtFile(Path.Combine(Folder, "level.dat"));
-        Version = VersionManager.DetermineVersion(LevelDat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
+        Version = VersionManager.DetermineJavaVersion(LevelDat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
         Name = LevelDat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
         WorldIcon = Path.Combine(Folder, "icon.png");
         AccessDate = File.GetLastWriteTime(LevelDat.FileName);
