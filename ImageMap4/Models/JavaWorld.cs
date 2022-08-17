@@ -13,7 +13,7 @@ namespace ImageMap4;
 public class JavaWorld : World
 {
     public readonly NbtFile LevelDat;
-    public Lazy<IJavaVersion> Version { get; }
+    public IJavaVersion Version { get; }
     public override string Name { get; }
     public override string WorldIcon { get; }
     public override DateTime AccessDate { get; }
@@ -21,7 +21,7 @@ public class JavaWorld : World
     public JavaWorld(string folder) : base(folder)
     {
         LevelDat = new NbtFile(Path.Combine(Folder, "level.dat"));
-        Version = new(() => VersionManager.DetermineVersion(LevelDat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data")));
+        Version = VersionManager.DetermineVersion(LevelDat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
         Name = LevelDat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
         WorldIcon = Path.Combine(Folder, "icon.png");
         AccessDate = File.GetLastWriteTime(LevelDat.FileName);
@@ -35,11 +35,6 @@ public class JavaWorld : World
     public override IEnumerable<Inventory> GetInventories()
     {
         yield return new LocalInventory();
-        foreach (var file in Directory.GetFiles(Path.Combine(Folder, "playerdata"), "*.dat"))
-        {
-            if (Path.GetFileNameWithoutExtension(file).Length == 36)
-                yield return new UUIDInventory(file);
-        }
     }
 
     private class LocalInventory : Inventory
@@ -88,7 +83,7 @@ public class JavaWorld : World
         var nbt = new NbtFile() { BigEndian = true };
         nbt.LoadFromFile(file, NbtCompression.GZip, null);
         var colors = nbt.GetRootTag<NbtCompound>().Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
-        var image = Version.Value.Decode(colors);
+        var image = Version.Decode(colors);
         ProcessImage(image, new ProcessSettings(null, new EuclideanAlgorithm()));
         return new Map(id, new MapData(image, colors));
     }
@@ -98,7 +93,7 @@ public class JavaWorld : World
         foreach (var map in maps)
         {
             var nbt = new NbtFile { BigEndian = true };
-            var data = Version.Value.CreateMapCompound(map.Data);
+            var data = Version.CreateMapCompound(map.Data);
             data.Name = "data";
             nbt.GetRootTag<NbtCompound>().Add(data);
             nbt.SaveToFile(Path.Combine(Folder, "data", $"map_{map.ID}.dat"), NbtCompression.GZip);
@@ -107,10 +102,10 @@ public class JavaWorld : World
 
     protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
-        var palette = Version.Value.GetPalette();
+        var palette = Version.GetPalette();
         var quantizer = new CustomQuantizer(new QuantizerOptions() { Dither = settings.Dither }, palette, settings.Algorithm);
         image.Mutate(x => x.Quantize(quantizer));
     }
 
-    protected override byte[] EncodeColors(Image<Rgba32> image) => Version.Value.EncodeColors(image);
+    protected override byte[] EncodeColors(Image<Rgba32> image) => Version.EncodeColors(image);
 }

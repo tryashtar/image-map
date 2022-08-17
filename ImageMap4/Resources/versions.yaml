@@ -64,7 +64,7 @@
   multipliers: [180, 220, 255, 135]
 - name: 14w08a
   check:
-    path: []
+    path: [GameRules, doEntityDrops]
   map_item:
     id: minecraft:filled_map
     Damage: '@s'

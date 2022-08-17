@@ -16,7 +16,7 @@ namespace ImageMap4;
 
 public class VersionManager
 {
-    private static readonly List<Update> Updates;
+    private static readonly List<(VersionCheck check, IJavaVersion version)> Versions = new();
     static VersionManager()
     {
         var deserializer = new DeserializerBuilder()
@@ -24,18 +24,18 @@ public class VersionManager
             .WithTypeConverter(new YamlColorConverter())
             .WithTypeConverter(new YamlNbtConverter())
             .Build();
-        Updates = deserializer.Deserialize<List<Update>>(Properties.Resources.versions);
+        var updates = deserializer.Deserialize<List<Update>>(Properties.Resources.versions);
+        var builder = new JavaVersionBuilder();
+        foreach (var update in updates)
+        {
+            builder.Add(update);
+            Versions.Add((update.Check, builder.Build()));
+        }
     }
 
     public static IJavaVersion DetermineVersion(NbtCompound leveldat)
     {
-        var version = new JavaVersionBuilder();
-        int last = Updates.FindLastIndex(x => x.Check.Passes(leveldat));
-        for (int i = 0; i <= last; i++)
-        {
-            version.Add(Updates[i]);
-        }
-        return version.Build();
+        return Versions.Last(x => x.check.Passes(leveldat)).version;
     }
 }
 
