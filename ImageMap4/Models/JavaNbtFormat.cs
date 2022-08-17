@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using fNbt;
 
 namespace ImageMap4;
@@ -6,86 +7,19 @@ namespace ImageMap4;
 public interface IJavaNbtFormat
 {
     NbtCompound CreateMapCompound(MapData map);
-    NbtCompound CreateStructureFile(long?[,] ids);
+    NbtCompound MakeMapItem(long id);
     bool StructuresSupported { get; }
+    NbtCompound CreateStructureFile(long?[,] mapids);
+    string StructureFileLocation(string world_folder, string identifier);
 }
 
-public static class JavaMapMethods
+public abstract class AbstractNbtFormat : IJavaNbtFormat
 {
-    public static NbtCompound Beta1p8(MapData map)
-    {
-        return new NbtCompound
-        {
-            new NbtByteArray("colors", map.Colors),
-            new NbtByte("scale", 0),
-            new NbtByte("dimension", 0),
-            new NbtInt("xCenter", Int32.MaxValue),
-            new NbtInt("zCenter", Int32.MaxValue),
-            new NbtShort("height", (short)map.Image.Width),
-            new NbtShort("width", (short)map.Image.Height)
-        };
-    }
-    public static NbtCompound Release1p12(MapData map)
-    {
-        return new NbtCompound
-        {
-            new NbtByteArray("colors", map.Colors),
-            new NbtByte("scale", 0),
-            new NbtByte("dimension", 0),
-            new NbtInt("xCenter", Int32.MaxValue),
-            new NbtInt("zCenter", Int32.MaxValue),
-            new NbtShort("height", (short)map.Image.Width),
-            new NbtShort("width", (short)map.Image.Height),
-            new NbtByte("trackingPosition", 0),
-            new NbtByte("unlimitedTracking", 0)
-        };
-    }
-    public static NbtCompound Release1p13(MapData map)
-    {
-        return new NbtCompound
-        {
-            new NbtByteArray("colors", map.Colors),
-            new NbtByte("scale", 0),
-            new NbtByte("dimension", 0),
-            new NbtInt("xCenter", Int32.MaxValue),
-            new NbtInt("zCenter", Int32.MaxValue),
-            new NbtByte("trackingPosition", 0),
-            new NbtByte("unlimitedTracking", 0)
-        };
-    }
-    public static NbtCompound Release1p14(MapData map)
-    {
-        return new NbtCompound
-        {
-            new NbtByteArray("colors", map.Colors),
-            new NbtByte("scale", 0),
-            new NbtByte("dimension", 0),
-            new NbtByte("locked", 1),
-            new NbtInt("xCenter", Int32.MaxValue),
-            new NbtInt("zCenter", Int32.MaxValue),
-            new NbtByte("trackingPosition", 0),
-            new NbtByte("unlimitedTracking", 0)
-        };
-    }
-    public static NbtCompound Release1p16(MapData map)
-    {
-        return new NbtCompound
-        {
-            new NbtByteArray("colors", map.Colors),
-            new NbtByte("scale", 0),
-            new NbtString("dimension", "minecraft:overworld"),
-            new NbtByte("locked", 1),
-            new NbtInt("xCenter", Int32.MaxValue),
-            new NbtInt("zCenter", Int32.MaxValue),
-            new NbtByte("trackingPosition", 0),
-            new NbtByte("unlimitedTracking", 0)
-        };
-    }
-}
-
-public static class JavaStructureMethods
-{
-    public static NbtCompound Release1p10(long?[,] mapids)
+    public abstract NbtCompound CreateMapCompound(MapData map);
+    public abstract NbtCompound MakeMapItem(long id);
+    public virtual bool StructuresSupported => true;
+    protected abstract NbtCompound MakeItemFrame();
+    public virtual NbtCompound CreateStructureFile(long?[,] mapids)
     {
         var entities = new NbtList();
         for (int y = 0; y < mapids.GetLength(0); y++)
@@ -95,18 +29,15 @@ public static class JavaStructureMethods
                 long? val = mapids[y, x];
                 if (val.HasValue)
                 {
+                    var frame = MakeItemFrame();
+                    frame.Name = "nbt";
+                    var item = MakeMapItem(val.Value);
+                    item.Name = "Item";
+                    frame.Add(item);
                     entities.Add(new NbtCompound()
                     {
-                        new NbtCompound("nbt") {
-                            new NbtString("id", "ItemFrame"),
-                            new NbtByte("Facing", 1),
-                            new NbtByte("Invulnerable", 1),
-                            new NbtCompound("Item") {
-                                new NbtString("id", "minecraft:filled_map"),
-                                new NbtByte("Count", 1),
-                                new NbtShort("Damage", (short)val.Value)
-                            }
-                        }
+                        frame,
+                        new NbtList("blockPos") { new NbtInt(0), new NbtInt(y), new NbtInt(x) }
                     });
                 }
             }
@@ -129,44 +60,127 @@ public static class JavaStructureMethods
             }
         };
     }
+    public abstract string StructureFileLocation(string world_folder, string identifier);
 }
 
-public class Beta1p8NbtFormat : IJavaNbtFormat
+public static class JavaMapMethods
 {
-    public NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Beta1p8(map);
-    public bool StructuresSupported => false;
-    public NbtCompound CreateStructureFile(long?[,] mapids)
+    public static NbtCompound Beta1p8(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtByte("dimension", 0),
+            new NbtByte("locked", 1),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtShort("height", (short)map.Image.Width),
+            new NbtShort("width", (short)map.Image.Height),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
+    public static NbtCompound Release1p16(MapData map)
+    {
+        return new NbtCompound
+        {
+            new NbtByteArray("colors", map.Colors),
+            new NbtByte("scale", 0),
+            new NbtString("dimension", "minecraft:overworld"),
+            new NbtByte("locked", 1),
+            new NbtInt("xCenter", Int32.MaxValue),
+            new NbtInt("zCenter", Int32.MaxValue),
+            new NbtByte("trackingPosition", 0),
+            new NbtByte("unlimitedTracking", 0)
+        };
+    }
+}
+
+public abstract class NoStructuresNbtFormat : AbstractNbtFormat
+{
+    public override bool StructuresSupported => false;
+    public override NbtCompound CreateStructureFile(long?[,] mapids)
+    {
+        throw new NotSupportedException();
+    }
+    public override string StructureFileLocation(string world_folder, string identifier)
+    {
+        throw new NotSupportedException();
+    }
+    protected override NbtCompound MakeItemFrame()
     {
         throw new NotSupportedException();
     }
 }
 
-public class Release1p10NbtFormat : IJavaNbtFormat
+public class Beta1p8NbtFormat : NoStructuresNbtFormat
 {
-    public NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Beta1p8(map);
-    public bool StructuresSupported => true;
-    public NbtCompound CreateStructureFile(long?[,] mapids) => JavaStructureMethods.Release1p10(mapids);
+    public override NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Beta1p8(map);
+    public override NbtCompound MakeMapItem(long id)
+    {
+        return new NbtCompound
+        {
+            new NbtShort("id", 358),
+            new NbtShort("Damage", (short)id),
+            new NbtByte("Count", 1)
+        };
+    }
 }
 
-public class Release1p12NbtFormat : IJavaNbtFormat
+public class Release1p8NbtFormat : NoStructuresNbtFormat
 {
-    public NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Release1p12(map);
-    public bool StructuresSupported => true;
-    public NbtCompound CreateStructureFile(long?[,] mapids) => JavaStructureMethods.Release1p10(mapids);
+    public override NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Beta1p8(map);
+    public override NbtCompound MakeMapItem(long id)
+    {
+        return new NbtCompound
+        {
+            new NbtString("id", "minecraft:filled_map"),
+            new NbtShort("Damage", (short)id),
+            new NbtByte("Count", 1)
+        };
+    }
 }
 
-public class Release1p13NbtFormat : IJavaNbtFormat
+public class Release1p10NbtFormat : AbstractNbtFormat
 {
-    public NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Release1p13(map);
-    public bool StructuresSupported => true;
-    public NbtCompound CreateStructureFile(long?[,] mapids) => JavaStructureMethods.Release1p10(mapids);
+    public override NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Beta1p8(map);
+    public override bool StructuresSupported => true;
+    public override NbtCompound MakeMapItem(long id)
+    {
+        return new NbtCompound
+        {
+            new NbtString("id", "minecraft:filled_map"),
+            new NbtShort("Damage", (short)id),
+            new NbtByte("Count", 1)
+        };
+    }
+    protected override NbtCompound MakeItemFrame()
+    {
+        return new NbtCompound() {
+            new NbtString("id", "ItemFrame"),
+            new NbtByte("Facing", 1),
+            new NbtByte("Fixed", 1),
+            new NbtByte("Invulnerable", 1)
+        };
+    }
+    public override string StructureFileLocation(string world_folder, string identifier)
+    {
+        return Path.Combine(world_folder, "structures", identifier.Replace(':', '_') + ".nbt");
+    }
 }
 
-public class Release1p14NbtFormat : IJavaNbtFormat
+public class Snapshot16w32aNbtFormat : Release1p10NbtFormat
 {
-    public NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Release1p14(map);
-    public bool StructuresSupported => true;
-    public NbtCompound CreateStructureFile(long?[,] mapids) => JavaStructureMethods.Release1p10(mapids);
+    protected override NbtCompound MakeItemFrame()
+    {
+        return new NbtCompound() {
+            new NbtString("id", "minecraft:item_frame"),
+            new NbtByte("Facing", 1),
+            new NbtByte("Fixed", 1),
+            new NbtByte("Invulnerable", 1)
+        };
+    }
 }
 
 public class Release1p16NbtFormat : IJavaNbtFormat
@@ -174,4 +188,9 @@ public class Release1p16NbtFormat : IJavaNbtFormat
     public NbtCompound CreateMapCompound(MapData map) => JavaMapMethods.Release1p16(map);
     public bool StructuresSupported => true;
     public NbtCompound CreateStructureFile(long?[,] mapids) => JavaStructureMethods.Release1p10(mapids);
+    public string StructureFileLocation(string world_folder, string identifier)
+    {
+        int colon = identifier.IndexOf(':');
+        return Path.Combine(world_folder, "generated", identifier[..colon], identifier[(colon + 1)..] + ".nbt");
+    }
 }

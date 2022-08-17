@@ -40,6 +40,8 @@ public class JavaWorld : World
                 return new Java1p16Version();
             if (intversion.Value >= 1128) // 17w17a
                 return new Java1p12Version();
+            if (intversion.Value >= 800)
+                return new Java1p11Version();
             if (intversion.Value >= 503)
                 return new Java1p10Version();
         }

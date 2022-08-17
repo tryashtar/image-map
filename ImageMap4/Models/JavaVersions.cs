@@ -41,7 +41,7 @@ public class Java1p8Version : IJavaVersion
 {
     public override string ToString() => "1.8+";
     public IMapColors Colors => JavaMapColors.Release1p8;
-    public IJavaNbtFormat NbtFormat => new Beta1p8NbtFormat();
+    public IJavaNbtFormat NbtFormat => new Release1p8NbtFormat();
 }
 
 //16w21a+
@@ -52,12 +52,20 @@ public class Java1p10Version : IJavaVersion
     public IJavaNbtFormat NbtFormat => new Release1p10NbtFormat();
 }
 
+//16w32a+
+public class Java1p11Version : IJavaVersion
+{
+    public override string ToString() => "1.11+";
+    public IMapColors Colors => JavaMapColors.Release1p8;
+    public IJavaNbtFormat NbtFormat => new Snapshot16w32aNbtFormat();
+}
+
 // 17w17a+
 public class Java1p12Version : IJavaVersion
 {
     public override string ToString() => "1.12+";
     public IMapColors Colors => JavaMapColors.Release1p12;
-    public IJavaNbtFormat NbtFormat => new Release1p12NbtFormat();
+    public IJavaNbtFormat NbtFormat => new Release1p10NbtFormat();
 }
 
 // 17w47a+
@@ -65,7 +73,7 @@ public class Java1p13Version : IJavaVersion
 {
     public override string ToString() => "1.13+";
     public IMapColors Colors => JavaMapColors.Release1p12;
-    public IJavaNbtFormat NbtFormat => new Release1p13NbtFormat();
+    public IJavaNbtFormat NbtFormat => new Release1p10NbtFormat();
 }
 
 // 19w02a+
@@ -73,7 +81,7 @@ public class Java1p14Version : IJavaVersion
 {
     public override string ToString() => "1.14+";
     public IMapColors Colors => JavaMapColors.Release1p12;
-    public IJavaNbtFormat NbtFormat => new Release1p14NbtFormat();
+    public IJavaNbtFormat NbtFormat => new Release1p10NbtFormat();
 }
 
 // 1.16 pre-6+
