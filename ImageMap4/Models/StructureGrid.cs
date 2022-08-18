@@ -14,8 +14,8 @@ public class StructureGrid
 {
     public string Identifier { get; }
     public Map?[,] Tiles { get; }
-    public int GridHeight => Tiles.GetLength(0);
-    public int GridWidth => Tiles.GetLength(1);
+    public int GridHeight => Tiles.GetLength(1);
+    public int GridWidth => Tiles.GetLength(0);
     public bool GlowingFrames { get; init; }
     public bool InvisibleFrames { get; init; }
     public StructureGrid(string identifier, Map?[,] tiles)
@@ -27,10 +27,10 @@ public class StructureGrid
     {
         Tiles = tiles;
         var name = new StringBuilder("imagemap:");
-        name.Append(tiles.GetLength(0));
+        name.Append(GridWidth);
         name.Append('x');
-        name.Append(tiles.GetLength(1));
-        name.Append('.');
+        name.Append(GridHeight);
+        name.Append('_');
         long? first_id = null;
         long? last_id = null;
         foreach (var map in tiles)
@@ -48,12 +48,12 @@ public class StructureGrid
     }
     public long?[,] ToIDGrid()
     {
-        long?[,] grid = new long?[GridHeight, GridWidth];
+        long?[,] grid = new long?[GridWidth, GridHeight];
         for (int y = 0; y < GridHeight; y++)
         {
             for (int x = 0; x < GridWidth; x++)
             {
-                grid[y, x] = Tiles[y, x]?.ID;
+                grid[x, y] = Tiles[x, y]?.ID;
             }
         }
         return grid;

@@ -17,7 +17,7 @@ public interface IJavaVersion
     byte[] EncodeColors(Image<Rgba32> image);
     NbtCompound CreateMapCompound(MapData map);
     NbtCompound MakeMapItem(long id);
-    NbtCompound MakeStructureItem(string identifier);
+    NbtCompound MakeStructureItem(StructureGrid structure);
     bool StructuresSupported { get; }
     NbtCompound CreateStructureFile(StructureGrid structure);
     string StructureFileLocation(string world_folder, string identifier);
@@ -66,15 +66,21 @@ public class JavaVersionBuilder
             }
             return compound;
         }
-        NbtCompound structure_maker(string identifier)
+        NbtCompound structure_maker(StructureGrid structure)
         {
             var compound = (NbtCompound)StructureItem.Clone();
             foreach (var item in compound.GetAllTags().OfType<NbtString>())
             {
                 if (item.Value == "@id")
-                    item.Parent[item.Name] = new NbtString(identifier);
+                    item.Parent[item.Name] = new NbtString(structure.Identifier);
                 else if (item.Value == "@name")
-                    item.Parent[item.Name] = new NbtString($"{{\"text\":\"{identifier}\",\"italic\":false}}");
+                    item.Parent[item.Name] = new NbtString($"{{\"text\":\"{structure.Identifier}\",\"italic\":false}}");
+                else if (item.Value == "@x")
+                    item.Parent[item.Name] = new NbtInt(1);
+                else if (item.Value == "@y")
+                    item.Parent[item.Name] = new NbtInt(structure.GridHeight);
+                else if (item.Value == "@z")
+                    item.Parent[item.Name] = new NbtInt(structure.GridWidth);
             }
             return compound;
         }
@@ -105,7 +111,7 @@ public class JavaVersionBuilder
             if (StructureFolder == "structures")
                 return Path.Combine(world, "structures", identifier.Replace(':', '_') + ".nbt");
             int colon = identifier.IndexOf(':');
-            return Path.Combine(world, StructureFolder, identifier[..colon], identifier[(colon + 1)..] + ".nbt");
+            return Path.Combine(world, StructureFolder, identifier[..colon], "structures", identifier[(colon + 1)..] + ".nbt");
         }
         return new JavaVersion(Name, GetPalette())
         {
@@ -143,7 +149,7 @@ public class JavaVersionBuilder
 
 public delegate NbtCompound MapDataMaker(MapData data);
 public delegate NbtCompound MapItemMaker(long id);
-public delegate NbtCompound StructureItemMaker(string identifier);
+public delegate NbtCompound StructureItemMaker(StructureGrid structure);
 public delegate NbtCompound ItemFrameMaker(bool glowing, bool invisible);
 public delegate string StructurePathGetter(string world, string identifier);
 
@@ -207,11 +213,11 @@ public class JavaVersion : IJavaVersion
     {
         var mapids = structure.ToIDGrid();
         var entities = new NbtList("entities");
-        for (int y = 0; y < mapids.GetLength(0); y++)
+        for (int y = 0; y < structure.GridHeight; y++)
         {
-            for (int x = 0; x < mapids.GetLength(1); x++)
+            for (int x = 0; x < structure.GridWidth; x++)
             {
-                long? val = mapids[y, x];
+                long? val = mapids[x, y];
                 if (val.HasValue)
                 {
                     var frame = FrameMaker(structure.GlowingFrames, structure.InvisibleFrames);
@@ -222,14 +228,15 @@ public class JavaVersion : IJavaVersion
                     entities.Add(new NbtCompound()
                     {
                         frame,
-                        new NbtList("blockPos") { new NbtInt(0), new NbtInt(y), new NbtInt(x) }
+                        new NbtList("blockPos") { new NbtInt(0), new NbtInt(structure.GridHeight - y - 1), new NbtInt(x) },
+                        new NbtList("pos") { new NbtDouble(0), new NbtDouble(structure.GridHeight - y - 1 + 0.5), new NbtDouble(x + 0.5) }
                     });
                 }
             }
         }
         return new NbtCompound("") {
             new NbtList("size") {
-                new NbtInt(1), new NbtInt(mapids.GetLength(0)), new NbtInt(mapids.GetLength(1))
+                new NbtInt(1), new NbtInt(structure.GridHeight), new NbtInt(structure.GridWidth)
             },
             entities,
             new NbtList("blocks") {
@@ -248,6 +255,6 @@ public class JavaVersion : IJavaVersion
 
     public NbtCompound CreateMapCompound(MapData map) => DataMaker(map);
     public NbtCompound MakeMapItem(long id) => MapMaker(id);
-    public NbtCompound MakeStructureItem(string identifier) => StructureMaker(identifier);
+    public NbtCompound MakeStructureItem(StructureGrid structure) => StructureMaker(structure);
     public string StructureFileLocation(string world_folder, string identifier) => StructurePath(world_folder, identifier);
 }

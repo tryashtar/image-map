@@ -22,7 +22,7 @@ public class StructureViewModel : ObservableObject
     public ICommand ConfirmCommand { get; }
     public ICommand CancelCommand { get; }
     public event EventHandler? OnClosed;
-    public event EventHandler<(StructureGrid grid, Inventory inventory)>? OnConfirmed;
+    public event EventHandler<(StructureGrid grid, IInventory inventory)>? OnConfirmed;
     public Map?[,] Grid { get; private set; } = new Map?[1, 1];
     private List<Map?> FlatGrid { get; } = new();
 
@@ -59,7 +59,7 @@ public class StructureViewModel : ObservableObject
         set { Properties.Settings.Default.InvisibleFrames = value; OnPropertyChanged(); }
     }
 
-    public Inventory SelectedInventory
+    public IInventory SelectedInventory
     {
         get { return Parent.PlayerList[Properties.Settings.Default.InventoryChoice]; }
         set { Properties.Settings.Default.InventoryChoice = Parent.PlayerList.IndexOf(value); OnPropertyChanged(); }

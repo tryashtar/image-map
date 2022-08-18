@@ -24,6 +24,7 @@ public class VersionManager
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .WithTypeConverter(new YamlColorConverter())
             .WithTypeConverter(new YamlNbtConverter())
+            .WithTypeConverter(new YamlNbtPathConverter())
             .Build();
         var updates = deserializer.Deserialize<UpdateLists>(Properties.Resources.versions);
         var java = new JavaVersionBuilder();
@@ -124,6 +125,38 @@ internal class YamlNbtConverter : IYamlTypeConverter
     }
 }
 
+internal class YamlNbtPathConverter : IYamlTypeConverter
+{
+    public bool Accepts(Type type)
+    {
+        return typeof(NbtPath).IsAssignableFrom(type);
+    }
+
+    public object ReadYaml(IParser parser, Type type)
+    {
+        if (parser.TryConsume<SequenceStart>(out _))
+        {
+            var list = new List<NbtPathNode>();
+            while (!parser.TryConsume<SequenceEnd>(out _))
+            {
+                var value = parser.Consume<Scalar>();
+                list.Add(NbtPathNode.Parse(value.Value));
+            }
+            return new NbtPath("", list.ToArray());
+        }
+        else
+        {
+            var scalar = parser.Consume<Scalar>();
+            return NbtPath.Parse(scalar.Value);
+        }
+    }
+
+    public void WriteYaml(IEmitter emitter, object? value, Type type)
+    {
+        throw new NotSupportedException();
+    }
+}
+
 public class JavaUpdate
 {
     public string Name;
@@ -167,7 +200,7 @@ public class BedrockVersionCheck
 
 public class JavaVersionCheck
 {
-    public string[]? Path;
+    public NbtPath? Path;
     public int? DataVersion;
     public bool Passes(NbtCompound leveldat)
     {
@@ -178,14 +211,7 @@ public class JavaVersionCheck
                 return dataversion.Value >= DataVersion.Value;
         }
         if (Path != null)
-        {
-            NbtTag? tag = leveldat;
-            foreach (var item in Path)
-            {
-                tag = leveldat?[item];
-            }
-            return tag != null;
-        }
+            return Path.Traverse(leveldat).Any();
         return false;
     }
 }

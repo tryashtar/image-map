@@ -21,7 +21,7 @@ public class MainViewModel : ObservableObject
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
     public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
     public ObservableList<Selectable<Map>> ExistingMaps { get; } = new();
-    public ReadOnlyCollection<Inventory>? PlayerList { get; private set; }
+    public ReadOnlyCollection<IInventory>? PlayerList { get; private set; }
     public ICollectionView ExistingMapsView
     {
         get { return CollectionViewSource.GetDefaultView(ExistingMaps); }
@@ -134,7 +134,7 @@ public class MainViewModel : ObservableObject
 
     public async Task AddImport(ImportSettings settings)
     {
-        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).DefaultIfEmpty(-1).Max() + 1;
+        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).Append(-1).Max() + 1;
         var maps = await Task.Run(() => SelectedWorld?.MakeMaps(settings));
         if (maps == null)
             return;

@@ -12,6 +12,7 @@ namespace ImageMap4;
 
 public class BedrockWorld : World
 {
+    private LevelDB DBAccess;
     public IBedrockVersion Version { get; }
     public override string Name { get; }
     public override string WorldIcon { get; }
@@ -33,22 +34,96 @@ public class BedrockWorld : World
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 
-    public override void AddStructure(StructureGrid structure, Inventory? inventory)
+    public override void AddStructure(StructureGrid structure, IInventory inventory)
     {
-        throw new NotImplementedException();
-    }
-
-    public override IEnumerable<Inventory> GetInventories()
-    {
-        yield return new LocalInventory();
-    }
-
-    private class LocalInventory : Inventory
-    {
-        public override string Name => "Local player";
-        public override void AddItem(NbtCompound item)
+        var blockdata = new NbtCompound("block_position_data");
+        var mapids = structure.ToIDGrid();
+        for (int y = 0; y < structure.GridHeight; y++)
         {
-            throw new NotImplementedException();
+            for (int x = 0; x < structure.GridWidth; x++)
+            {
+                long? id = mapids[x, structure.GridHeight - y - 1];
+                if (id.HasValue)
+                {
+                    blockdata.Add(new NbtCompound((y * structure.GridWidth + x).ToString()) {
+                        new NbtCompound("block_entity_data") {
+                            new NbtString("id", structure.GlowingFrames ? "GlowItemFrame" : "ItemFrame"),
+                            new NbtCompound("Item") {
+                                new NbtString("Name", "minecraft:filled_map"),
+                                new NbtByte("Count", 1),
+                                new NbtCompound("tag") {
+                                    new NbtLong("map_uuid", id.Value)
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+        var nbt = new NbtCompound("") {
+            new NbtInt("format_version", 1),
+            new NbtList("size") { new NbtInt(1), new NbtInt(structure.GridHeight), new NbtInt(structure.GridWidth) },
+            new NbtCompound("structure") {
+                new NbtList("block_indices") {
+                    new NbtList(Enumerable.Repeat(0, structure.GridHeight * structure.GridWidth).Select(x => new NbtInt(x))),
+                    new NbtList(Enumerable.Repeat(-1, structure.GridHeight * structure.GridWidth).Select(x => new NbtInt(x)))
+                },
+                new NbtList("entities"),
+                new NbtCompound("palette") {
+                    new NbtCompound("default") {
+                        new NbtList("block_palette") {
+                            new NbtCompound() {
+                                new NbtString("name", structure.GlowingFrames ? "minecraft:glow_frame" : "minecraft:frame"),
+                                new NbtCompound("states") {
+                                    new NbtInt("facing_direction", 4),
+                                    new NbtByte("item_frame_map_bit", 1)
+                                }
+                            }
+                        },
+                        blockdata
+                    }
+                }
+            },
+            new NbtList("structure_world_origin") { new NbtInt(0), new NbtInt(0), new NbtInt(0) }
+        };
+        var key = "structuretemplate_" + structure.Identifier;
+        var file = new NbtFile(nbt) { BigEndian = false };
+        using var db = OpenDB();
+        db.Put(key, file.SaveToBuffer(NbtCompression.None));
+        var item = new NbtCompound {
+            new NbtString("Name", "minecraft:structure_block"),
+            new NbtByte("Count", 1),
+            new NbtCompound("tag") {
+                new NbtInt("data", 2),
+                new NbtString("structureName", structure.Identifier),
+                new NbtInt("xStructureOffset", 0),
+                new NbtInt("yStructureOffset", 0),
+                new NbtInt("zStructureOffset", 0),
+                new NbtInt("xStructureSize", 1),
+                new NbtInt("yStructureSize", structure.GridHeight),
+                new NbtInt("zStructureSize", structure.GridWidth),
+                new NbtCompound("display") {
+                    new NbtString("Name", $"§r§d{structure.Identifier}§r")
+                }
+            }
+        };
+        inventory.AddItem(item);
+    }
+
+    public override IEnumerable<IInventory> GetInventories()
+    {
+        yield return new BedrockInventory("Local player", this, "~local_player");
+        var db = OpenDB();
+        using var iterator = db.CreateIterator();
+        iterator.Seek("player_server_");
+        while (iterator.IsValid())
+        {
+            var name = iterator.StringKey();
+            if (name.StartsWith("player_server_"))
+                yield return new BedrockInventory(name[15..], this, name);
+            else
+                break;
+            iterator.Next();
         }
     }
 
@@ -87,7 +162,9 @@ public class BedrockWorld : World
         foreach (var map in maps)
         {
             var nbt = new NbtFile { BigEndian = false };
-            nbt.RootTag = Version.CreateMapCompound(map);
+            var data = Version.CreateMapCompound(map);
+            data.Name = "";
+            nbt.RootTag = data;
             var bytes = nbt.SaveToBuffer(NbtCompression.None);
             batch.Put($"map_{map.ID}", bytes);
         }
@@ -106,8 +183,10 @@ public class BedrockWorld : World
         return result;
     }
 
-    private LevelDB OpenDB()
+    public LevelDB OpenDB()
     {
-        return new LevelDB(Path.Combine(Folder, "db"));
+        if (DBAccess == null || DBAccess.Disposed)
+            DBAccess = new LevelDB(Path.Combine(Folder, "db"));
+        return DBAccess;
     }
 }

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using TryashtarUtils.Nbt;
 
 namespace ImageMap4;
 
@@ -26,44 +27,29 @@ public class JavaWorld : World
         AccessDate = File.GetLastWriteTime(leveldat.FileName);
     }
 
-    public override void AddStructure(StructureGrid structure, Inventory inventory)
+    public override void AddStructure(StructureGrid structure, IInventory inventory)
     {
         var nbt = Version.CreateStructureFile(structure);
         var path = Version.StructureFileLocation(Folder, structure.Identifier);
         var file = new NbtFile(nbt) { BigEndian = true };
         Directory.CreateDirectory(Path.GetDirectoryName(path));
         file.SaveToFile(path, NbtCompression.GZip);
-        var item = Version.MakeStructureItem(structure.Identifier);
+        var item = Version.MakeStructureItem(structure);
         inventory.AddItem(item);
     }
 
-    public override IEnumerable<Inventory> GetInventories()
+    public override IEnumerable<IInventory> GetInventories()
     {
-        yield return new LocalInventory();
-    }
-
-    private class LocalInventory : Inventory
-    {
-        public override string Name => "Local player";
-        public override void AddItem(NbtCompound item)
+        yield return new JavaInventory("Local player", Path.Combine(Folder, "level.dat"), NbtPath.Parse("Data.Player.Inventory"));
+        var playerdata = Path.Combine(Folder, "playerdata");
+        if (Directory.Exists(playerdata))
         {
-            throw new NotImplementedException();
-        }
-    }
-
-    private class UUIDInventory : Inventory
-    {
-        private string _name;
-        public override string Name => _name;
-        private string File;
-        public UUIDInventory(string file)
-        {
-            File = file;
-            _name = Path.GetFileNameWithoutExtension(file);
-        }
-        public override void AddItem(NbtCompound item)
-        {
-            throw new NotImplementedException();
+            foreach (var file in Directory.GetFiles(playerdata, "*.dat"))
+            {
+                string uuid = Path.GetFileNameWithoutExtension(file);
+                if (uuid.Length == 36)
+                    yield return new JavaInventory(uuid, file, NbtPath.Parse("Inventory"));
+            }
         }
     }
 

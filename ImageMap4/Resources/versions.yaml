@@ -4,22 +4,22 @@ bedrock:
     version: [1,2]
   map_data:
     mapId: '@id'
-    parentMapId: -1
+    parentMapId: -1L
     colors: '@colors'
-    mapLocked: 1
-    scale: 4
-    dimension: 0
-    fullyExplored: 1
-    unlimitedTracking: 0
+    mapLocked: 1b
+    scale: 4b
+    dimension: 0b
+    fullyExplored: 1b
+    unlimitedTracking: 0b
     xCenter: 2147483647
     zCenter: 2147483647
-    height: 128
-    width: 128
+    height: 128s
+    width: 128s
 
 java:
 - name: Beta 1.8
   check:
-    path: [MapFeatures]
+    path: MapFeatures
   multipliers: [180, 220, 255, 220]
   set_base_colors:
   - transparent
@@ -53,7 +53,7 @@ java:
     unlimitedTracking: 0b
 - name: 13w42a
   check:
-    path: [Player, HealF]
+    path: Player.HealF
   add_base_colors:
   - ffffff
   - d87f33
@@ -79,18 +79,18 @@ java:
   - 700200
 - name: 1.7 # 13w43a
   check:
-    path: [Player, HealF]
+    path: Player.HealF
   multipliers: [180, 220, 255, 135]
 - name: 14w08a
   check:
-    path: [GameRules, doEntityDrops]
+    path: GameRules.doEntityDrops
   map_item:
     id: minecraft:filled_map
     Damage: '@s'
     Count: 1b
 - name: 1.8 # 1.8.1-pre1
   check:
-    path: [GameRules, doEntityDrops]
+    path: GameRules.doEntityDrops
   set_base_colors:
   - transparent
   - 7fb238
@@ -154,7 +154,7 @@ java:
     data_version: 800
   map_entity:
     id: '@id'
-    Facing: 1b
+    Facing: 4b
     Fixed: 1b
     Invulnerable: 1b
     Invisible: '@invisible'
@@ -200,15 +200,23 @@ java:
     trackingPosition: 0b
     unlimitedTracking: 0b
 - name: 1.13 # 18w01a
+  check:
+    data_version: 1459
   structure_item:
     id: minecraft:structure_block
     Count: 1b
     tag:
       BlockEntityTag:
+        id: minecraft:structure_block
         mode: LOAD
         name: '@id'
         ignoreEntities: 0b
-        id: minecraft:structure_block
+        posX: 0
+        posY: 0
+        posZ: 0
+        sizeX: '@x'
+        sizeY: '@y'
+        sizeZ: '@z'
       BlockStateTag:
         mode: load
       display:
