@@ -51,6 +51,7 @@ public class VersionManager
     }
 }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 internal class UpdateLists
 {
     public List<JavaUpdate> Java;
@@ -131,6 +132,7 @@ public class JavaUpdate
     public List<Rgba32>? SetBaseColors;
     public List<Rgba32>? AddBaseColors;
     public NbtCompound? MapItem;
+    public NbtCompound? StructureItem;
     public NbtCompound? MapData;
     public NbtCompound? MapEntity;
     public bool? StructuresSupported;
@@ -187,3 +189,4 @@ public class JavaVersionCheck
         return false;
     }
 }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

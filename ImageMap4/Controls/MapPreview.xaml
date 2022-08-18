@@ -15,7 +15,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <Image Source="{StaticResource MapBackground}"
+        <Image Source="{StaticResource ItemFrame}"
                RenderOptions.BitmapScalingMode="NearestNeighbor" />
         <Image RenderOptions.BitmapScalingMode="NearestNeighbor">
             <Image.Style>

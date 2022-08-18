@@ -21,9 +21,10 @@ namespace ImageMap4;
 public partial class StructureWindow : Window, IDropTarget
 {
     public StructureViewModel ViewModel => (StructureViewModel)DataContext;
-    public StructureWindow()
+    public StructureWindow(StructureViewModel context)
     {
         InitializeComponent();
+        this.DataContext = context;
         UpdateGrid();
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         ViewModel.OnClosed += (s, e) => this.Close();

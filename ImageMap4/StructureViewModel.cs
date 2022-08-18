@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using static ImageMap4.ImportViewModel;
 
 namespace ImageMap4;
 public class StructureViewModel : ObservableObject
@@ -21,7 +22,7 @@ public class StructureViewModel : ObservableObject
     public ICommand ConfirmCommand { get; }
     public ICommand CancelCommand { get; }
     public event EventHandler? OnClosed;
-    public event EventHandler<StructureGrid>? OnConfirmed;
+    public event EventHandler<(StructureGrid grid, Inventory inventory)>? OnConfirmed;
     public Map?[,] Grid { get; private set; } = new Map?[1, 1];
     private List<Map?> FlatGrid { get; } = new();
 
@@ -39,47 +40,32 @@ public class StructureViewModel : ObservableObject
         set { _gridHeight = value; UpdateGrid(); OnPropertyChanged(); }
     }
 
-    private MainViewModel? _parent;
-    public MainViewModel? Parent
+    private bool _javaMode;
+    public bool JavaMode
     {
-        get { return _parent; }
-        set
-        {
-            SetParent(value);
-            OnPropertyChanged();
-        }
+        get { return _javaMode; }
+        set { _javaMode = value; OnPropertyChanged(); }
     }
 
-    private void SetParent(MainViewModel? parent)
+    public bool GlowingFrames
     {
-        if (_parent != null)
-            _parent.ExistingMaps.ItemChanged -= ExistingMaps_ItemChanged;
-        _parent = parent;
-        FlatGrid.Clear();
-        if (_parent != null)
-        {
-            _parent.ExistingMaps.ItemChanged += ExistingMaps_ItemChanged;
-            var selected = _parent.ExistingMaps.Where(x => x.IsSelected).Select(x => x.Item).ToList();
-            FlatGrid.AddRange(selected);
-            int sqrt = (int)Math.Ceiling(Math.Sqrt(selected.Count));
-            for (int i = 0; i < sqrt; i++)
-            {
-                bool check(int val)
-                {
-                    int div = Math.DivRem(selected.Count, val, out int remain);
-                    if (remain == 0)
-                    {
-                        GridWidth = sqrt + i;
-                        GridHeight = div;
-                        return true;
-                    }
-                    return false;
-                }
-                if (check(sqrt + i) || check(sqrt - i))
-                    break;
-            }
-        }
+        get { return Properties.Settings.Default.GlowingFrames; }
+        set { Properties.Settings.Default.GlowingFrames = value; OnPropertyChanged(); }
     }
+
+    public bool InvisibleFrames
+    {
+        get { return Properties.Settings.Default.InvisibleFrames; }
+        set { Properties.Settings.Default.InvisibleFrames = value; OnPropertyChanged(); }
+    }
+
+    public Inventory SelectedInventory
+    {
+        get { return Parent.PlayerList[Properties.Settings.Default.InventoryChoice]; }
+        set { Properties.Settings.Default.InventoryChoice = Parent.PlayerList.IndexOf(value); OnPropertyChanged(); }
+    }
+
+    public MainViewModel Parent { get; }
 
     private void ExistingMaps_ItemChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -99,22 +85,43 @@ public class StructureViewModel : ObservableObject
         }
     }
 
-    public StructureViewModel()
+    public StructureViewModel(MainViewModel parent)
     {
         ConfirmCommand = new RelayCommand(() =>
         {
-            OnConfirmed?.Invoke(this, CreateStructure());
+            OnConfirmed?.Invoke(this, (CreateStructure(), SelectedInventory));
             OnClosed?.Invoke(this, EventArgs.Empty);
         });
         CancelCommand = new RelayCommand(() =>
         {
             OnClosed?.Invoke(this, EventArgs.Empty);
         });
+        Parent = parent;
+        parent.ExistingMaps.ItemChanged += ExistingMaps_ItemChanged;
+        var selected = parent.ExistingMaps.Where(x => x.IsSelected).Select(x => x.Item).ToList();
+        FlatGrid.AddRange(selected);
+        int sqrt = (int)Math.Ceiling(Math.Sqrt(selected.Count));
+        for (int i = 0; i < sqrt; i++)
+        {
+            bool check(int val)
+            {
+                int div = Math.DivRem(selected.Count, val, out int remain);
+                if (remain == 0)
+                {
+                    GridWidth = sqrt + i;
+                    GridHeight = div;
+                    return true;
+                }
+                return false;
+            }
+            if (check(sqrt + i) || check(sqrt - i))
+                break;
+        }
     }
 
     public StructureGrid CreateStructure()
     {
-        return new("temp", Grid);
+        return new(Grid) { GlowingFrames = GlowingFrames, InvisibleFrames = InvisibleFrames };
     }
 
     public void MoveMap(int from_x, int from_y, int to_x, int to_y)

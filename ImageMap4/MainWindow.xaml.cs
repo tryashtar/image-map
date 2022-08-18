@@ -109,8 +109,9 @@ public partial class MainWindow : Window, IDropTarget
     {
         if (ImportWindow == null || !ImportWindow.IsVisible)
         {
-            ImportWindow = new(ViewModel.SelectedWorld is JavaWorld);
+            ImportWindow = new();
             ImportWindow.Owner = this;
+            ImportWindow.ViewModel.JavaMode = ViewModel.SelectedWorld is JavaWorld;
             ImportWindow.ViewModel.OnConfirmed += (s, e) => _ = ViewModel.AddImport(e);
         }
         ImportWindow.Show();
@@ -123,10 +124,10 @@ public partial class MainWindow : Window, IDropTarget
     {
         if (StructureWindow == null || !StructureWindow.IsVisible)
         {
-            StructureWindow = new();
+            StructureWindow = new(new StructureViewModel(this.ViewModel));
             StructureWindow.Owner = this;
-            StructureWindow.ViewModel.Parent = this.ViewModel;
-            StructureWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.AddStructure(e);
+            StructureWindow.ViewModel.JavaMode = ViewModel.SelectedWorld is JavaWorld;
+            StructureWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.SelectedWorld.AddStructure(e.grid, e.inventory);
         }
         StructureWindow.Show();
         StructureWindow.Activate();

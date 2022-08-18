@@ -133,6 +133,17 @@ java:
     data_version: 503
   structures_supported: true
   structure_folder: structures
+  structure_item:
+    id: minecraft:structure_block
+    Count: 1b
+    tag:
+      BlockEntityTag:
+        mode: LOAD
+        name: '@id'
+        ignoreEntities: 0b
+        id: minecraft:structure_block
+      display:
+        Name: '@id'
   map_entity:
     id: ItemFrame
     Facing: 1b
@@ -142,10 +153,11 @@ java:
   check:
     data_version: 800
   map_entity:
-    id: item_frame
+    id: '@id'
     Facing: 1b
     Fixed: 1b
     Invulnerable: 1b
+    Invisible: '@invisible'
 - name: 1.12 # 17w17a
   check:
     data_version: 1128
@@ -166,7 +178,7 @@ java:
   - 4c522a
   - 8e3c2e
   - 251610
-- name: 1.13 # 17w47a
+- name: 17w47a
   check:
     data_version: 1451
   structure_folder: generated
@@ -187,6 +199,20 @@ java:
     zCenter: 2147483647
     trackingPosition: 0b
     unlimitedTracking: 0b
+- name: 1.13 # 18w01a
+  structure_item:
+    id: minecraft:structure_block
+    Count: 1b
+    tag:
+      BlockEntityTag:
+        mode: LOAD
+        name: '@id'
+        ignoreEntities: 0b
+        id: minecraft:structure_block
+      BlockStateTag:
+        mode: load
+      display:
+        Name: '@name'
 - name: 1.16 # 1.16-pre6
   check:
     data_version: 2562

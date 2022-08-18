@@ -15,10 +15,9 @@ namespace ImageMap4;
 public partial class ImportWindow : Window
 {
     public ImportViewModel ViewModel => (ImportViewModel)DataContext;
-    public ImportWindow(bool java)
+    public ImportWindow()
     {
         InitializeComponent();
-        ViewModel.JavaMode = java;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         ViewModel.OnClosed += (s, e) => this.Close();
         UpdateGrid();
@@ -43,7 +42,7 @@ public partial class ImportWindow : Window
         {
             for (int x = 0; x < ViewModel.GridWidth; x++)
             {
-                var preview = new Image() { Source = (ImageSource)this.Resources["MapBackground"] };
+                var preview = new Image() { Source = (ImageSource)this.Resources["ItemFrame"] };
                 RenderOptions.SetBitmapScalingMode(preview, BitmapScalingMode.NearestNeighbor);
                 Grid.SetColumn(preview, x);
                 Grid.SetRow(preview, y);

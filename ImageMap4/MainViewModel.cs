@@ -40,7 +40,9 @@ public class MainViewModel : ObservableObject
             {
                 MapCTS = new();
                 _ = RefreshMaps(MapCTS.Token);
-                PlayerList = _selectedWorld.GetInventories().ToList().AsReadOnly();
+                var players = _selectedWorld.GetInventories().ToList();
+                players.Insert(0, new NoInventory());
+                PlayerList = players.AsReadOnly();
                 OnPropertyChanged(nameof(PlayerList));
             }
         }
@@ -51,6 +53,12 @@ public class MainViewModel : ObservableObject
     {
         get { return Properties.Settings.Default.ShowEmptyMaps; }
         set { Properties.Settings.Default.ShowEmptyMaps = value; OnPropertyChanged(); ExistingMapsView.Refresh(); }
+    }
+
+    public bool CreateStructures
+    {
+        get { return Properties.Settings.Default.CreateStructures; }
+        set { Properties.Settings.Default.CreateStructures = value; OnPropertyChanged(); }
     }
 
     public MainViewModel()
@@ -135,10 +143,5 @@ public class MainViewModel : ObservableObject
             ImportingMaps.Add(new Selectable<Map>(new Map(id, item)));
             id++;
         }
-    }
-
-    public void AddStructure(StructureGrid structure)
-    {
-        SelectedWorld?.AddStructure(structure, null);
     }
 }

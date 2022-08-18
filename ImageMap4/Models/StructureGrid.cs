@@ -16,10 +16,35 @@ public class StructureGrid
     public Map?[,] Tiles { get; }
     public int GridHeight => Tiles.GetLength(0);
     public int GridWidth => Tiles.GetLength(1);
+    public bool GlowingFrames { get; init; }
+    public bool InvisibleFrames { get; init; }
     public StructureGrid(string identifier, Map?[,] tiles)
     {
         Identifier = identifier;
         Tiles = tiles;
+    }
+    public StructureGrid(Map?[,] tiles)
+    {
+        Tiles = tiles;
+        var name = new StringBuilder("imagemap:");
+        name.Append(tiles.GetLength(0));
+        name.Append('x');
+        name.Append(tiles.GetLength(1));
+        name.Append('.');
+        long? first_id = null;
+        long? last_id = null;
+        foreach (var map in tiles)
+        {
+            if (map != null)
+            {
+                first_id ??= map.ID;
+                last_id = map.ID;
+            }
+        }
+        name.Append(first_id);
+        name.Append('-');
+        name.Append(last_id);
+        Identifier = name.ToString();
     }
     public long?[,] ToIDGrid()
     {

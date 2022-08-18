@@ -213,21 +213,28 @@
                 <StackPanel Grid.Column="0"
                             Grid.Row="0"
                             Margin="10,5,10,5">
-                    <TextBlock Margin="0,0,0,5">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Text"
-                                        Value="{Binding ImportingMaps.Count, StringFormat=Importing – {0} maps}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ImportingMaps.Count}"
-                                                 Value="0">
-                                        <Setter Property="Text"
-                                                Value="Importing" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                    <DockPanel>
+                        <TextBlock Margin="0,0,0,5">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text"
+                                            Value="{Binding ImportingMaps.Count, StringFormat=Importing – {0} maps}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ImportingMaps.Count}"
+                                                     Value="0">
+                                            <Setter Property="Text"
+                                                    Value="Importing" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <CheckBox Content="Create structures"
+                                  IsChecked="{Binding CreateStructures}"
+                                  FontSize="16"
+                                  VerticalContentAlignment="Center"
+                                  HorizontalAlignment="Right" />
+                    </DockPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Open"
                                 Padding="15,5,15,5"

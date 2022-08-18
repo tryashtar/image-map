@@ -12,3 +12,9 @@ public abstract class Inventory
     public abstract string Name { get; }
     public abstract void AddItem(NbtCompound item);
 }
+
+public class NoInventory : Inventory
+{
+    public override string Name => "None";
+    public override void AddItem(NbtCompound item) { }
+}
