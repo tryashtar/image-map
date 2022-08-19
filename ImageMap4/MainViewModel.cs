@@ -17,6 +17,8 @@ namespace ImageMap4;
 public class MainViewModel : ObservableObject
 {
     public ICommand TransferAllCommand { get; }
+    public ICommand UndoCommand { get; }
+    public ICommand RedoCommand { get; }
     public ObservableCollection<JavaWorld> JavaWorlds { get; } = new();
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
     public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
@@ -77,6 +79,8 @@ public class MainViewModel : ObservableObject
             }
             ImportingMaps.Clear();
         });
+        UndoCommand = new RelayCommand(() => UndoHistory.Undo());
+        RedoCommand = new RelayCommand(() => UndoHistory.Redo());
         RefreshWorlds();
     }
 
@@ -150,16 +154,28 @@ public class MainViewModel : ObservableObject
         }
     }
 
-    public async Task AddImport(ImportSettings settings)
+    public void AddImport(ImportSettings settings)
     {
-        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).Append(-1).Max() + 1;
-        var maps = await Task.Run(() => SelectedWorld?.MakeMaps(settings));
-        if (maps == null)
+        if (SelectedWorld == null)
             return;
-        foreach (var item in maps)
+        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).Append(-1).Max() + 1;
+        var maps = SelectedWorld.MakeMaps(settings).Select(x => new Selectable<Map>(new Map(id++, x))).ToList();
+        UndoHistory.Perform(() =>
         {
-            ImportingMaps.Add(new Selectable<Map>(new Map(id, item)));
-            id++;
-        }
+            ImportingMaps.AddRange(maps);
+        }, () =>
+        {
+            foreach (var item in maps)
+            {
+                for (int i = ImportingMaps.Count - 1; i >= 0; i--)
+                {
+                    if (ImportingMaps[i] == item)
+                    {
+                        ImportingMaps.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+        });
     }
 }

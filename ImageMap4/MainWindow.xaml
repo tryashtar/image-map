@@ -19,6 +19,12 @@
         <KeyBinding Modifiers="Ctrl"
                     Key="V"
                     Command="{Binding PasteCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+        <KeyBinding Modifiers="Ctrl"
+                    Key="Z"
+                    Command="{Binding UndoCommand}" />
+        <KeyBinding Modifiers="Ctrl+Shift"
+                    Key="Z"
+                    Command="{Binding RedoCommand}" />
     </Window.InputBindings>
     <Window.Resources>
         <ResourceDictionary>

@@ -67,7 +67,11 @@ public partial class MainWindow : Window, IDropTarget
             if (window.ShowDialog() ?? false)
             {
                 if (window.Result == ChangeResult.Confirmed)
-                    x.Item.ID = window.ID;
+                {
+                    long old_id = x.Item.ID;
+                    long new_id = window.ID;
+                    UndoHistory.Perform(() => x.Item.ID = new_id, () => x.Item.ID = old_id);
+                }
             }
         });
         InitializeComponent();
@@ -124,7 +128,7 @@ public partial class MainWindow : Window, IDropTarget
             ImportWindow = new();
             ImportWindow.Owner = this;
             ImportWindow.ViewModel.JavaMode = ViewModel.SelectedWorld is JavaWorld;
-            ImportWindow.ViewModel.OnConfirmed += (s, e) => _ = ViewModel.AddImport(e);
+            ImportWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.AddImport(e);
         }
         ImportWindow.Show();
         ImportWindow.Activate();
