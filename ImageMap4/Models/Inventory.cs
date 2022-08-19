@@ -19,6 +19,7 @@ public interface IInventory
     void AddItem(NbtCompound item);
 }
 
+// I would prefer if we just used null for this, but we need something to show up for "Name" in the combobox
 public class NoInventory : IInventory
 {
     public string Name => "None";
@@ -37,6 +38,8 @@ public class JavaInventory : IInventory, INotifyPropertyChanged
         DataPath = path;
         if (Name.Length == 36)
         {
+            // convert UUIDs to playernames
+            // first check in cache, which is like a slow dictionary where keys are in even places and values in odd
             bool found = false;
             if (Properties.Settings.Default.UsernameCache == null)
                 Properties.Settings.Default.UsernameCache = new();
@@ -51,6 +54,9 @@ public class JavaInventory : IInventory, INotifyPropertyChanged
             }
             if (!found)
             {
+                // get name from Mojang's API
+                // if it fails, just ignore
+                // if it succeeds, cache it forever
                 Debug.WriteLine($"Looking up UUID {Name}");
                 var result = Client.GetAsync($"https://api.mojang.com/user/profiles/{Name}/names");
                 result.ContinueWith(x =>
@@ -103,6 +109,7 @@ public class BedrockInventory : IInventory
     public readonly string Key;
     public BedrockInventory(string name, BedrockWorld world, string key)
     {
+        // Name could also be a UUID, but it seems impossible to get a username from this
         Name = name;
         World = world;
         Key = key;
@@ -115,6 +122,7 @@ public class BedrockInventory : IInventory
         var file = new NbtFile() { BigEndian = false };
         file.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
         var items = file.GetRootTag<NbtCompound>().Get<NbtList>("Inventory");
+        // remember bedrock saves empty slots
         foreach (NbtCompound slot in items.ToList())
         {
             if (slot.Get<NbtByte>("Count").Value == 0)

@@ -11,6 +11,7 @@ using System.Windows.Media;
 
 namespace ImageMap4;
 
+// map + ID, this is separate because we need to generate images without assigning them an ID yet
 public class Map : ObservableObject
 {
     private long _id;
@@ -32,10 +33,12 @@ public class Map : ObservableObject
     }
 }
 
+// doesn't contain all the map info (center, dimension, etc), just the pixels
 public class MapData
 {
     public Image<Rgba32> Image { get; }
     public Image<Rgba32> Original { get; }
+    // makes it easier to render if we just have properties for this
     public ImageSource OriginalSource { get; }
     public ImageSource ImageSource { get; }
     public byte[] Colors { get; }

@@ -26,6 +26,7 @@ public class StructureGrid
     public StructureGrid(Map?[,] tiles)
     {
         Tiles = tiles;
+        // generate name automatically from size and map IDs
         var name = new StringBuilder("imagemap:");
         name.Append(GridWidth);
         name.Append('x');

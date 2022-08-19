@@ -39,6 +39,8 @@ public partial class SquareGrid : UserControl
         get { return (int)GetValue(RowsProperty); }
         set { SetValue(RowsProperty, value); }
     }
+
+    // goes on top of the grid, but underneath the gridlines
     public FrameworkElement Inside
     {
         get { return (FrameworkElement)GetValue(InsideProperty); }

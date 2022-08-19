@@ -75,7 +75,6 @@ public class JavaWorld : World
         nbt.LoadFromFile(file, NbtCompression.GZip, null);
         var colors = nbt.GetRootTag<NbtCompound>().Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
         var image = Version.Decode(colors);
-        ProcessImage(image, new ProcessSettings(null, new EuclideanAlgorithm()));
         return new Map(id, new MapData(image, colors));
     }
 
@@ -87,7 +86,9 @@ public class JavaWorld : World
             var data = Version.CreateMapCompound(map.Data);
             data.Name = "data";
             nbt.GetRootTag<NbtCompound>().Add(data);
-            nbt.SaveToFile(Path.Combine(Folder, "data", $"map_{map.ID}.dat"), NbtCompression.GZip);
+            var folder = Path.Combine(Folder, "data");
+            Directory.CreateDirectory(folder);
+            nbt.SaveToFile(Path.Combine(folder, $"map_{map.ID}.dat"), NbtCompression.GZip);
         }
     }
 

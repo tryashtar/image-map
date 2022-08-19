@@ -183,6 +183,10 @@ public class BedrockWorld : World
         return result;
     }
 
+    // we definitely only want one LevelDB instance accessing this world at a time
+    // it's nice to open on demand and dispose it when you're done
+    // but that's not very threadsafe (e.g. GetMapsAsync)
+    // seems to work ok for now, but could be worth taking another look at
     public LevelDB OpenDB()
     {
         if (DBAccess == null || DBAccess.Disposed)

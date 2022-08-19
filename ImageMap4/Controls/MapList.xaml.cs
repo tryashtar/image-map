@@ -31,9 +31,10 @@ public partial class MapList : UserControl
         get { return (ContextMenu)GetValue(MapMenuProperty); }
         set { SetValue(MapMenuProperty, value); }
     }
+    // icon that appears next to the map name (used for warnings)
     public DataTemplate Status { get; set; } = new();
+    // can't be much more specific than IEnumerable because we bind an ICollectionView to this
     public IEnumerable<Selectable<Map>> Maps => ((IEnumerable)DataContext).Cast<Selectable<Map>>();
-    private Selectable<Map>? LastClicked;
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
 
@@ -56,6 +57,7 @@ public partial class MapList : UserControl
         });
     }
 
+    private Selectable<Map>? LastClicked;
     private void Map_MouseDown(object sender, MouseButtonEventArgs e)
     {
         var map = (Selectable<Map>)((FrameworkElement)sender).DataContext;
@@ -73,6 +75,7 @@ public partial class MapList : UserControl
         else
         {
             map.IsSelected = !map.IsSelected;
+            // yes this is bad... maybe we should enumerate the controls instead?
             var maps = Maps.ToList();
             if (LastClicked != null && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
             {
@@ -106,6 +109,7 @@ public class Selectable<T> : ObservableObject
             p.PropertyChanged += Item_PropertyChanged;
     }
 
+    // hack to make sure changes to maps' IDs bubble up to ObservableList
     private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         OnPropertyChanged(e.PropertyName);
