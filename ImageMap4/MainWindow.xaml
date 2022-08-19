@@ -86,9 +86,8 @@
         <Style TargetType="Window">
             <Setter Property="Title">
                 <Setter.Value>
-                    <MultiBinding StringFormat="Image Map – {0} ({1})">
+                    <MultiBinding StringFormat="Image Map – {0}">
                         <Binding Path="SelectedWorld.Name" />
-                        <Binding Path="SelectedWorld.Version.Name" />
                     </MultiBinding>
                 </Setter.Value>
             </Setter>
@@ -245,10 +244,39 @@
                         <Button Content="Open"
                                 Padding="15,5,15,5"
                                 Click="OpenButton_Click" />
-                        <Button Content="Send All to World"
-                                Command="{Binding TransferAllCommand}"
-                                Margin="10,0,0,0"
-                                Padding="15,5,15,5">
+                        <Button Command="{Binding TransferAllCommand}"
+                                Margin="10,0,0,0">
+                            <Button.Content>
+                                <DockPanel>
+                                    <TextBlock Text="Send All to World"
+                                               Padding="15,5,15,5" />
+                                    <Image Source="{StaticResource WarningIcon}"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                           SnapsToDevicePixels="True"
+                                           Margin="-5,0,10,0"
+                                           HorizontalAlignment="Right"
+                                           ToolTipService.InitialShowDelay="1">
+                                        <Image.ToolTip>
+                                            <ToolTip>
+                                                <TextBlock Text="{Binding ConflictingIDs.Count, StringFormat={}{0} maps will be overwritten}" />
+                                            </ToolTip>
+                                        </Image.ToolTip>
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Visibility"
+                                                        Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Value="0"
+                                                                 Binding="{Binding ConflictingIDs.Count}">
+                                                        <Setter Property="Visibility"
+                                                                Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                </DockPanel>
+                            </Button.Content>
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Visibility"
@@ -281,9 +309,11 @@
                         <DataTemplate>
                             <Image Source="{StaticResource WarningIcon}"
                                    RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                   SnapsToDevicePixels="True"
                                    Margin="0,0,5,0"
                                    HorizontalAlignment="Right"
-                                   ToolTip="A map with this ID already exists in the world">
+                                   ToolTip="A map with this ID already exists in the world"
+                                   ToolTipService.InitialShowDelay="1">
                                 <Image.Style>
                                     <Style TargetType="Image">
                                         <Setter Property="Visibility"
@@ -293,7 +323,7 @@
                                                 <DataTrigger.Binding>
                                                     <MultiBinding Converter="{StaticResource ConflictChecker}">
                                                         <Binding Path="Item.ID" />
-                                                        <Binding Path="DataContext.ExistingMaps"
+                                                        <Binding Path="DataContext.ConflictingIDs"
                                                                  RelativeSource="{RelativeSource AncestorType=Window}" />
                                                     </MultiBinding>
                                                 </DataTrigger.Binding>
@@ -369,7 +399,35 @@
                                Grid.Row="1"
                                DataContext="{Binding ExistingMapsView}">
                     <local:MapList.Status>
-                        <DataTemplate />
+                        <DataTemplate>
+                            <Image Source="{StaticResource WarningIcon}"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                   SnapsToDevicePixels="True"
+                                   Margin="0,0,5,0"
+                                   HorizontalAlignment="Right"
+                                   ToolTip="This map will be overwritten"
+                                   ToolTipService.InitialShowDelay="1">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource ConflictChecker}">
+                                                        <Binding Path="Item.ID" />
+                                                        <Binding Path="DataContext.ConflictingIDs"
+                                                                 RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
+                                                <Setter Property="Visibility"
+                                                        Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </DataTemplate>
                     </local:MapList.Status>
                 </local:MapList>
             </Grid>

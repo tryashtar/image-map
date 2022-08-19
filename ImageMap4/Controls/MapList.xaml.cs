@@ -31,7 +31,7 @@ public partial class MapList : UserControl
         get { return (ContextMenu)GetValue(MapMenuProperty); }
         set { SetValue(MapMenuProperty, value); }
     }
-    public DataTemplate Status { get; set; }
+    public DataTemplate Status { get; set; } = new();
     public IEnumerable<Selectable<Map>> Maps => ((IEnumerable)DataContext).Cast<Selectable<Map>>();
     private Selectable<Map>? LastClicked;
     public ICommand SelectAllCommand { get; }
@@ -102,5 +102,12 @@ public class Selectable<T> : ObservableObject
     {
         Item = item;
         _isSelected = selected;
+        if (Item is INotifyPropertyChanged p)
+            p.PropertyChanged += Item_PropertyChanged;
+    }
+
+    private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        OnPropertyChanged(e.PropertyName);
     }
 }

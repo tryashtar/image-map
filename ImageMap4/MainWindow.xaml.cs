@@ -203,8 +203,8 @@ public class ConflictChecker : IMultiValueConverter
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
         var id = (long)values[0];
-        var maps = (ICollection<Selectable<Map>>)values[1];
-        return maps.Any(x => x.Item.ID == id);
+        var maps = (ICollection<long>)values[1];
+        return maps.Contains(id);
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

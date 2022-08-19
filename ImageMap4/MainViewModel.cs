@@ -49,6 +49,8 @@ public class MainViewModel : ObservableObject
     }
     private CancellationTokenSource MapCTS = new();
 
+    public HashSet<long> ConflictingIDs { get; } = new();
+
     public bool ShowEmptyMaps
     {
         get { return Properties.Settings.Default.ShowEmptyMaps; }
@@ -64,6 +66,8 @@ public class MainViewModel : ObservableObject
     public MainViewModel()
     {
         ExistingMapsView.Filter = x => ShowEmptyMaps || !((Selectable<Map>)x).Item.Data.IsEmpty;
+        ImportingMaps.ItemChanged += Maps_ItemChanged;
+        ExistingMaps.ItemChanged += Maps_ItemChanged;
         TransferAllCommand = new RelayCommand(() =>
         {
             SelectedWorld?.AddMaps(ImportingMaps.Select(x => x.Item));
@@ -74,6 +78,20 @@ public class MainViewModel : ObservableObject
             ImportingMaps.Clear();
         });
         RefreshWorlds();
+    }
+
+    private void Maps_ItemChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Map.ID))
+        {
+            ConflictingIDs.Clear();
+            var conflicts = ExistingMaps.Select(x => x.Item.ID).Intersect(ImportingMaps.Select(x => x.Item.ID));
+            foreach (var item in conflicts)
+            {
+                ConflictingIDs.Add(item);
+            }
+            OnPropertyChanged(nameof(ConflictingIDs));
+        }
     }
 
     private static readonly IComparer<Selectable<Map>> Sorter = new LambdaComparer<Selectable<Map>, long>(x => x.Item.ID);
