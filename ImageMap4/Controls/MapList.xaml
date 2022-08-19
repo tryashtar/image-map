@@ -54,11 +54,14 @@
                                       Width="128"
                                       Height="128"
                                       Margin="4" />
-                    <TextBlock Text="{Binding Item.ID, StringFormat=map_{0}}"
-                               Foreground="Black"
-                               FontWeight="Medium"
-                               FontSize="13"
-                               Margin="4,0,0,4" />
+                    <DockPanel>
+                        <TextBlock Text="{Binding Item.ID, StringFormat=map_{0}}"
+                                   Foreground="Black"
+                                   FontWeight="Medium"
+                                   FontSize="13"
+                                   Margin="4,0,0,4" />
+                        <ContentPresenter ContentTemplate="{Binding Status, ElementName=This}" />
+                    </DockPanel>
                 </StackPanel>
             </DataTemplate>
         </ItemsControl.ItemTemplate>

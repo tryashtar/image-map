@@ -20,6 +20,7 @@ using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace ImageMap4;
 /// <summary>
@@ -194,5 +195,20 @@ public partial class MainWindow : Window, IDropTarget
             ViewModel.SelectedWorld = (World)BedrockWorldList.SelectedItem;
             TabList.SelectedItem = MapsTab;
         }
+    }
+}
+
+public class ConflictChecker : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        var id = (long)values[0];
+        var maps = (ICollection<Selectable<Map>>)values[1];
+        return maps.Any(x => x.Item.ID == id);
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
     }
 }

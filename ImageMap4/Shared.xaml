@@ -7,4 +7,6 @@
                  UriSource="../Icons/item_frame.png" />
     <BitmapImage x:Key="GlowItemFrame"
                  UriSource="../Icons/glow_item_frame.png" />
+    <BitmapImage x:Key="WarningIcon"
+                 UriSource="../Icons/warning.png" />
 </ResourceDictionary>

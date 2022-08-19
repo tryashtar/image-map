@@ -25,6 +25,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Shared.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <local:ConflictChecker x:Key="ConflictChecker" />
             <ContextMenu x:Key="WorldMenu">
                 <MenuItem Header="Open folder"
                           Command="{Binding OpenWorldFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -275,7 +276,37 @@
                                dd:DragDrop.IsDropTarget="True"
                                dd:DragDrop.DropHandler="{Binding ElementName=This}"
                                DataContext="{Binding ImportingMaps}"
-                               MapMenu="{StaticResource ImportingMenu}" />
+                               MapMenu="{StaticResource ImportingMenu}">
+                    <local:MapList.Status>
+                        <DataTemplate>
+                            <Image Source="{StaticResource WarningIcon}"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                   Margin="0,0,5,0"
+                                   HorizontalAlignment="Right"
+                                   ToolTip="A map with this ID already exists in the world">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource ConflictChecker}">
+                                                        <Binding Path="Item.ID" />
+                                                        <Binding Path="DataContext.ExistingMaps"
+                                                                 RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
+                                                <Setter Property="Visibility"
+                                                        Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </DataTemplate>
+                    </local:MapList.Status>
+                </local:MapList>
                 <TextBlock Grid.Column="0"
                            Grid.Row="1"
                            Text="Open, drag, or paste images here to import and convert them to maps."
@@ -336,7 +367,11 @@
                 </StackPanel>
                 <local:MapList Grid.Column="1"
                                Grid.Row="1"
-                               DataContext="{Binding ExistingMapsView}" />
+                               DataContext="{Binding ExistingMapsView}">
+                    <local:MapList.Status>
+                        <DataTemplate />
+                    </local:MapList.Status>
+                </local:MapList>
             </Grid>
         </TabItem>
     </TabControl>

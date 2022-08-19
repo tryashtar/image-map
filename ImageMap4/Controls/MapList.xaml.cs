@@ -31,6 +31,7 @@ public partial class MapList : UserControl
         get { return (ContextMenu)GetValue(MapMenuProperty); }
         set { SetValue(MapMenuProperty, value); }
     }
+    public DataTemplate Status { get; set; }
     public IEnumerable<Selectable<Map>> Maps => ((IEnumerable)DataContext).Cast<Selectable<Map>>();
     private Selectable<Map>? LastClicked;
     public ICommand SelectAllCommand { get; }
