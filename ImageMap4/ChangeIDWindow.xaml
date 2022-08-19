@@ -1,0 +1,44 @@
+﻿<Window x:Class="ImageMap4.ChangeIDWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ImageMap4"
+        xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="Change map ID"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        FontSize="20">
+    <Window.InputBindings>
+        <KeyBinding Key="Esc"
+                    Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+        <KeyBinding Key="Return"
+                    Command="{Binding ConfirmCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+    </Window.InputBindings>
+    <StackPanel Margin="20">
+        <DockPanel>
+            <TextBlock Text="map_"
+                       DockPanel.Dock="Left"
+                       Margin="0,5,5,0" />
+            <tk:IntegerUpDown x:Name="Input"
+                              Value="{Binding ID, RelativeSource={RelativeSource AncestorType=Window}}"
+                              TextAlignment="Left" />
+        </DockPanel>
+        <StackPanel Orientation="Horizontal"
+                    Margin="0,15,0,0">
+            <Button Content="Confirm"
+                    Command="{Binding ConfirmCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Padding="10,5,10,5" />
+            <Button Content="Auto"
+                    Command="{Binding AutoCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Padding="10,5,10,5"
+                    Margin="5,0,0,0" />
+            <Button Content="Cancel"
+                    Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Padding="10,5,10,5"
+                    Margin="5,0,0,0" />
+        </StackPanel>
+    </StackPanel>
+</Window>

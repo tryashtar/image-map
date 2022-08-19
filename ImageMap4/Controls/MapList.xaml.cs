@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,6 +23,14 @@ namespace ImageMap4;
 /// </summary>
 public partial class MapList : UserControl
 {
+    public static readonly DependencyProperty MapMenuProperty =
+            DependencyProperty.Register(nameof(MapMenu), typeof(ContextMenu),
+            typeof(MapList), new FrameworkPropertyMetadata());
+    public ContextMenu MapMenu
+    {
+        get { return (ContextMenu)GetValue(MapMenuProperty); }
+        set { SetValue(MapMenuProperty, value); }
+    }
     public IEnumerable<Selectable<Map>> Maps => ((IEnumerable)DataContext).Cast<Selectable<Map>>();
     private Selectable<Map>? LastClicked;
     public ICommand SelectAllCommand { get; }
@@ -50,15 +58,29 @@ public partial class MapList : UserControl
     private void Map_MouseDown(object sender, MouseButtonEventArgs e)
     {
         var map = (Selectable<Map>)((FrameworkElement)sender).DataContext;
-        map.IsSelected = !map.IsSelected;
-        var maps = Maps.ToList();
-        if (LastClicked != null && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+        if (e.RightButton == MouseButtonState.Pressed)
         {
-            int first = maps.IndexOf(LastClicked);
-            int last = maps.IndexOf(map);
-            for (int i = Math.Min(first, last); i <= Math.Max(first, last); i++)
+            if (!map.IsSelected)
             {
-                maps[i].IsSelected = map.IsSelected;
+                foreach (var item in Maps)
+                {
+                    item.IsSelected = false;
+                }
+                map.IsSelected = true;
+            }
+        }
+        else
+        {
+            map.IsSelected = !map.IsSelected;
+            var maps = Maps.ToList();
+            if (LastClicked != null && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+            {
+                int first = maps.IndexOf(LastClicked);
+                int last = maps.IndexOf(map);
+                for (int i = Math.Min(first, last); i <= Math.Max(first, last); i++)
+                {
+                    maps[i].IsSelected = map.IsSelected;
+                }
             }
         }
         LastClicked = map;

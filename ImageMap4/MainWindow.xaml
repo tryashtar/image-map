@@ -30,6 +30,11 @@
                           Command="{Binding OpenWorldFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                           CommandParameter="{Binding}" />
             </ContextMenu>
+            <ContextMenu x:Key="ImportingMenu">
+                <MenuItem Header="Change ID"
+                          Command="{Binding ChangeIDCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding}" />
+            </ContextMenu>
             <Style x:Key="WorldCard"
                    TargetType="ListViewItem">
                 <Style.Triggers>
@@ -269,7 +274,8 @@
                                Grid.Row="1"
                                dd:DragDrop.IsDropTarget="True"
                                dd:DragDrop.DropHandler="{Binding ElementName=This}"
-                               DataContext="{Binding ImportingMaps}" />
+                               DataContext="{Binding ImportingMaps}"
+                               MapMenu="{StaticResource ImportingMenu}" />
                 <TextBlock Grid.Column="0"
                            Grid.Row="1"
                            Text="Open, drag, or paste images here to import and convert them to maps."

@@ -12,6 +12,12 @@
         Width="940"
         FontSize="16"
         WindowStartupLocation="CenterOwner">
+    <Window.InputBindings>
+        <KeyBinding Key="Esc"
+                    Command="{Binding CancelCommand}" />
+        <KeyBinding Key="Return"
+                    Command="{Binding ConfirmCommand}" />
+    </Window.InputBindings>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

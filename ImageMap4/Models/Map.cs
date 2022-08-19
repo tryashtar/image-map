@@ -11,7 +11,27 @@ using System.Windows.Media;
 
 namespace ImageMap4;
 
-public record Map(long ID, MapData Data);
+public class Map : ObservableObject
+{
+    private long _id;
+    public long ID
+    {
+        get { return _id; }
+        set { _id = value; OnPropertyChanged(); }
+    }
+    private MapData _data;
+    public MapData Data
+    {
+        get { return _data; }
+        set { _data = value; OnPropertyChanged(); }
+    }
+    public Map(long id, MapData data)
+    {
+        _id = id;
+        _data = data;
+    }
+}
+
 public class MapData
 {
     public Image<Rgba32> Image { get; }

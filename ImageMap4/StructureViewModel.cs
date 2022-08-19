@@ -61,7 +61,12 @@ public class StructureViewModel : ObservableObject
 
     public IInventory SelectedInventory
     {
-        get { return Parent.PlayerList[Properties.Settings.Default.InventoryChoice]; }
+        get
+        {
+            if (Properties.Settings.Default.InventoryChoice >= Parent.PlayerList.Count || Properties.Settings.Default.InventoryChoice < 0)
+                Properties.Settings.Default.InventoryChoice = 1;
+            return Parent.PlayerList[Properties.Settings.Default.InventoryChoice];
+        }
         set { Properties.Settings.Default.InventoryChoice = Parent.PlayerList.IndexOf(value); OnPropertyChanged(); }
     }
 

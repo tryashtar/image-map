@@ -30,9 +30,9 @@ public partial class MainWindow : Window, IDropTarget
     private MainViewModel ViewModel => (MainViewModel)this.DataContext;
     public ICommand PasteCommand { get; }
     public ICommand OpenWorldFolderCommand { get; }
+    public ICommand ChangeIDCommand { get; }
     public MainWindow()
     {
-        InitializeComponent();
         PasteCommand = new RelayCommand(() =>
         {
             if (Clipboard.ContainsFileDropList())
@@ -59,6 +59,17 @@ public partial class MainWindow : Window, IDropTarget
         {
             Process.Start("explorer.exe", x.Folder);
         });
+        ChangeIDCommand = new RelayCommand<Selectable<Map>>(x =>
+        {
+            var window = new ChangeIDWindow(x.Item.ID);
+            window.Owner = this;
+            if (window.ShowDialog() ?? false)
+            {
+                if (window.Result == ChangeResult.Confirmed)
+                    x.Item.ID = window.ID;
+            }
+        });
+        InitializeComponent();
     }
 
     private void Window_Closing(object sender, CancelEventArgs e)

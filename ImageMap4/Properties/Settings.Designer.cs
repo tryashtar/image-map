@@ -167,5 +167,16 @@ namespace ImageMap4.Properties {
                 this["InventoryChoice"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection UsernameCache {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["UsernameCache"]));
+            }
+            set {
+                this["UsernameCache"] = value;
+            }
+        }
     }
 }
