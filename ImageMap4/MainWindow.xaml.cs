@@ -13,7 +13,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.ComponentModel;
 using GongSolutions.Wpf.DragDrop;
 using System.IO;
@@ -31,6 +30,7 @@ public partial class MainWindow : Window, IDropTarget
     private MainViewModel ViewModel => (MainViewModel)this.DataContext;
     public ICommand PasteCommand { get; }
     public ICommand OpenWorldFolderCommand { get; }
+    public ICommand OpenMapFileCommand { get; }
     public ICommand ChangeIDCommand { get; }
     public MainWindow()
     {
@@ -60,13 +60,17 @@ public partial class MainWindow : Window, IDropTarget
         {
             Process.Start("explorer.exe", x.Folder);
         });
+        OpenMapFileCommand = new RelayCommand<Map>(x =>
+        {
+            Process.Start("explorer.exe", $"/select, \"{Path.Combine(ViewModel.SelectedWorld.Folder, "data", $"map_{x.ID}.dat")}\"");
+        });
         ChangeIDCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
         {
-            var window = new ChangeIDWindow(x.FirstOrDefault()?.Item.ID ?? 0);
+            var selected = x.Where(x => x.IsSelected);
+            var window = new ChangeIDWindow(selected.FirstOrDefault()?.Item.ID ?? 0);
             window.Owner = this;
             if (window.ShowDialog() ?? false)
             {
-                var selected = x.Where(x => x.IsSelected);
                 if (window.Result == ChangeResult.Confirmed)
                     ViewModel.ChangeIDs(selected, window.ID);
                 else if (window.Result == ChangeResult.Auto)
@@ -160,22 +164,41 @@ public partial class MainWindow : Window, IDropTarget
 
     private Action GetDropAction(IDropInfo info)
     {
-        if (info.VisualTarget == ImportList && info.Data is IDataObject data && data.GetDataPresent(DataFormats.FileDrop))
+        if (info.Data is IDataObject data && data.GetDataPresent(DataFormats.FileDrop))
         {
-            info.Effects = DragDropEffects.Copy;
-            return () =>
+            if (info.VisualTarget == ImportList)
             {
-                var files = (IEnumerable<string>)data.GetData(DataFormats.FileDrop);
-                var list = new List<string>();
-                foreach (var file in files)
+                info.Effects = DragDropEffects.Copy;
+                return () =>
                 {
-                    if (File.Exists(file))
-                        list.Add(file);
-                    else if (Directory.Exists(file))
-                        list.AddRange(Directory.GetFiles(file));
-                }
-                OpenImages(list.Select(PendingSource.FromPath));
-            };
+                    var files = (IEnumerable<string>)data.GetData(DataFormats.FileDrop);
+                    var list = new List<string>();
+                    foreach (var file in files)
+                    {
+                        if (File.Exists(file))
+                            list.Add(file);
+                        else if (Directory.Exists(file))
+                            list.AddRange(Directory.GetFiles(file));
+                    }
+                    OpenImages(list.Select(PendingSource.FromPath));
+                };
+            }
+            else if (info.VisualTarget == WorldsTab)
+            {
+                info.Effects = DragDropEffects.Copy;
+                return () =>
+                {
+                    var file = ((IEnumerable<string>)data.GetData(DataFormats.FileDrop)).First();
+                    if (Directory.Exists(file) && File.Exists(Path.Combine(file, "level.dat")))
+                    {
+                        if (Directory.Exists(Path.Combine(file, "db")))
+                            ViewModel.SelectedWorld = new BedrockWorld(file);
+                        else
+                            ViewModel.SelectedWorld = new JavaWorld(file);
+                        TabList.SelectedItem = MapsTab;
+                    }
+                };
+            }
         }
         return () => { };
     }
@@ -205,9 +228,9 @@ public class ConflictChecker : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
-        var id = (long)values[0];
-        var maps = (ICollection<long>)values[1];
-        return maps.Contains(id);
+        if (values[0] is long id && values[1] is ICollection<long> maps)
+            return maps.Contains(id);
+        return false;
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

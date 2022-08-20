@@ -49,6 +49,23 @@
                 <MenuItem Header="Change ID"
                           Command="{Binding ChangeIDCommand, Source={x:Reference This}}"
                           CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
+                <MenuItem Header="Open file"
+                          Command="{Binding OpenMapFileCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding Item}">
+                    <MenuItem.Style>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="IsEnabled"
+                                    Value="False" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.SelectedWorld, Source={x:Reference This}, Converter={StaticResource TypeConverter}}"
+                                             Value="{x:Type local:JavaWorld}">
+                                    <Setter Property="IsEnabled"
+                                            Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </MenuItem.Style>
+                </MenuItem>
                 <MenuItem Header="Delete"
                           Command="{Binding DataContext.DeleteCommand, Source={x:Reference This}}"
                           CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
@@ -121,7 +138,18 @@
     </Window.Style>
     <TabControl x:Name="TabList">
         <TabItem x:Name="WorldsTab"
-                 Header="Worlds">
+                 dd:DragDrop.IsDropTarget="True"
+                 dd:DragDrop.DropHandler="{Binding ElementName=This}">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{StaticResource WorldsIcon}"
+                           Height="18"
+                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                           SnapsToDevicePixels="True" />
+                    <TextBlock Text="Worlds"
+                               Margin="10,0,0,0" />
+                </StackPanel>
+            </TabItem.Header>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -207,8 +235,17 @@
                 </TextBlock>
             </Grid>
         </TabItem>
-        <TabItem x:Name="MapsTab"
-                 Header="Maps">
+        <TabItem x:Name="MapsTab">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{StaticResource MapsIcon}"
+                           Height="18"
+                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                           SnapsToDevicePixels="True" />
+                    <TextBlock Text="Maps"
+                               Margin="10,0,0,0" />
+                </StackPanel>
+            </TabItem.Header>
             <TabItem.Style>
                 <Style TargetType="TabItem">
                     <Style.Triggers>
@@ -258,20 +295,27 @@
                                   HorizontalAlignment="Right" />
                     </DockPanel>
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="Open"
-                                Padding="15,5,15,5"
-                                Click="OpenButton_Click" />
+                        <Button Padding="10,5,15,5"
+                                Click="OpenButton_Click">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <ContentPresenter Height="18"
+                                                      Width="18"
+                                                      Content="{StaticResource ImageIcon}" />
+                                    <TextBlock Text="Open"
+                                               Margin="5,0,0,0" />
+                                </StackPanel>
+                            </Button.Content>
+                        </Button>
                         <Button Command="{Binding TransferAllCommand}"
                                 Margin="10,0,0,0">
                             <Button.Content>
                                 <DockPanel>
-                                    <TextBlock Text="Send All to World"
-                                               Padding="15,5,15,5" />
                                     <Image Source="{StaticResource WarningIcon}"
                                            RenderOptions.BitmapScalingMode="NearestNeighbor"
                                            SnapsToDevicePixels="True"
-                                           Margin="-5,0,10,0"
-                                           HorizontalAlignment="Right"
+                                           Height="18"
+                                           Margin="5,0,-5,0"
                                            ToolTipService.InitialShowDelay="1">
                                         <Image.ToolTip>
                                             <ToolTip>
@@ -292,6 +336,27 @@
                                             </Style>
                                         </Image.Style>
                                     </Image>
+                                    <Image Source="{StaticResource CheckmarkIcon}"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                           SnapsToDevicePixels="True"
+                                           Height="18"
+                                           Margin="5,0,-5,0">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Value="0"
+                                                                 Binding="{Binding ConflictingIDs.Count}">
+                                                        <Setter Property="Visibility"
+                                                                Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                    <TextBlock Text="Send All to World"
+                                               Padding="15,5,15,5" />
                                 </DockPanel>
                             </Button.Content>
                             <Button.Style>

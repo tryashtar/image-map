@@ -93,6 +93,7 @@ public class MainViewModel : ObservableObject
                 ImportingMaps.Clear();
             }, () =>
             {
+                SelectedWorld.RemoveMaps(importing.Select(x => x.Item.ID));
                 SelectedWorld.AddMaps(overwritten.Select(x => x.Item));
                 RemoveRange(importing, ExistingMaps);
                 foreach (var item in overwritten)
@@ -180,16 +181,16 @@ public class MainViewModel : ObservableObject
         UndoHistory.Perform(() =>
         {
             long id = new_id;
-            foreach (var item in changing)
+            foreach (var (_, map) in changing)
             {
-                item.x.Item.ID = id;
+                map.Item.ID = id;
                 id++;
             }
         }, () =>
         {
-            foreach (var item in changing)
+            foreach (var (id, map) in changing)
             {
-                item.x.Item.ID = item.ID;
+                map.Item.ID = id;
             }
         });
     }

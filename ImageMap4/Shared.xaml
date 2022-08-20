@@ -3,10 +3,52 @@
                     xmlns:local="clr-namespace:ImageMap4">
     <local:EqualityConverter x:Key="EqualityConverter" />
     <local:GreaterThanConverter x:Key="GreaterThanConverter" />
+    <local:TypeConverter x:Key="TypeConverter" />
     <BitmapImage x:Key="ItemFrame"
                  UriSource="../Icons/item_frame.png" />
     <BitmapImage x:Key="GlowItemFrame"
                  UriSource="../Icons/glow_item_frame.png" />
     <BitmapImage x:Key="WarningIcon"
                  UriSource="../Icons/warning.png" />
+    <BitmapImage x:Key="CheckmarkIcon"
+                 UriSource="../Icons/checkmark.png" />
+    <BitmapImage x:Key="WorldsIcon"
+                 UriSource="../Icons/world.png" />
+    <BitmapImage x:Key="MapsIcon"
+                 UriSource="../Icons/map.png" />
+    <Rectangle x:Key="ImageIcon">
+        <Rectangle.Resources>
+            <SolidColorBrush x:Key="light-defaultgrey-10"
+                             Color="#212121"
+                             Opacity="0.1" />
+            <SolidColorBrush x:Key="light-defaultgrey"
+                             Color="#212121"
+                             Opacity="1" />
+            <SolidColorBrush x:Key="light-yellow"
+                             Color="#996f00"
+                             Opacity="1" />
+            <SolidColorBrush x:Key="light-blue"
+                             Color="#005dba"
+                             Opacity="1" />
+        </Rectangle.Resources>
+        <Rectangle.Fill>
+            <DrawingBrush Stretch="Fill">
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+
+                        <DrawingGroup x:Name="level_1">
+                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey-10}"
+                                             Geometry="F1M14.5,2.5v12H1.5V2.5Z" />
+                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}"
+                                             Geometry="F1M14.5,2H1.5L1,2.5v12l.5.5h13l.5-.5V2.5ZM14,14H2V3H14Z" />
+                            <GeometryDrawing Brush="{DynamicResource light-yellow}"
+                                             Geometry="F1M12,5.5A1.5,1.5,0,1,1,10.5,4,1.5,1.5,0,0,1,12,5.5Z" />
+                            <GeometryDrawing Brush="{DynamicResource light-blue}"
+                                             Geometry="F1M14,11.09V12.5l-2.819-2.82L8.988,11.877H8.281L4.814,8.41,2,11.225V9.811L4.461,7.35h.707l3.466,3.466,2.193-2.193h.707Z" />
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+        </Rectangle.Fill>
+    </Rectangle>
 </ResourceDictionary>

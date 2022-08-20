@@ -10,10 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Icons\checkmark.png" />
     <None Remove="Icons\glow_item_frame.png" />
     <None Remove="Icons\item_frame.png" />
+    <None Remove="Icons\map.png" />
     <None Remove="Icons\map_background.png" />
     <None Remove="Icons\warning.png" />
+    <None Remove="Icons\world.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,13 +24,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Icons\checkmark.png" />
     <Resource Include="Icons\glow_item_frame.png" />
     <Resource Include="Icons\item_frame.png" />
+    <Resource Include="Icons\map.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Icons\map_background.png" />
     <Resource Include="Icons\warning.png" />
+    <Resource Include="Icons\world.png" />
   </ItemGroup>
 
   <ItemGroup>

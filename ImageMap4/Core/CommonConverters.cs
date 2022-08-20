@@ -43,3 +43,11 @@ public class GreaterThanConverter : ParameterConverter<int, bool, int>
         return value > parameter;
     }
 }
+
+public class TypeConverter : OneWayConverter<object, Type>
+{
+    public override Type? Convert(object? value)
+    {
+        return value?.GetType();
+    }
+}
