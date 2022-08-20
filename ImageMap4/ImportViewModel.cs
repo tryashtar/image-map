@@ -71,18 +71,19 @@ public class ImportViewModel : ObservableObject
         new StretchOption("Crop", Stretch.UniformToFill, ResizeMode.Crop)
     }.AsReadOnly();
 
-    public record ScalingOption(string Name, BitmapScalingMode Mode, IResampler Sampler);
+    public record ScalingOption(string Name, Func<Size, BitmapScalingMode> Mode, Func<Size, IResampler> Sampler);
     public ScalingOption ScaleChoice
     {
         get { return ScaleOptions[Properties.Settings.Default.ScaleChoice]; }
-        set { Properties.Settings.Default.ScaleChoice = ScaleOptions.IndexOf(value); OnPropertyChanged(); }
+        set { Properties.Settings.Default.ScaleChoice = ScaleOptions.IndexOf(value); OnPropertyChanged(); OnPropertyChanged(nameof(CurrentMode)); }
     }
     public ReadOnlyCollection<ScalingOption> ScaleOptions { get; } = new List<ScalingOption>
     {
-        new ScalingOption("Automatic", BitmapScalingMode.HighQuality, KnownResamplers.Bicubic),
-        new ScalingOption("Pixel Art", BitmapScalingMode.NearestNeighbor, KnownResamplers.NearestNeighbor),
-        new ScalingOption("Bicubic", BitmapScalingMode.HighQuality, KnownResamplers.Bicubic)
+        new ScalingOption("Automatic", x => x.Width > 128 && x.Height > 128 ? BitmapScalingMode.HighQuality : BitmapScalingMode.NearestNeighbor, x => x.Width > 128 && x.Height > 128 ? KnownResamplers.Bicubic : KnownResamplers.NearestNeighbor),
+        new ScalingOption("Pixel Art", x => BitmapScalingMode.NearestNeighbor, x => KnownResamplers.NearestNeighbor),
+        new ScalingOption("Bicubic", x => BitmapScalingMode.HighQuality, x => KnownResamplers.Bicubic)
     }.AsReadOnly();
+    public BitmapScalingMode CurrentMode => CurrentImage == null ? BitmapScalingMode.NearestNeighbor : ScaleChoice.Mode(CurrentImage.Source.Image.Value.Size());
 
     public record DitherOption(string Name, IDither? Dither);
     public DitherOption DitherChoice
@@ -150,6 +151,7 @@ public class ImportViewModel : ObservableObject
         {
             CurrentIndex = ImageQueue.IndexOf(preview);
             OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(CurrentMode));
         });
         DiscardCommand = new RelayCommand(() =>
         {
@@ -157,6 +159,7 @@ public class ImportViewModel : ObservableObject
             if (CurrentIndex >= ImageQueue.Count)
                 CurrentIndex--;
             OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(CurrentMode));
             CloseIfDone();
         });
         DiscardAllCommand = new RelayCommand(() =>
@@ -164,6 +167,7 @@ public class ImportViewModel : ObservableObject
             ImageQueue.Clear();
             CurrentIndex = 0;
             OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(CurrentMode));
             CloseIfDone();
         });
         ConfirmCommand = new RelayCommand(() =>
@@ -174,6 +178,7 @@ public class ImportViewModel : ObservableObject
             if (CurrentIndex >= ImageQueue.Count)
                 CurrentIndex--;
             OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(CurrentMode));
             CloseIfDone();
         });
         ConfirmAllCommand = new RelayCommand(() =>
@@ -185,12 +190,14 @@ public class ImportViewModel : ObservableObject
             ImageQueue.Clear();
             CurrentIndex = 0;
             OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(CurrentMode));
             CloseIfDone();
         });
         NavigateCommand = new RelayCommand<int>(x =>
         {
             CurrentIndex = ((CurrentIndex + x) % ImageQueue.Count + ImageQueue.Count) % ImageQueue.Count;
             OnPropertyChanged(nameof(CurrentImage));
+            OnPropertyChanged(nameof(CurrentMode));
         });
         ChangeBackgroundCommand = new RelayCommand(() =>
         {
@@ -200,7 +207,7 @@ public class ImportViewModel : ObservableObject
 
     private void ConfirmImage(PreviewImage preview)
     {
-        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler, StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm));
+        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler(preview.Source.Image.Value.Size()), StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm));
         OnConfirmed?.Invoke(this, settings);
     }
 
@@ -217,6 +224,7 @@ public class ImportViewModel : ObservableObject
             ImageQueue.Add(new PreviewImage(source));
         }
         OnPropertyChanged(nameof(CurrentImage));
+        OnPropertyChanged(nameof(CurrentMode));
         HadMultiple = ImageQueue.Count > 1;
     }
 }

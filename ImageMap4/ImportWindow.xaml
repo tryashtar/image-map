@@ -92,7 +92,7 @@
                            Stretch="{Binding StretchChoice.Stretch}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center"
-                           RenderOptions.BitmapScalingMode="{Binding ScaleChoice.Mode}">
+                           RenderOptions.BitmapScalingMode="{Binding CurrentMode}">
                         <Image.LayoutTransform>
                             <TransformGroup>
                                 <RotateTransform Angle="{Binding CurrentImage.Rotation}" />

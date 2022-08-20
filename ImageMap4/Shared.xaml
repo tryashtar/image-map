@@ -36,7 +36,7 @@
                 <DrawingBrush.Drawing>
                     <DrawingGroup>
 
-                        <DrawingGroup x:Name="level_1">
+                        <DrawingGroup>
                             <GeometryDrawing Brush="{DynamicResource light-defaultgrey-10}"
                                              Geometry="F1M14.5,2.5v12H1.5V2.5Z" />
                             <GeometryDrawing Brush="{DynamicResource light-defaultgrey}"
@@ -45,6 +45,37 @@
                                              Geometry="F1M12,5.5A1.5,1.5,0,1,1,10.5,4,1.5,1.5,0,0,1,12,5.5Z" />
                             <GeometryDrawing Brush="{DynamicResource light-blue}"
                                              Geometry="F1M14,11.09V12.5l-2.819-2.82L8.988,11.877H8.281L4.814,8.41,2,11.225V9.811L4.461,7.35h.707l3.466,3.466,2.193-2.193h.707Z" />
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+        </Rectangle.Fill>
+    </Rectangle>
+    <Rectangle x:Key="FolderIcon" x:Shared="False">
+        <Rectangle.Resources>
+            <SolidColorBrush x:Key="light-yellow-10"
+                             Color="#996f00"
+                             Opacity="0.1" />
+            <SolidColorBrush x:Key="light-yellow-25"
+                             Color="#996f00"
+                             Opacity="0.25" />
+            <SolidColorBrush x:Key="light-yellow"
+                             Color="#996f00"
+                             Opacity="1" />
+        </Rectangle.Resources>
+        <Rectangle.Fill>
+            <DrawingBrush Stretch="Fill">
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+                        <DrawingGroup>
+                            <GeometryDrawing Brush="{DynamicResource light-yellow-10}"
+                                             Geometry="F1M13.5,3.5v2h-5l-1,1h-5l-2,6V2.5h5l1,1Z" />
+                            <GeometryDrawing Brush="{DynamicResource light-yellow-25}"
+                                             Geometry="F1M8.5,5.5h7l-2,7H.5l2-6h5Z" />
+                            <GeometryDrawing Brush="{DynamicResource light-yellow}"
+                                             Geometry="F1M15.408,5H14V3.5L13.5,3H6.707l-.853-.854L5.5,2H.5L0,2.5v10l.5.5H13.541l.483-.371,1.868-7ZM1,3H5.293l.853.854L6.5,4H13V5H8.475l-.354.146L7.268,6H2.475L2,6.342,1,9.421Zm12.157,9H1.168L2.835,7h4.64l.353-.146L8.682,6h6.076Z" />
+                            <GeometryDrawing Brush="{DynamicResource light-yellow-25}"
+                                             Geometry="F1M14,12.5H13V6h1Z" />
                         </DrawingGroup>
                     </DrawingGroup>
                 </DrawingBrush.Drawing>

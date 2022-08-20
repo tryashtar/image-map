@@ -162,13 +162,31 @@
                 <Button Grid.Column="0"
                         Grid.Row="1"
                         Padding="5"
-                        Content="Java Worlds"
-                        Click="JavaFolder_Click" />
+                        Click="JavaFolder_Click">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <ContentPresenter Height="18"
+                                              Width="24"
+                                              Content="{StaticResource FolderIcon}" />
+                            <TextBlock Text="Java Worlds"
+                                       Margin="5,0,0,0" />
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
                 <Button Grid.Column="1"
                         Grid.Row="1"
                         Padding="5"
-                        Content="Bedrock Worlds"
-                        Click="BedrockFolder_Click" />
+                        Click="BedrockFolder_Click">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <ContentPresenter Height="18"
+                                              Width="24"
+                                              Content="{StaticResource FolderIcon}" />
+                            <TextBlock Text="Bedrock Worlds"
+                                       Margin="5,0,0,0" />
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
                 <ListView x:Name="JavaWorldList"
                           Grid.Column="0"
                           Grid.Row="0"
