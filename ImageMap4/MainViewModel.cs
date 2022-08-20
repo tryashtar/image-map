@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -35,6 +36,7 @@ public class MainViewModel : ObservableObject
         set
         {
             _selectedWorld = value;
+            UndoHistory.Clear();
             OnPropertyChanged();
             MapCTS?.Cancel();
             MapCTS?.Dispose();
@@ -70,32 +72,59 @@ public class MainViewModel : ObservableObject
         ExistingMapsView.Filter = x => ShowEmptyMaps || !((Selectable<Map>)x).Item.Data.IsEmpty;
         ImportingMaps.ItemChanged += Maps_ItemChanged;
         ExistingMaps.ItemChanged += Maps_ItemChanged;
+        ImportingMaps.CollectionChanged += Maps_CollectionChanged;
+        ExistingMaps.CollectionChanged += Maps_CollectionChanged;
         TransferAllCommand = new RelayCommand(() =>
         {
-            SelectedWorld?.AddMaps(ImportingMaps.Select(x => x.Item));
-            foreach (var item in ImportingMaps)
+            if (SelectedWorld == null)
+                return;
+            var overwritten = ExistingMaps.Where(x => ConflictingIDs.Contains(x.Item.ID)).ToList();
+            var importing = ImportingMaps.ToList();
+            UndoHistory.Perform(() =>
             {
-                ExistingMaps.Add(new Selectable<Map>(item.Item));
-            }
-            ImportingMaps.Clear();
+                SelectedWorld.AddMaps(importing.Select(x => x.Item));
+                foreach (var item in importing)
+                {
+                    Insert(item, ExistingMaps);
+                }
+                RemoveRange(overwritten, ExistingMaps);
+                ImportingMaps.Clear();
+            }, () =>
+            {
+                SelectedWorld.AddMaps(overwritten.Select(x => x.Item));
+                RemoveRange(importing, ExistingMaps);
+                foreach (var item in overwritten)
+                {
+                    Insert(item, ExistingMaps);
+                }
+                ImportingMaps.AddRange(importing);
+            });
         });
         UndoCommand = new RelayCommand(() => UndoHistory.Undo());
         RedoCommand = new RelayCommand(() => UndoHistory.Redo());
         RefreshWorlds();
     }
 
+    private void Maps_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        UpdateConflictingIDs();
+    }
+
     private void Maps_ItemChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(Map.ID))
+            UpdateConflictingIDs();
+    }
+
+    private void UpdateConflictingIDs()
+    {
+        ConflictingIDs.Clear();
+        var conflicts = ExistingMaps.Select(x => x.Item.ID).Intersect(ImportingMaps.Select(x => x.Item.ID));
+        foreach (var item in conflicts)
         {
-            ConflictingIDs.Clear();
-            var conflicts = ExistingMaps.Select(x => x.Item.ID).Intersect(ImportingMaps.Select(x => x.Item.ID));
-            foreach (var item in conflicts)
-            {
-                ConflictingIDs.Add(item);
-            }
-            OnPropertyChanged(nameof(ConflictingIDs));
+            ConflictingIDs.Add(item);
         }
+        OnPropertyChanged(nameof(ConflictingIDs));
     }
 
     private static readonly IComparer<Selectable<Map>> Sorter = new LambdaComparer<Selectable<Map>, long>(x => x.Item.ID);
@@ -109,10 +138,30 @@ public class MainViewModel : ObservableObject
         {
             ct.ThrowIfCancellationRequested();
             var selectable = new Selectable<Map>(item);
-            int index = ExistingMaps.BinarySearch(selectable, Sorter);
-            if (index < 0)
-                index = ~index;
-            ExistingMaps.Insert(index, selectable);
+            Insert(selectable, ExistingMaps);
+        }
+    }
+
+    private void Insert(Selectable<Map> item, IList<Selectable<Map>> list)
+    {
+        int index = list.BinarySearch(item, Sorter);
+        if (index < 0)
+            index = ~index;
+        ExistingMaps.Insert(index, item);
+    }
+
+    private void RemoveRange(IEnumerable<Selectable<Map>> items, IList<Selectable<Map>> list)
+    {
+        foreach (var item in items)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (list[i] == item)
+                {
+                    list.RemoveAt(i);
+                    break;
+                }
+            }
         }
     }
 
@@ -165,17 +214,7 @@ public class MainViewModel : ObservableObject
             ImportingMaps.AddRange(maps);
         }, () =>
         {
-            foreach (var item in maps)
-            {
-                for (int i = ImportingMaps.Count - 1; i >= 0; i--)
-                {
-                    if (ImportingMaps[i] == item)
-                    {
-                        ImportingMaps.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
+            RemoveRange(maps, ImportingMaps);
         });
     }
 }

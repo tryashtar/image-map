@@ -33,7 +33,6 @@ public class Map : ObservableObject
     }
 }
 
-// doesn't contain all the map info (center, dimension, etc), just the pixels
 public class MapData
 {
     public Image<Rgba32> Image { get; }
@@ -43,7 +42,9 @@ public class MapData
     public ImageSource ImageSource { get; }
     public byte[] Colors { get; }
     public bool IsEmpty { get; }
-    public MapData(Image<Rgba32> image, byte[] colors)
+    // save FullData when loading from world, that way if we call AddMaps on the values from GetMaps, we won't lose any tags
+    public NbtCompound? FullData { get; }
+    public MapData(Image<Rgba32> image, byte[] colors, NbtCompound? fullData = null)
     {
         Image = image;
         Original = image;
@@ -52,6 +53,7 @@ public class MapData
         ImageSource.Freeze();
         OriginalSource = ImageSource;
         IsEmpty = CheckIsEmpty();
+        FullData = fullData;
     }
     public MapData(Image<Rgba32> image, Image<Rgba32> original, byte[] colors)
     {

@@ -41,16 +41,17 @@ java:
     Damage: '@s'
     Count: 1b
   map_data:
-    colors: '@colors'
-    scale: 0b
-    dimension: 0b
-    locked: 1b
-    xCenter: 2147483647
-    zCenter: 2147483647
-    height: 128
-    width: 128
-    trackingPosition: 0b
-    unlimitedTracking: 0b
+    data:
+      colors: '@colors'
+      scale: 0b
+      dimension: 0b
+      locked: 1b
+      xCenter: 2147483647
+      zCenter: 2147483647
+      height: 128
+      width: 128
+      trackingPosition: 0b
+      unlimitedTracking: 0b
 - name: 13w42a
   check:
     path: Player.HealF
@@ -191,14 +192,15 @@ java:
   check:
     data_version: 2554
   map_data:
-    colors: '@colors'
-    scale: 0b
-    dimension: minecraft:overworld
-    locked: 1b
-    xCenter: 2147483647
-    zCenter: 2147483647
-    trackingPosition: 0b
-    unlimitedTracking: 0b
+    data:
+      colors: '@colors'
+      scale: 0b
+      dimension: minecraft:overworld
+      locked: 1b
+      xCenter: 2147483647
+      zCenter: 2147483647
+      trackingPosition: 0b
+      unlimitedTracking: 0b
 - name: 1.13 # 18w01a
   check:
     data_version: 1459

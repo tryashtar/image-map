@@ -42,6 +42,11 @@ public static class UndoHistory
             Undos.Push(action);
         }
     }
+    public static void Clear()
+    {
+        Undos.Clear();
+        Redos.Clear();
+    }
     public static bool CanUndo => Undos.Count > 0;
     public static bool CanRedo => Redos.Count > 0;
 }

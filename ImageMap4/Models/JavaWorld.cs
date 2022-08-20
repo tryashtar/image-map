@@ -73,9 +73,10 @@ public class JavaWorld : World
         long id = long.Parse(name[4..]);
         var nbt = new NbtFile() { BigEndian = true };
         nbt.LoadFromFile(file, NbtCompression.GZip, null);
-        var colors = nbt.GetRootTag<NbtCompound>().Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
+        var full_data = nbt.GetRootTag<NbtCompound>();
+        var colors = full_data.Get<NbtCompound>("data").Get<NbtByteArray>("colors").Value;
         var image = Version.Decode(colors);
-        return new Map(id, new MapData(image, colors));
+        return new Map(id, new MapData(image, colors, full_data));
     }
 
     public override void AddMaps(IEnumerable<Map> maps)
@@ -83,9 +84,9 @@ public class JavaWorld : World
         foreach (var map in maps)
         {
             var nbt = new NbtFile { BigEndian = true };
-            var data = Version.CreateMapCompound(map.Data);
-            data.Name = "data";
-            nbt.GetRootTag<NbtCompound>().Add(data);
+            var data = map.Data.FullData ?? Version.CreateMapCompound(map.Data);
+            data.Name = "";
+            nbt.RootTag = data;
             var folder = Path.Combine(Folder, "data");
             Directory.CreateDirectory(folder);
             nbt.SaveToFile(Path.Combine(folder, $"map_{map.ID}.dat"), NbtCompression.GZip);

@@ -150,9 +150,10 @@ public class BedrockWorld : World
         var bytes = iterator.Value();
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
-        var colors = nbt.GetRootTag<NbtCompound>().Get<NbtByteArray>("colors").Value;
+        var full_data = nbt.GetRootTag<NbtCompound>();
+        var colors = full_data.Get<NbtByteArray>("colors").Value;
         var image = Image.LoadPixelData<Rgba32>(colors, 128, 128);
-        return new Map(id, new MapData(image, colors));
+        return new Map(id, new MapData(image, colors, full_data));
     }
 
     public override void AddMaps(IEnumerable<Map> maps)
@@ -162,7 +163,8 @@ public class BedrockWorld : World
         foreach (var map in maps)
         {
             var nbt = new NbtFile { BigEndian = false };
-            var data = Version.CreateMapCompound(map);
+            var data = map.Data.FullData ?? Version.CreateMapCompound(map);
+            data["mapId"] = new NbtLong(map.ID);
             data.Name = "";
             nbt.RootTag = data;
             var bytes = nbt.SaveToBuffer(NbtCompression.None);
