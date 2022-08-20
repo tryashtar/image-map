@@ -22,8 +22,6 @@
         <UniformGrid x:Name="SplitGrid"
                      Grid.Row="1"
                      Grid.Column="1"
-                     Rows="{Binding Rows, ElementName=This}"
-                     Columns="{Binding Columns, ElementName=This}"
                      SnapsToDevicePixels="True" />
         <ContentPresenter Grid.Row="1"
                           Grid.Column="1"

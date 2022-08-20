@@ -34,7 +34,7 @@ public partial class SquareGrid : UserControl
              typeof(SquareGrid), new FrameworkPropertyMetadata(ContentsChanged));
     public static readonly DependencyProperty CellContentsContextProperty =
              DependencyProperty.Register(nameof(CellContentsContext), typeof(object[,]),
-             typeof(SquareGrid), new FrameworkPropertyMetadata(ContentsChanged));
+             typeof(SquareGrid), new FrameworkPropertyMetadata(ContextChanged));
     public int Columns
     {
         get { return (int)GetValue(ColumnsProperty); }
@@ -74,12 +74,17 @@ public partial class SquareGrid : UserControl
     private static void DimensionsChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
         ((SquareGrid)sender).FixSpace();
-        ((SquareGrid)sender).UpdateCells();
+        ((SquareGrid)sender).ReshapeCells();
     }
 
     private static void ContentsChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
-        ((SquareGrid)sender).UpdateCells();
+        ((SquareGrid)sender).ReplaceCells();
+    }
+
+    private static void ContextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        ((SquareGrid)sender).RelinkCells();
     }
 
     private void SpaceGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -108,21 +113,59 @@ public partial class SquareGrid : UserControl
         }
     }
 
-    private void UpdateCells()
+    private FrameworkElement[,] Cells;
+    private void ReplaceCells()
     {
         SplitGrid.Children.Clear();
         if (CellContentsTemplate == null)
             return;
+        if (Cells == null)
+            Cells = new FrameworkElement[Columns, Rows];
         for (int y = 0; y < Rows; y++)
         {
             for (int x = 0; x < Columns; x++)
             {
-                var item = (FrameworkElement)CellContentsTemplate.LoadContent();
-                if (CellContentsContext != null)
-                    item.DataContext = CellContentsContext[x, y];
-                Grid.SetColumn(item, x);
-                Grid.SetRow(item, y);
-                SplitGrid.Children.Add(item);
+                Cells[x, y] = AddItem(x, y);
+            }
+        }
+    }
+    private FrameworkElement AddItem(int x, int y)
+    {
+        var item = (FrameworkElement)CellContentsTemplate.LoadContent();
+        if (CellContentsContext != null)
+            item.DataContext = CellContentsContext[x, y];
+        SplitGrid.Children.Insert(Math.Min(SplitGrid.Children.Count, y * Columns + x), item);
+        // doesn't actually do anything to this control, but lets you query it
+        Grid.SetColumn(item, x);
+        Grid.SetRow(item, y);
+        return item;
+    }
+    private void ReshapeCells()
+    {
+        SplitGrid.Rows = this.Rows;
+        SplitGrid.Columns = this.Columns;
+        var newcells = new FrameworkElement[Columns, Rows];
+        for (int y = 0; y < Math.Max(Rows, Cells.GetLength(1)); y++)
+        {
+            for (int x = 0; x < Math.Max(Columns, Cells.GetLength(0)); x++)
+            {
+                if (x >= Columns || y >= Rows)
+                    SplitGrid.Children.Remove(Cells[x, y]);
+                else if (x >= Cells.GetLength(0) || y >= Cells.GetLength(1))
+                    newcells[x, y] = AddItem(x, y);
+                else
+                    newcells[x, y] = Cells[x, y];
+            }
+        }
+        Cells = newcells;
+    }
+    private void RelinkCells()
+    {
+        for (int y = 0; y < Math.Min(Rows, CellContentsContext.GetLength(1)); y++)
+        {
+            for (int x = 0; x < Math.Min(Columns, CellContentsContext.GetLength(0)); x++)
+            {
+                Cells[x, y].DataContext = CellContentsContext[x, y];
             }
         }
     }
