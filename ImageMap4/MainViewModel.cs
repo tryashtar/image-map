@@ -20,6 +20,8 @@ public class MainViewModel : ObservableObject
     public ICommand TransferAllCommand { get; }
     public ICommand UndoCommand { get; }
     public ICommand RedoCommand { get; }
+    public ICommand DiscardCommand { get; }
+    public ICommand DeleteCommand { get; }
     public ObservableCollection<JavaWorld> JavaWorlds { get; } = new();
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
     public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
@@ -102,6 +104,36 @@ public class MainViewModel : ObservableObject
         });
         UndoCommand = new RelayCommand(() => UndoHistory.Undo());
         RedoCommand = new RelayCommand(() => UndoHistory.Redo());
+        DiscardCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
+        {
+            var maps = x.Where(x => x.IsSelected).ToList();
+            UndoHistory.Perform(() =>
+            {
+                RemoveRange(maps, x);
+            }, () =>
+            {
+                foreach (var map in maps)
+                {
+                    Insert(map, x);
+                }
+            });
+        });
+        DeleteCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
+        {
+            var maps = x.Where(x => x.IsSelected).ToList();
+            UndoHistory.Perform(() =>
+            {
+                RemoveRange(maps, x);
+                SelectedWorld?.RemoveMaps(maps.Select(x => x.Item.ID));
+            }, () =>
+            {
+                foreach (var map in maps)
+                {
+                    Insert(map, x);
+                }
+                SelectedWorld?.AddMaps(maps.Select(x => x.Item));
+            });
+        });
         RefreshWorlds();
     }
 
@@ -142,12 +174,37 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    public void ChangeIDs(IEnumerable<Selectable<Map>> maps, long new_id)
+    {
+        var changing = maps.Select(x => (x.Item.ID, x)).ToList();
+        UndoHistory.Perform(() =>
+        {
+            long id = new_id;
+            foreach (var item in changing)
+            {
+                item.x.Item.ID = id;
+                id++;
+            }
+        }, () =>
+        {
+            foreach (var item in changing)
+            {
+                item.x.Item.ID = item.ID;
+            }
+        });
+    }
+
+    public void AutoIDs(IEnumerable<Selectable<Map>> maps)
+    {
+        ChangeIDs(maps, NextFreeID());
+    }
+
     private void Insert(Selectable<Map> item, IList<Selectable<Map>> list)
     {
         int index = list.BinarySearch(item, Sorter);
         if (index < 0)
             index = ~index;
-        ExistingMaps.Insert(index, item);
+        list.Insert(index, item);
     }
 
     private void RemoveRange(IEnumerable<Selectable<Map>> items, IList<Selectable<Map>> list)
@@ -203,11 +260,16 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    private long NextFreeID()
+    {
+        return ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).Append(-1).Max() + 1;
+    }
+
     public void AddImport(ImportSettings settings)
     {
         if (SelectedWorld == null)
             return;
-        long id = ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).Append(-1).Max() + 1;
+        long id = NextFreeID();
         var maps = SelectedWorld.MakeMaps(settings).Select(x => new Selectable<Map>(new Map(id++, x))).ToList();
         UndoHistory.Perform(() =>
         {

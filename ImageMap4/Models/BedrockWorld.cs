@@ -173,6 +173,15 @@ public class BedrockWorld : World
         db.Write(batch);
     }
 
+    public override void RemoveMaps(IEnumerable<long> ids)
+    {
+        using var db = OpenDB();
+        foreach (var id in ids)
+        {
+            db.Delete($"map_{id}");
+        }
+    }
+
     protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
         // no quantization needed, Bedrock supports all colors

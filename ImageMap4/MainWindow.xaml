@@ -40,7 +40,18 @@
             <ContextMenu x:Key="ImportingMenu">
                 <MenuItem Header="Change ID"
                           Command="{Binding ChangeIDCommand, Source={x:Reference This}}"
-                          CommandParameter="{Binding}" />
+                          CommandParameter="{Binding DataContext.ImportingMaps, Source={x:Reference This}}" />
+                <MenuItem Header="Discard"
+                          Command="{Binding DataContext.DiscardCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding DataContext.ImportingMaps, Source={x:Reference This}}" />
+            </ContextMenu>
+            <ContextMenu x:Key="ExistingMenu">
+                <MenuItem Header="Change ID"
+                          Command="{Binding ChangeIDCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
+                <MenuItem Header="Delete"
+                          Command="{Binding DataContext.DeleteCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
             </ContextMenu>
             <Style x:Key="WorldCard"
                    TargetType="ListViewItem">
@@ -403,7 +414,8 @@
                 </StackPanel>
                 <local:MapList Grid.Column="1"
                                Grid.Row="1"
-                               DataContext="{Binding ExistingMapsView}">
+                               DataContext="{Binding ExistingMapsView}"
+                               MapMenu="{StaticResource ExistingMenu}">
                     <local:MapList.Status>
                         <DataTemplate>
                             <Image Source="{StaticResource WarningIcon}"

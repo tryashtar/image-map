@@ -93,6 +93,16 @@ public class JavaWorld : World
         }
     }
 
+    public override void RemoveMaps(IEnumerable<long> ids)
+    {
+        foreach (var id in ids)
+        {
+            var file = Path.Combine(Folder, "data", $"map_{id}.dat");
+            if (File.Exists(file))
+                File.Delete(file);
+        }
+    }
+
     protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
         var palette = Version.GetPalette();

@@ -24,6 +24,7 @@ public abstract class World
 
     public abstract IAsyncEnumerable<Map> GetMapsAsync();
     public abstract void AddMaps(IEnumerable<Map> maps);
+    public abstract void RemoveMaps(IEnumerable<long> ids);
     public abstract void AddStructure(StructureGrid structure, IInventory inventory);
     public abstract IEnumerable<IInventory> GetInventories();
     protected abstract void ProcessImage(Image<Rgba32> image, ProcessSettings settings);

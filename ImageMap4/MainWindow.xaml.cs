@@ -60,18 +60,17 @@ public partial class MainWindow : Window, IDropTarget
         {
             Process.Start("explorer.exe", x.Folder);
         });
-        ChangeIDCommand = new RelayCommand<Selectable<Map>>(x =>
+        ChangeIDCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
         {
-            var window = new ChangeIDWindow(x.Item.ID);
+            var window = new ChangeIDWindow(x.FirstOrDefault()?.Item.ID ?? 0);
             window.Owner = this;
             if (window.ShowDialog() ?? false)
             {
+                var selected = x.Where(x => x.IsSelected);
                 if (window.Result == ChangeResult.Confirmed)
-                {
-                    long old_id = x.Item.ID;
-                    long new_id = window.ID;
-                    UndoHistory.Perform(() => x.Item.ID = new_id, () => x.Item.ID = old_id);
-                }
+                    ViewModel.ChangeIDs(selected, window.ID);
+                else if (window.Result == ChangeResult.Auto)
+                    ViewModel.AutoIDs(selected);
             }
         });
         InitializeComponent();
