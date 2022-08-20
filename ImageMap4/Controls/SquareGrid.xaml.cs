@@ -29,6 +29,12 @@ public partial class SquareGrid : UserControl
     public static readonly DependencyProperty InsideProperty =
              DependencyProperty.Register(nameof(Inside), typeof(FrameworkElement),
              typeof(SquareGrid), new FrameworkPropertyMetadata());
+    public static readonly DependencyProperty CellContentsTemplateProperty =
+             DependencyProperty.Register(nameof(CellContentsTemplate), typeof(DataTemplate),
+             typeof(SquareGrid), new FrameworkPropertyMetadata(ContentsChanged));
+    public static readonly DependencyProperty CellContentsContextProperty =
+             DependencyProperty.Register(nameof(CellContentsContext), typeof(object[,]),
+             typeof(SquareGrid), new FrameworkPropertyMetadata(ContentsChanged));
     public int Columns
     {
         get { return (int)GetValue(ColumnsProperty); }
@@ -47,6 +53,18 @@ public partial class SquareGrid : UserControl
         set { SetValue(InsideProperty, value); }
     }
 
+    // goes in each cell of the grid
+    public DataTemplate CellContentsTemplate
+    {
+        get { return (DataTemplate)GetValue(CellContentsTemplateProperty); }
+        set { SetValue(CellContentsTemplateProperty, value); }
+    }
+    public object[,] CellContentsContext
+    {
+        get { return (object[,])GetValue(CellContentsContextProperty); }
+        set { SetValue(CellContentsContextProperty, value); }
+    }
+
     public SquareGrid()
     {
         InitializeComponent();
@@ -56,6 +74,12 @@ public partial class SquareGrid : UserControl
     private static void DimensionsChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
         ((SquareGrid)sender).FixSpace();
+        ((SquareGrid)sender).UpdateCells();
+    }
+
+    private static void ContentsChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        ((SquareGrid)sender).UpdateCells();
     }
 
     private void SpaceGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -81,6 +105,25 @@ public partial class SquareGrid : UserControl
             SpaceGrid.ColumnDefinitions[2].Width = new GridLength(0);
             SpaceGrid.RowDefinitions[0].Height = new GridLength(0.5 * grid_ratio / space_ratio - 0.5, GridUnitType.Star);
             SpaceGrid.RowDefinitions[2].Height = new GridLength(0.5 * grid_ratio / space_ratio - 0.5, GridUnitType.Star);
+        }
+    }
+
+    private void UpdateCells()
+    {
+        SplitGrid.Children.Clear();
+        if (CellContentsTemplate == null)
+            return;
+        for (int y = 0; y < Rows; y++)
+        {
+            for (int x = 0; x < Columns; x++)
+            {
+                var item = (FrameworkElement)CellContentsTemplate.LoadContent();
+                if (CellContentsContext != null)
+                    item.DataContext = CellContentsContext[x, y];
+                Grid.SetColumn(item, x);
+                Grid.SetRow(item, y);
+                SplitGrid.Children.Add(item);
+            }
         }
     }
 }

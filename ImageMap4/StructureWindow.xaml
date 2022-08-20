@@ -1,4 +1,5 @@
 ﻿<Window x:Class="ImageMap4.StructureWindow"
+        x:Name="This"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,6 +7,7 @@
         xmlns:local="clr-namespace:ImageMap4"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d"
         Title="Create Structure"
         Height="450"
@@ -39,7 +41,18 @@
                               Grid.Row="0"
                               Background="LightGray"
                               Rows="{Binding GridHeight}"
-                              Columns="{Binding GridWidth}">
+                              Columns="{Binding GridWidth}"
+                              CellContentsContext="{Binding Grid}">
+                <local:SquareGrid.CellContentsTemplate>
+                    <DataTemplate>
+                        <Grid dd:DragDrop.IsDropTarget="True"
+                              dd:DragDrop.IsDragSource="True"
+                              dd:DragDrop.UseDefaultDragAdorner="True"
+                              dd:DragDrop.DropHandler="{Binding Path=., RelativeSource={RelativeSource AncestorType=Window}}">
+                            <local:MapPreview DataContext="{Binding Data}" />
+                        </Grid>
+                    </DataTemplate>
+                </local:SquareGrid.CellContentsTemplate>
             </local:SquareGrid>
             <StackPanel Grid.Row="1">
                 <StackPanel Orientation="Horizontal"

@@ -85,6 +85,12 @@
                           Background="LightGray"
                           Rows="{Binding GridHeight}"
                           Columns="{Binding GridWidth}">
+            <local:SquareGrid.CellContentsTemplate>
+                <DataTemplate>
+                    <Image Source="{StaticResource ItemFrame}"
+                           RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                </DataTemplate>
+            </local:SquareGrid.CellContentsTemplate>
             <local:SquareGrid.Inside>
                 <Grid>
                     <Rectangle Fill="{Binding BackgroundColorChoice.Brush}" />
