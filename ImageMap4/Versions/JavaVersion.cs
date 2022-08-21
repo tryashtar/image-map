@@ -54,9 +54,10 @@ public class JavaVersionBuilder
     }
     public IJavaVersion Build()
     {
+        var mp = MapItem;
         NbtCompound item_maker(long id)
         {
-            var compound = (NbtCompound)MapItem.Clone();
+            var compound = (NbtCompound)mp.Clone();
             foreach (var item in compound.GetAllTags().OfType<NbtString>())
             {
                 if (item.Value == "@s")
@@ -66,15 +67,22 @@ public class JavaVersionBuilder
             }
             return compound;
         }
+        var si = StructureItem;
+        var sf = StructureFolder;
         NbtCompound structure_maker(StructureGrid structure)
         {
-            var compound = (NbtCompound)StructureItem.Clone();
+            var compound = (NbtCompound)si.Clone();
             foreach (var item in compound.GetAllTags().OfType<NbtString>())
             {
+                string identifier = structure.Identifier;
+                if (sf == "structures")
+                    identifier = identifier.Replace(':', '_');
                 if (item.Value == "@id")
-                    item.Parent[item.Name] = new NbtString(structure.Identifier);
+                    item.Parent[item.Name] = new NbtString(identifier);
+                else if (item.Value == "@old_name")
+                    item.Parent[item.Name] = new NbtString($"§r§d{identifier}§r");
                 else if (item.Value == "@name")
-                    item.Parent[item.Name] = new NbtString($"{{\"text\":\"{structure.Identifier}\",\"italic\":false}}");
+                    item.Parent[item.Name] = new NbtString($"{{\"text\":\"{identifier}\",\"italic\":false}}");
                 else if (item.Value == "@x")
                     item.Parent[item.Name] = new NbtInt(1);
                 else if (item.Value == "@y")
@@ -84,9 +92,10 @@ public class JavaVersionBuilder
             }
             return compound;
         }
+        var me = MapEntity;
         NbtCompound frame_maker(bool glowing, bool invisible)
         {
-            var compound = (NbtCompound)MapEntity.Clone();
+            var compound = (NbtCompound)me.Clone();
             foreach (var item in compound.GetAllTags().OfType<NbtString>())
             {
                 if (item.Value == "@id")
@@ -96,9 +105,10 @@ public class JavaVersionBuilder
             }
             return compound;
         }
+        var md = MapData;
         NbtCompound data_maker(MapData data)
         {
-            var compound = (NbtCompound)MapData.Clone();
+            var compound = (NbtCompound)md.Clone();
             foreach (var item in compound.GetAllTags().OfType<NbtString>())
             {
                 if (item.Value == "@colors")
@@ -108,10 +118,10 @@ public class JavaVersionBuilder
         }
         string structure_folder(string world, string identifier)
         {
-            if (StructureFolder == "structures")
+            if (sf == "structures")
                 return Path.Combine(world, "structures", identifier.Replace(':', '_') + ".nbt");
             int colon = identifier.IndexOf(':');
-            return Path.Combine(world, StructureFolder, identifier[..colon], "structures", identifier[(colon + 1)..] + ".nbt");
+            return Path.Combine(world, sf, identifier[..colon], "structures", identifier[(colon + 1)..] + ".nbt");
         }
         return new JavaVersion(Name, GetPalette())
         {

@@ -139,12 +139,18 @@ java:
     Count: 1b
     tag:
       BlockEntityTag:
+        id: minecraft:structure_block
         mode: LOAD
         name: '@id'
         ignoreEntities: 0b
-        id: minecraft:structure_block
+        posX: 0
+        posY: 0
+        posZ: 0
+        sizeX: '@x'
+        sizeY: '@y'
+        sizeZ: '@z'
       display:
-        Name: '@id'
+        Name: '@old_name'
   map_entity:
     id: ItemFrame
     Facing: 1b
