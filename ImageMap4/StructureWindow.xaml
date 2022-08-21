@@ -6,8 +6,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageMap4"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
-        xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d"
         Title="Create Structure"
         Height="450"
@@ -27,64 +25,19 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <local:SquareGrid x:Name="StructureGrid"
-                              Grid.Row="0"
-                              Background="LightGray"
-                              Rows="{Binding GridHeight}"
-                              Columns="{Binding GridWidth}"
-                              CellContentsContext="{Binding Grid}">
-                <local:SquareGrid.CellContentsTemplate>
-                    <DataTemplate>
-                        <Grid dd:DragDrop.IsDropTarget="True"
-                              dd:DragDrop.IsDragSource="True"
-                              dd:DragDrop.UseDefaultDragAdorner="True"
-                              dd:DragDrop.DropHandler="{Binding Path=., RelativeSource={RelativeSource AncestorType=Window}}">
-                            <local:MapPreview DataContext="{Binding Data}" />
-                        </Grid>
-                    </DataTemplate>
-                </local:SquareGrid.CellContentsTemplate>
-            </local:SquareGrid>
-            <StackPanel Grid.Row="1">
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                            Margin="0,5,0,5">
-                    <StackPanel Margin="0,3,10,0">
-                        <TextBlock Text="Width:" />
-                        <tk:IntegerUpDown Value="{Binding GridWidth}"
-                                          Minimum="1"
-                                          Maximum="100"
-                                          Width="60"
-                                          Height="31" />
-                    </StackPanel>
-                    <StackPanel Margin="0,3,0,0">
-                        <TextBlock Text="Height:" />
-                        <tk:IntegerUpDown Value="{Binding GridHeight}"
-                                          Minimum="1"
-                                          Maximum="100"
-                                          Width="60"
-                                          Height="31" />
-                    </StackPanel>
-                </StackPanel>
+    <local:GridMaker DataContext="{Binding GridMaker}">
+        <local:GridMaker.Controls>
+            <StackPanel>
                 <StackPanel HorizontalAlignment="Center"
                             Orientation="Horizontal"
                             Margin="0,0,0,5">
                     <CheckBox Content="Glowing"
-                              IsChecked="{Binding GlowingFrames}"
+                              IsChecked="{Binding DataContext.GlowingFrames, RelativeSource={RelativeSource AncestorType=Window}}"
                               VerticalContentAlignment="Center"
                               HorizontalAlignment="Right" />
                     <CheckBox Content="Invisible"
                               Margin="10,0,0,0"
-                              IsChecked="{Binding InvisibleFrames}"
+                              IsChecked="{Binding DataContext.InvisibleFrames, RelativeSource={RelativeSource AncestorType=Window}}"
                               VerticalContentAlignment="Center"
                               HorizontalAlignment="Right">
                         <CheckBox.Style>
@@ -93,7 +46,7 @@
                                         Value="Collapsed" />
                                 <Style.Triggers>
                                     <DataTrigger Value="True"
-                                                 Binding="{Binding JavaMode}">
+                                                 Binding="{Binding DataContext.JavaMode, RelativeSource={RelativeSource AncestorType=Window}}">
                                         <DataTrigger.Setters>
                                             <Setter Property="Visibility"
                                                     Value="Visible" />
@@ -109,7 +62,7 @@
                     <TextBlock Text="Add to inventory:" />
                     <ComboBox Width="200"
                               ItemsSource="{Binding Parent.PlayerList}"
-                              SelectedItem="{Binding SelectedInventory}"
+                              SelectedItem="{Binding DataContext.SelectedInventory, RelativeSource={RelativeSource AncestorType=Window}}"
                               DisplayMemberPath="Name" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal"
@@ -117,16 +70,13 @@
                             Margin="0,5,0,10">
                     <Button Content="Confirm"
                             Padding="5"
-                            Command="{Binding ConfirmCommand}" />
+                            Command="{Binding DataContext.ConfirmCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
                     <Button Content="Cancel"
                             Padding="5"
                             Margin="10,0,0,0"
-                            Command="{Binding CancelCommand}" />
+                            Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </StackPanel>
             </StackPanel>
-        </Grid>
-        <local:MapList Grid.Column="1"
-                       DataContext="{Binding Parent.ExistingMaps}" />
-
-    </Grid>
+        </local:GridMaker.Controls>
+    </local:GridMaker>
 </Window>

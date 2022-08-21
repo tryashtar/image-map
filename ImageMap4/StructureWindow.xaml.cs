@@ -18,7 +18,7 @@ namespace ImageMap4;
 /// <summary>
 /// Interaction logic for StructureWindow.xaml
 /// </summary>
-public partial class StructureWindow : Window, IDropTarget
+public partial class StructureWindow : Window
 {
     public StructureViewModel ViewModel => (StructureViewModel)DataContext;
     public StructureWindow(StructureViewModel context)
@@ -26,28 +26,5 @@ public partial class StructureWindow : Window, IDropTarget
         InitializeComponent();
         this.DataContext = context;
         ViewModel.OnClosed += (s, e) => this.Close();
-    }
-
-    void IDropTarget.DragOver(IDropInfo dropInfo)
-    {
-        GetDropAction(dropInfo);
-    }
-
-    void IDropTarget.Drop(IDropInfo dropInfo)
-    {
-        GetDropAction(dropInfo)();
-    }
-
-    private Action GetDropAction(IDropInfo info)
-    {
-        info.Effects = DragDropEffects.Move;
-        return () =>
-        {
-            int from_x = Grid.GetColumn(info.DragInfo.VisualSource);
-            int from_y = Grid.GetRow(info.DragInfo.VisualSource);
-            int to_x = Grid.GetColumn(info.VisualTargetItem);
-            int to_y = Grid.GetRow(info.VisualTargetItem);
-            ViewModel.MoveMap(from_x, from_y, to_x, to_y);
-        };
     }
 }

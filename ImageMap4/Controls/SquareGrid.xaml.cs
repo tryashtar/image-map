@@ -175,10 +175,10 @@ internal class GridlineRenderer : FrameworkElement
 {
     public static readonly DependencyProperty ColumnsProperty =
             DependencyProperty.Register(nameof(Columns), typeof(int),
-            typeof(GridlineRenderer), new FrameworkPropertyMetadata(1));
+            typeof(GridlineRenderer), new FrameworkPropertyMetadata(1, RatioChanged));
     public static readonly DependencyProperty RowsProperty =
             DependencyProperty.Register(nameof(Rows), typeof(int),
-            typeof(GridlineRenderer), new FrameworkPropertyMetadata(1));
+            typeof(GridlineRenderer), new FrameworkPropertyMetadata(1, RatioChanged));
     public int Columns
     {
         get { return (int)GetValue(ColumnsProperty); }
@@ -189,6 +189,13 @@ internal class GridlineRenderer : FrameworkElement
         get { return (int)GetValue(RowsProperty); }
         set { SetValue(RowsProperty, value); }
     }
+
+    // fixes grid lines not updating if both grid and columns change without ratio changing, e.g. 1x1 -> 2x2
+    private static void RatioChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        ((GridlineRenderer)sender).InvalidateVisual();
+    }
+
     protected override void OnRender(DrawingContext dc)
     {
         Pen black = new Pen(Brushes.Black, 4);

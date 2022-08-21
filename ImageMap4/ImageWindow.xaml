@@ -1,0 +1,59 @@
+﻿<Window x:Class="ImageMap4.ImageWindow"
+        x:Name="This"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ImageMap4"
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        xmlns:dd="urn:gong-wpf-dragdrop"
+        mc:Ignorable="d"
+        Title="Create Image"
+        Height="450"
+        Width="940"
+        FontSize="16"
+        WindowStartupLocation="CenterOwner">
+    <Window.InputBindings>
+        <KeyBinding Key="Esc"
+                    Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+    </Window.InputBindings>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Shared.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <DataTemplate x:Key="Template">
+                <Grid dd:DragDrop.IsDropTarget="True"
+                      dd:DragDrop.IsDragSource="True"
+                      dd:DragDrop.UseDefaultDragAdorner="True"
+                      dd:DragDrop.DropHandler="{Binding Path=., RelativeSource={RelativeSource AncestorType=local:GridMaker}}"
+                      Background="Transparent">
+                    <Image RenderOptions.BitmapScalingMode="NearestNeighbor"
+                           Source="{Binding Data.ImageSource}" />
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
+    <local:GridMaker x:Name="GridMaker"
+                     DataContext="{Binding GridMaker}">
+        <local:GridMaker.Controls>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,5,0,10">
+                    <Button Content="Export Combined"
+                            Padding="5"
+                            Command="{Binding ExportCombinedCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Button Content="Export Separately"
+                            Padding="5"
+                            Margin="10,0,0,0"
+                            Command="{Binding ExportSeparateCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Button Content="Cancel"
+                            Padding="5"
+                            Margin="10,0,0,0"
+                            Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </StackPanel>
+            </StackPanel>
+        </local:GridMaker.Controls>
+    </local:GridMaker>
+</Window>

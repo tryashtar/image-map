@@ -44,6 +44,9 @@
                 <MenuItem Header="Discard"
                           Command="{Binding DataContext.DiscardCommand, Source={x:Reference This}}"
                           CommandParameter="{Binding DataContext.ImportingMaps, Source={x:Reference This}}" />
+                <MenuItem Header="Export image"
+                          Command="{Binding ExportImageCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding DataContext.ImportingMaps, Source={x:Reference This}}" />
             </ContextMenu>
             <ContextMenu x:Key="ExistingMenu">
                 <MenuItem Header="Change ID"
@@ -68,6 +71,9 @@
                 </MenuItem>
                 <MenuItem Header="Delete"
                           Command="{Binding DataContext.DeleteCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
+                <MenuItem Header="Export image"
+                          Command="{Binding ExportImageCommand, Source={x:Reference This}}"
                           CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
             </ContextMenu>
             <Style x:Key="WorldCard"
@@ -142,7 +148,7 @@
                  dd:DragDrop.DropHandler="{Binding ElementName=This}">
             <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="{StaticResource WorldsIcon}"
+                    <Image Source="Icons/world.png"
                            Height="18"
                            RenderOptions.BitmapScalingMode="NearestNeighbor"
                            SnapsToDevicePixels="True" />

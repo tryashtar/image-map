@@ -25,11 +25,12 @@
                      SnapsToDevicePixels="True" />
         <ContentPresenter Grid.Row="1"
                           Grid.Column="1"
-                          Content="{Binding Inside, ElementName=This}" />
+                          Content="{Binding Inside, RelativeSource={RelativeSource AncestorType=local:SquareGrid}}" />
         <local:GridlineRenderer Grid.Row="1"
                                 Grid.Column="1"
-                                Rows="{Binding Rows, ElementName=This}"
-                                Columns="{Binding Columns, ElementName=This}"
-                                SnapsToDevicePixels="True" />
+                                Rows="{Binding Rows, RelativeSource={RelativeSource AncestorType=local:SquareGrid}}"
+                                Columns="{Binding Columns, RelativeSource={RelativeSource AncestorType=local:SquareGrid}}"
+                                SnapsToDevicePixels="True"
+                                IsHitTestVisible="False" />
     </Grid>
 </UserControl>

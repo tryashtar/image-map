@@ -32,6 +32,7 @@ public partial class MainWindow : Window, IDropTarget
     public ICommand OpenWorldFolderCommand { get; }
     public ICommand OpenMapFileCommand { get; }
     public ICommand ChangeIDCommand { get; }
+    public ICommand ExportImageCommand { get; }
     public MainWindow()
     {
         PasteCommand = new RelayCommand(() =>
@@ -75,6 +76,29 @@ public partial class MainWindow : Window, IDropTarget
                     ViewModel.ChangeIDs(selected, window.ID);
                 else if (window.Result == ChangeResult.Auto)
                     ViewModel.AutoIDs(selected);
+            }
+        });
+        ExportImageCommand = new RelayCommand<ObservableList<Selectable<Map>>>(x =>
+        {
+            var selected = x.Where(x => x.IsSelected).ToList();
+            if (selected.Count == 1)
+            {
+                var dialog = new SaveFileDialog();
+                dialog.Title = "Export the image";
+                dialog.Filter = "Image Files|*.png;|All Files|*";
+                dialog.FileName = $"map_{selected[0].Item.ID}.png";
+                if (dialog.ShowDialog() == true)
+                    selected[0].Item.Data.Image.Save(dialog.FileName);
+            }
+            else
+            {
+                if (ImageWindow == null || !ImageWindow.IsVisible)
+                {
+                    ImageWindow = new(new ImageViewModel(new GridMakerViewModel(ViewModel, x)));
+                    ImageWindow.Owner = this;
+                }
+                ImageWindow.Show();
+                ImageWindow.Activate();
             }
         });
         InitializeComponent();
@@ -123,6 +147,7 @@ public partial class MainWindow : Window, IDropTarget
             OpenImages(dialog.FileNames.Select(PendingSource.FromPath));
     }
 
+    private ImageWindow? ImageWindow;
     private ImportWindow? ImportWindow;
     private void OpenImages(IEnumerable<PendingSource> images)
     {
@@ -143,7 +168,7 @@ public partial class MainWindow : Window, IDropTarget
     {
         if (StructureWindow == null || !StructureWindow.IsVisible)
         {
-            StructureWindow = new(new StructureViewModel(this.ViewModel));
+            StructureWindow = new(new StructureViewModel(new GridMakerViewModel(this.ViewModel, this.ViewModel.ExistingMaps)));
             StructureWindow.Owner = this;
             StructureWindow.ViewModel.JavaMode = ViewModel.SelectedWorld is JavaWorld;
             StructureWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.SelectedWorld.AddStructure(e.grid, e.inventory);
