@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,17 +17,48 @@ namespace ImageMap4;
 /// <summary>
 /// Interaction logic for ChangeIDWindow.xaml
 /// </summary>
-public partial class ChangeIDWindow : Window
+public partial class ChangeIDWindow : Window, INotifyPropertyChanged
 {
     public ChangeResult Result;
-    public long ID { get; set; }
+    private long _id;
+    public long ID
+    {
+        get { return _id; }
+        set
+        {
+            _id = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ID)));
+            bool conflicts = false;
+            for (long i = _id; i < _id + Count; i++)
+            {
+                if (TakenIDs.Contains(i))
+                {
+                    conflicts = true;
+                    break;
+                }
+            }
+            Conflicts = conflicts;
+        }
+    }
+    private bool _conflicts;
+    public bool Conflicts
+    {
+        get { return _conflicts; }
+        set { _conflicts = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Conflicts))); }
+    }
     public ICommand ConfirmCommand { get; }
     public ICommand AutoCommand { get; }
     public ICommand CancelCommand { get; }
-    public ChangeIDWindow(long starting)
+    private readonly HashSet<long> TakenIDs;
+    private readonly int Count;
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public ChangeIDWindow(long starting, int count, HashSet<long> taken)
     {
-        InitializeComponent();
+        TakenIDs = taken;
         ID = starting;
+        Count = count;
+        InitializeComponent();
         ConfirmCommand = new RelayCommand(() =>
         {
             Result = ChangeResult.Confirmed;

@@ -68,14 +68,14 @@ public partial class MainWindow : Window, IDropTarget
         ChangeIDCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
         {
             var selected = x.Where(x => x.IsSelected);
-            var window = new ChangeIDWindow(selected.FirstOrDefault()?.Item.ID ?? 0);
+            var window = new ChangeIDWindow(selected.FirstOrDefault()?.Item.ID ?? 0, selected.Count(), x.Except(selected).Select(x => x.Item.ID).ToHashSet());
             window.Owner = this;
             if (window.ShowDialog() ?? false)
             {
                 if (window.Result == ChangeResult.Confirmed)
-                    ViewModel.ChangeIDs(selected, window.ID);
+                    ViewModel.ChangeIDs(x, selected, window.ID);
                 else if (window.Result == ChangeResult.Auto)
-                    ViewModel.AutoIDs(selected);
+                    ViewModel.AutoIDs(x, selected);
             }
         });
         ExportImageCommand = new RelayCommand<ObservableList<Selectable<Map>>>(x =>

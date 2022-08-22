@@ -191,29 +191,46 @@ public class MainViewModel : ObservableObject
         }
     }
 
-    public void ChangeIDs(IEnumerable<Selectable<Map>> maps, long new_id)
+    public void ChangeIDs(IList<Selectable<Map>> source, IEnumerable<Selectable<Map>> maps, long new_id)
     {
-        var changing = maps.Select(x => (x.Item.ID, x)).ToList();
+        long id = new_id;
+        var changing = maps.Select(x => (from: x.Item.ID, to: id++, map: x.Item)).ToList();
+        var new_ids = changing.Select(x => x.to).ToHashSet();
+        var replaced = source.Except(maps).Where(x => new_ids.Contains(x.Item.ID)).ToList();
         UndoHistory.Perform(() =>
         {
-            long id = new_id;
-            foreach (var (_, map) in changing)
+            foreach (var (_, to, map) in changing)
             {
-                map.Item.ID = id;
-                id++;
+                map.ID = to;
+            }
+            RemoveRange(replaced, source);
+            if (source == ExistingMaps && SelectedWorld != null)
+            {
+                SelectedWorld.RemoveMaps(changing.Select(x => x.from));
+                SelectedWorld.AddMaps(changing.Select(x => x.map));
             }
         }, () =>
         {
-            foreach (var (id, map) in changing)
+            foreach (var (from, _, map) in changing)
             {
-                map.Item.ID = id;
+                map.ID = from;
+            }
+            foreach (var item in replaced)
+            {
+                Insert(item, source);
+            }
+            if (source == ExistingMaps && SelectedWorld != null)
+            {
+                SelectedWorld.RemoveMaps(new_ids);
+                SelectedWorld.AddMaps(changing.Select(x => x.map));
+                SelectedWorld.AddMaps(replaced.Select(x => x.Item));
             }
         });
     }
 
-    public void AutoIDs(IEnumerable<Selectable<Map>> maps)
+    public void AutoIDs(IList<Selectable<Map>> source, IEnumerable<Selectable<Map>> maps)
     {
-        ChangeIDs(maps, NextFreeID());
+        ChangeIDs(source, maps, NextFreeID());
     }
 
     private void Insert(Selectable<Map> item, IList<Selectable<Map>> list)
@@ -315,9 +332,12 @@ public class MainViewModel : ObservableObject
     }
     private static IEnumerable<T> Flatten<T>(T[,] stuff)
     {
-        foreach (var item in stuff)
+        for (int y = 0; y < stuff.GetLength(1); y++)
         {
-            yield return item;
+            for (int x = 0; x < stuff.GetLength(0); x++)
+            {
+                yield return stuff[x, y];
+            }
         }
     }
     private static TTo[,] Map2D<TFrom, TTo>(TFrom[,] stuff, Func<TFrom, TTo> func)
