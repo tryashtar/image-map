@@ -29,7 +29,7 @@ public abstract class World
     public abstract IEnumerable<IInventory> GetInventories();
     protected abstract void ProcessImage(Image<Rgba32> image, ProcessSettings settings);
     protected abstract byte[] EncodeColors(Image<Rgba32> image);
-    public IEnumerable<MapData> MakeMaps(ImportSettings settings)
+    public MapData[,] MakeMaps(ImportSettings settings)
     {
         using var image = settings.Preview.Source.Image.Value;
         image.Mutate(x =>
@@ -56,13 +56,15 @@ public abstract class World
         var original = Split(image, settings.Width, settings.Height);
         ProcessImage(image, settings.ProcessSettings);
         var finished = Split(image, settings.Width, settings.Height);
+        var result = new MapData[settings.Width, settings.Height];
         for (int y = 0; y < settings.Height; y++)
         {
             for (int x = 0; x < settings.Width; x++)
             {
-                yield return new MapData(finished[x, y], original[x, y], EncodeColors(finished[x, y]));
+                result[x, y] = new MapData(finished[x, y], original[x, y], EncodeColors(finished[x, y]));
             }
         }
+        return result;
     }
 
     private static Image<Rgba32>[,] Split(Image<Rgba32> source, int columns, int rows)

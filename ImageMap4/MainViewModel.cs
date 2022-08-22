@@ -26,6 +26,7 @@ public class MainViewModel : ObservableObject
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
     public ObservableList<Selectable<Map>> ImportingMaps { get; } = new();
     public ObservableList<Selectable<Map>> ExistingMaps { get; } = new();
+    public List<StructureGrid> ImportingStructures { get; } = new();
     public ReadOnlyCollection<IInventory>? PlayerList { get; private set; }
     public ICollectionView ExistingMapsView
     {
@@ -82,15 +83,29 @@ public class MainViewModel : ObservableObject
                 return;
             var overwritten = ExistingMaps.Where(x => ConflictingIDs.Contains(x.Item.ID)).ToList();
             var importing = ImportingMaps.ToList();
+            var structures = ImportingStructures.ToList();
+            int index = Properties.Settings.Default.InventoryChoice;
+            if (index < 0 || index >= PlayerList.Count)
+                index = 1;
+            var inventory = PlayerList[index];
+            bool send_structures = CreateStructures;
             UndoHistory.Perform(() =>
             {
                 SelectedWorld.AddMaps(importing.Select(x => x.Item));
+                if (send_structures)
+                {
+                    foreach (var structure in structures)
+                    {
+                        SelectedWorld.AddStructure(structure, inventory);
+                    }
+                }
                 foreach (var item in importing)
                 {
                     Insert(item, ExistingMaps);
                 }
                 RemoveRange(overwritten, ExistingMaps);
                 ImportingMaps.Clear();
+                ImportingStructures.Clear();
             }, () =>
             {
                 SelectedWorld.RemoveMaps(importing.Select(x => x.Item.ID));
@@ -101,6 +116,7 @@ public class MainViewModel : ObservableObject
                     Insert(item, ExistingMaps);
                 }
                 ImportingMaps.AddRange(importing);
+                ImportingStructures.AddRange(structures);
             });
         });
         UndoCommand = new RelayCommand(() => UndoHistory.Undo());
@@ -271,13 +287,49 @@ public class MainViewModel : ObservableObject
         if (SelectedWorld == null)
             return;
         long id = NextFreeID();
-        var maps = SelectedWorld.MakeMaps(settings).Select(x => new Selectable<Map>(new Map(id++, x))).ToList();
+        var map_data = SelectedWorld.MakeMaps(settings);
+        var maps = Map2D(map_data, x => new Map(id++, x));
+        var import = Flatten(maps).Select(x => new Selectable<Map>(x)).ToList();
+        var structure = new StructureGrid("imagemap:" + MakeSafe(settings.Preview.Source.Name), maps)
+        {
+            GlowingFrames = Properties.Settings.Default.GlowingFrames,
+            InvisibleFrames = Properties.Settings.Default.InvisibleFrames
+        };
         UndoHistory.Perform(() =>
         {
-            ImportingMaps.AddRange(maps);
+            ImportingMaps.AddRange(import);
+            ImportingStructures.Add(structure);
         }, () =>
         {
-            RemoveRange(maps, ImportingMaps);
+            RemoveRange(import, ImportingMaps);
+            ImportingStructures.Remove(structure);
         });
+    }
+
+    private static string MakeSafe(string input)
+    {
+        input = Path.GetFileNameWithoutExtension(input);
+        input = input.ToLower();
+        input = input.Replace(' ', '_');
+        return input;
+    }
+    private static IEnumerable<T> Flatten<T>(T[,] stuff)
+    {
+        foreach (var item in stuff)
+        {
+            yield return item;
+        }
+    }
+    private static TTo[,] Map2D<TFrom, TTo>(TFrom[,] stuff, Func<TFrom, TTo> func)
+    {
+        var result = new TTo[stuff.GetLength(0), stuff.GetLength(1)];
+        for (int y = 0; y < stuff.GetLength(1); y++)
+        {
+            for (int x = 0; x < stuff.GetLength(0); x++)
+            {
+                result[x, y] = func(stuff[x, y]);
+            }
+        }
+        return result;
     }
 }
