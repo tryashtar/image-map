@@ -25,6 +25,8 @@
         <KeyBinding Modifiers="Ctrl+Shift"
                     Key="Z"
                     Command="{Binding RedoCommand}" />
+        <KeyBinding Key="Delete"
+                    Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
     </Window.InputBindings>
     <Window.Resources>
         <ResourceDictionary>
@@ -501,7 +503,8 @@
                         </Button>
                     </StackPanel>
                 </StackPanel>
-                <local:MapList Grid.Column="1"
+                <local:MapList x:Name="ExistingList"
+                               Grid.Column="1"
                                Grid.Row="1"
                                DataContext="{Binding ExistingMapsView}"
                                MapMenu="{StaticResource ExistingMenu}">

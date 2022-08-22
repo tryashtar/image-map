@@ -29,6 +29,7 @@ public partial class MainWindow : Window, IDropTarget
 {
     private MainViewModel ViewModel => (MainViewModel)this.DataContext;
     public ICommand PasteCommand { get; }
+    public ICommand DeleteCommand { get; }
     public ICommand OpenWorldFolderCommand { get; }
     public ICommand OpenMapFileCommand { get; }
     public ICommand ChangeIDCommand { get; }
@@ -100,6 +101,13 @@ public partial class MainWindow : Window, IDropTarget
                 ImageWindow.Show();
                 ImageWindow.Activate();
             }
+        });
+        DeleteCommand = new RelayCommand(() =>
+        {
+            if (ImportList.IsFocused)
+                ViewModel.DiscardCommand.Execute(ViewModel.ImportingMaps);
+            else if (ExistingList.IsFocused)
+                ViewModel.DeleteCommand.Execute(ViewModel.ExistingMaps);
         });
         InitializeComponent();
     }

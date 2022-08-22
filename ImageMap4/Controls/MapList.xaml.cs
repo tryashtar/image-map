@@ -60,6 +60,7 @@ public partial class MapList : UserControl
     private Selectable<Map>? LastClicked;
     private void Map_MouseDown(object sender, MouseButtonEventArgs e)
     {
+        this.Focus();
         var map = (Selectable<Map>)((FrameworkElement)sender).DataContext;
         if (e.RightButton == MouseButtonState.Pressed)
         {
@@ -88,6 +89,11 @@ public partial class MapList : UserControl
             }
         }
         LastClicked = map;
+    }
+
+    private void List_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        this.Focus();
     }
 }
 
