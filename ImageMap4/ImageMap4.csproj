@@ -7,6 +7,22 @@
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+	<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>false</SelfContained>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<RootNamespace>ImageMap4</RootNamespace>
+	<AssemblyName>ImageMap</AssemblyName>
+	<Authors>tryashtar</Authors>
+	<Company />
+	<Product>Image Map</Product>
+	<Description>Converts images to maps for Minecraft</Description>
+	<Copyright>Copyright © 2022 tryashtar</Copyright>
+	<PackageProjectUrl>https://github.com/tryashtar/image-map</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/tryashtar/image-map</RepositoryUrl>
+    <AssemblyVersion>4.0.0.0</AssemblyVersion>
+    <FileVersion>4.0.0.0</FileVersion>
+    <Version>4.0.0</Version>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -97,5 +113,12 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win_amd64.dll&quot; &quot;$(ProjectDir)$(OutDir)&quot;&#xD;&#xA;xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win32.dll&quot; &quot;$(ProjectDir)$(OutDir)&quot;&#xD;&#xA;if $(ConfigurationName) == Release (powershell Compress-Archive -Path '$(TargetDir)*.dll', '$(TargetDir)*.exe' -DestinationPath '$(TargetDir)ImageMap4.zip' -Force)" />
+  </Target>
+  <Target Name="Test" AfterTargets="Publish">
+    <Exec Command="xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win_amd64.dll&quot; &quot;$(ProjectDir)bin\Publish&quot;&#xD;&#xA;xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win32.dll&quot; &quot;$(ProjectDir)bin\Publish&quot;&#xD;&#xA;powershell Compress-Archive -Path '$(ProjectDir)bin\Publish\*.dll', '$(ProjectDir)bin\Publish\*.exe' -DestinationPath '$(ProjectDir)bin\Publish\ImageMap4.zip' -Force" />
+  </Target>
 
 </Project>
