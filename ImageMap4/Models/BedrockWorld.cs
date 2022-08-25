@@ -88,7 +88,7 @@ public class BedrockWorld : World
         };
         var key = "structuretemplate_" + structure.Identifier;
         var file = new NbtFile(nbt) { BigEndian = false };
-        using var db = OpenDB();
+        var db = OpenDB();
         db.Put(key, file.SaveToBuffer(NbtCompression.None));
         var item = new NbtCompound {
             new NbtString("Name", "minecraft:structure_block"),
@@ -129,7 +129,7 @@ public class BedrockWorld : World
 
     public override async IAsyncEnumerable<Map> GetMapsAsync()
     {
-        using var db = OpenDB();
+        var db = OpenDB();
         using var iterator = db.CreateIterator();
         iterator.Seek("map_");
         while (iterator.IsValid())
@@ -158,7 +158,7 @@ public class BedrockWorld : World
 
     public override void AddMaps(IEnumerable<Map> maps)
     {
-        using var db = OpenDB();
+        var db = OpenDB();
         using var batch = new WriteBatch();
         foreach (var map in maps)
         {
@@ -175,7 +175,7 @@ public class BedrockWorld : World
 
     public override void RemoveMaps(IEnumerable<long> ids)
     {
-        using var db = OpenDB();
+        var db = OpenDB();
         foreach (var id in ids)
         {
             db.Delete($"map_{id}");
@@ -203,5 +203,10 @@ public class BedrockWorld : World
         if (DBAccess == null || DBAccess.Disposed)
             DBAccess = new LevelDB(Path.Combine(Folder, "db"));
         return DBAccess;
+    }
+
+    public void CloseDB()
+    {
+        DBAccess?.Dispose();
     }
 }

@@ -51,10 +51,9 @@ public partial class MainWindow : Window, IDropTarget
                 encoder.Frames.Add(BitmapFrame.Create(source));
                 encoder.Save(stream);
                 stream.Position = 0;
-                var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
                 OpenImages(new[]
                 {
-                    new PendingSource(new(source), new(image), "Pasted image")
+                    new PendingSource(new(source), () => SixLabors.ImageSharp.Image.Load<Rgba32>(stream), "Pasted image")
                 });
             }
         });
@@ -164,7 +163,7 @@ public partial class MainWindow : Window, IDropTarget
             ImportWindow = new();
             ImportWindow.Owner = this;
             ImportWindow.ViewModel.JavaMode = ViewModel.SelectedWorld is JavaWorld;
-            ImportWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.AddImport(e);
+            ImportWindow.ViewModel.OnConfirmed += (s, e) => _ = ViewModel.AddImports(e);
         }
         ImportWindow.Show();
         ImportWindow.Activate();

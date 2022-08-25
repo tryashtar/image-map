@@ -38,6 +38,8 @@ public class MainViewModel : ObservableObject
         get => _selectedWorld;
         set
         {
+            if (_selectedWorld is BedrockWorld w)
+                w.CloseDB();
             _selectedWorld = value;
             UndoHistory.Clear();
             OnPropertyChanged();
@@ -183,12 +185,16 @@ public class MainViewModel : ObservableObject
         ExistingMaps.Clear();
         if (SelectedWorld == null)
             return;
-        await foreach (var item in SelectedWorld.GetMapsAsync())
+        await Parallel.ForEachAsync(SelectedWorld.GetMapsAsync(), new ParallelOptions() { CancellationToken = ct, MaxDegreeOfParallelism = 5 }, async (item, token) =>
         {
-            ct.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
             var selectable = new Selectable<Map>(item);
-            Insert(selectable, ExistingMaps);
-        }
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (!token.IsCancellationRequested)
+                    Insert(selectable, ExistingMaps);
+            });
+        });
     }
 
     public void ChangeIDs(IList<Selectable<Map>> source, IEnumerable<Selectable<Map>> maps, long new_id)
@@ -241,7 +247,7 @@ public class MainViewModel : ObservableObject
         list.Insert(index, item);
     }
 
-    private void RemoveRange(IEnumerable<Selectable<Map>> items, IList<Selectable<Map>> list)
+    private void RemoveRange<T>(IEnumerable<T> items, IList<T> list) where T : class
     {
         foreach (var item in items)
         {
@@ -299,27 +305,72 @@ public class MainViewModel : ObservableObject
         return ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).Append(-1).Max() + 1;
     }
 
-    public void AddImport(ImportSettings settings)
+    public async Task AddImports(IList<Lazy<ImportSettings>> settings)
     {
         if (SelectedWorld == null)
             return;
         long id = NextFreeID();
-        var map_data = SelectedWorld.MakeMaps(settings);
-        var maps = Map2D(map_data, x => new Map(id++, x));
-        var import = Flatten(maps).Select(x => new Selectable<Map>(x)).ToList();
-        var structure = new StructureGrid("imagemap:" + MakeSafe(settings.Preview.Source.Name), maps)
+        var action = (CancellationToken token) =>
         {
-            GlowingFrames = Properties.Settings.Default.GlowingFrames,
-            InvisibleFrames = Properties.Settings.Default.InvisibleFrames
+            var added_maps = new List<Selectable<Map>>();
+            var added_structures = new List<StructureGrid>();
+            var processed = new HashSet<ImportSettings>();
+            Parallel.ForEach(settings.ToList(), (setting, state) =>
+            {
+                if (token.IsCancellationRequested)
+                    state.Break();
+                else
+                {
+                    var map_data = SelectedWorld.MakeMaps(setting.Value);
+                    var maps = Map2D(map_data, x => new Map(id++, x));
+                    var import = Flatten(maps).Select(x => new Selectable<Map>(x)).ToList();
+                    var structure = new StructureGrid("imagemap:" + MakeSafe(setting.Value.Preview.Source.Name), maps)
+                    {
+                        GlowingFrames = Properties.Settings.Default.GlowingFrames,
+                        InvisibleFrames = Properties.Settings.Default.InvisibleFrames
+                    };
+                    lock (processed)
+                    {
+                        added_maps.AddRange(import);
+                        added_structures.Add(structure);
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (!token.IsCancellationRequested)
+                                ImportingMaps.AddRange(import);
+                        });
+                        ImportingStructures.Add(structure);
+                        processed.Add(setting.Value);
+                        settings.Remove(setting);
+                    }
+                }
+            });
+            return (added_maps, added_structures);
         };
-        UndoHistory.Perform(() =>
+        UndoHistory.PerformContext(((List<Selectable<Map>> done_maps, List<StructureGrid> done_structures)? context) =>
         {
-            ImportingMaps.AddRange(import);
-            ImportingStructures.Add(structure);
-        }, () =>
+            var maps = new List<Selectable<Map>>();
+            var structures = new List<StructureGrid>();
+            if (context.HasValue)
+            {
+                maps.AddRange(context.Value.done_maps);
+                structures.AddRange(context.Value.done_structures);
+                ImportingMaps.AddRange(maps);
+                ImportingStructures.AddRange(structures);
+            }
+            var source = new CancellationTokenSource();
+            var task = Task.Run(() => action(source.Token));
+            return (source, task, maps, structures);
+        }, context =>
         {
-            RemoveRange(import, ImportingMaps);
-            ImportingStructures.Remove(structure);
+            var (source, task, done_maps, done_structures) = context;
+            source.Cancel();
+            task.Wait();
+            var (maps, structures) = task.Result;
+            done_maps.AddRange(maps);
+            done_structures.AddRange(structures);
+            RemoveRange(done_maps, ImportingMaps);
+            RemoveRange(done_structures, ImportingStructures);
+            return (done_maps, done_structures);
         });
     }
 

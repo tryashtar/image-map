@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -28,7 +29,7 @@ public class ImportViewModel : ObservableObject
     public ICommand NavigateCommand { get; }
     public ICommand ChangeBackgroundCommand { get; }
     public event EventHandler? OnClosed;
-    public event EventHandler<ImportSettings>? OnConfirmed;
+    public event EventHandler<IList<Lazy<ImportSettings>>>? OnConfirmed;
 
     private bool _hadMultiple;
     public bool HadMultiple
@@ -173,7 +174,7 @@ public class ImportViewModel : ObservableObject
         ConfirmCommand = new RelayCommand(() =>
         {
             if (CurrentImage != null)
-                ConfirmImage(CurrentImage);
+                ConfirmImages(new[] { CurrentImage });
             ImageQueue.RemoveAt(CurrentIndex);
             if (CurrentIndex >= ImageQueue.Count)
                 CurrentIndex--;
@@ -183,10 +184,7 @@ public class ImportViewModel : ObservableObject
         });
         ConfirmAllCommand = new RelayCommand(() =>
         {
-            foreach (var item in ImageQueue)
-            {
-                ConfirmImage(item);
-            }
+            ConfirmImages(ImageQueue);
             ImageQueue.Clear();
             CurrentIndex = 0;
             OnPropertyChanged(nameof(CurrentImage));
@@ -205,9 +203,16 @@ public class ImportViewModel : ObservableObject
         });
     }
 
-    private void ConfirmImage(PreviewImage preview)
+    private void ConfirmImages(IEnumerable<PreviewImage> previews)
     {
-        var settings = new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler(preview.Source.Image.Value.Size()), StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm));
+        // you would think the laziness of PendingSource.Image is enough to defer initialization to processing,
+        // but we need to load the image to get its size for automatic scale mode
+        // hence, this needs to be lazy too
+        var settings = new List<Lazy<ImportSettings>>();
+        foreach (var preview in previews)
+        {
+            settings.Add(new(() => new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler(preview.Source.Image.Value.Size()), StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm))));
+        }
         OnConfirmed?.Invoke(this, settings);
     }
 
@@ -229,8 +234,27 @@ public class ImportViewModel : ObservableObject
     }
 }
 
-public record PendingSource(Lazy<ImageSource> Source, Lazy<Image<Rgba32>> Image, string Name)
+public class PendingSource
 {
+    public Lazy<ImageSource> Source { get; }
+    public Remakable<Image<Rgba32>> Image { get; }
+    public string Name { get; }
+
+    public PendingSource(Lazy<ImageSource> source, Func<Image<Rgba32>> image, string name)
+    {
+        Source = source;
+        Image = new(image, IsDisposed);
+        Name = name;
+    }
+
+    private static bool IsDisposed(Image<Rgba32> img)
+    {
+        // eek!
+        var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        var field = typeof(Image).GetField("isDisposed", flags);
+        return (bool)field.GetValue(img);
+    }
+
     public static PendingSource FromPath(string path)
     {
         return new PendingSource(new(() =>
@@ -238,8 +262,29 @@ public record PendingSource(Lazy<ImageSource> Source, Lazy<Image<Rgba32>> Image,
             var img = new BitmapImage(new Uri(path));
             img.Freeze();
             return img;
-        }), new(() => SixLabors.ImageSharp.Image.Load<Rgba32>(path)),
+        }), () => SixLabors.ImageSharp.Image.Load<Rgba32>(path),
         Path.GetFileName(path));
+    }
+}
+
+public class Remakable<T> where T : class, IDisposable
+{
+    private T? _value = null;
+    public T Value
+    {
+        get
+        {
+            if (_value == null || DisposedCheck(_value))
+                _value = Getter();
+            return _value;
+        }
+    }
+    private readonly Func<T> Getter;
+    private readonly Func<T, bool> DisposedCheck;
+    public Remakable(Func<T> getter, Func<T, bool> disposed_check)
+    {
+        Getter = getter;
+        DisposedCheck = disposed_check;
     }
 }
 
