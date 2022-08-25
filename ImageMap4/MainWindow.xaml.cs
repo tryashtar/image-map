@@ -224,9 +224,9 @@ public partial class MainWindow : Window, IDropTarget
                     if (Directory.Exists(file) && File.Exists(Path.Combine(file, "level.dat")))
                     {
                         if (Directory.Exists(Path.Combine(file, "db")))
-                            ViewModel.SelectedWorld = new BedrockWorld(file);
+                            TryOpenWorld(new BedrockWorld(file));
                         else
-                            ViewModel.SelectedWorld = new JavaWorld(file);
+                            TryOpenWorld(new JavaWorld(file));
                         TabList.SelectedItem = MapsTab;
                     }
                 };
@@ -235,13 +235,24 @@ public partial class MainWindow : Window, IDropTarget
         return () => { };
     }
 
+    private void TryOpenWorld(World world)
+    {
+        try
+        {
+            ViewModel.SelectedWorld = world;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString());
+        }
+    }
+
     private void JavaWorldList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (JavaWorldList.SelectedIndex != -1)
         {
             BedrockWorldList.SelectedIndex = -1;
-            ViewModel.SelectedWorld = (World)JavaWorldList.SelectedItem;
-            TabList.SelectedItem = MapsTab;
+            TryOpenWorld((World)JavaWorldList.SelectedItem);
         }
     }
 
@@ -250,9 +261,13 @@ public partial class MainWindow : Window, IDropTarget
         if (BedrockWorldList.SelectedIndex != -1)
         {
             JavaWorldList.SelectedIndex = -1;
-            ViewModel.SelectedWorld = (World)BedrockWorldList.SelectedItem;
-            TabList.SelectedItem = MapsTab;
+            TryOpenWorld((World)BedrockWorldList.SelectedItem);
         }
+    }
+
+    private void World_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        TabList.SelectedItem = MapsTab;
     }
 }
 

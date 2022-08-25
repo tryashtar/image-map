@@ -87,6 +87,8 @@
                                 Value="#CCDDFF" />
                     </Trigger>
                 </Style.Triggers>
+                <EventSetter Event="MouseDoubleClick"
+                             Handler="World_DoubleClick" />
                 <Setter Property="Background"
                         Value="#E5E5E5" />
                 <Setter Property="ContextMenu"

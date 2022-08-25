@@ -4,6 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace ImageMap4;
 public class BedrockWorld : World
 {
     private LevelDB DBAccess;
+    private object DBLock = new();
     public IBedrockVersion Version { get; }
     public override string Name { get; }
     public override string WorldIcon { get; }
@@ -200,13 +202,20 @@ public class BedrockWorld : World
     // seems to work ok for now, but could be worth taking another look at
     public LevelDB OpenDB()
     {
-        if (DBAccess == null || DBAccess.Disposed)
-            DBAccess = new LevelDB(Path.Combine(Folder, "db"));
-        return DBAccess;
+        lock (DBLock)
+        {
+            Debug.WriteLine($"Opening {Name}");
+            if (DBAccess == null || DBAccess.Disposed)
+                DBAccess = new LevelDB(Path.Combine(Folder, "db"));
+            return DBAccess;
+        }
     }
 
     public void CloseDB()
     {
-        DBAccess?.Dispose();
+        lock (DBLock)
+        {
+            DBAccess?.Dispose();
+        }
     }
 }
