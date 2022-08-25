@@ -29,7 +29,7 @@ public class ImportViewModel : ObservableObject
     public ICommand NavigateCommand { get; }
     public ICommand ChangeBackgroundCommand { get; }
     public event EventHandler? OnClosed;
-    public event EventHandler<IList<Lazy<ImportSettings>>>? OnConfirmed;
+    public event EventHandler<IList<ImportSettings>>? OnConfirmed;
 
     private bool _hadMultiple;
     public bool HadMultiple
@@ -205,13 +205,10 @@ public class ImportViewModel : ObservableObject
 
     private void ConfirmImages(IEnumerable<PreviewImage> previews)
     {
-        // you would think the laziness of PendingSource.Image is enough to defer initialization to processing,
-        // but we need to load the image to get its size for automatic scale mode
-        // hence, this needs to be lazy too
-        var settings = new List<Lazy<ImportSettings>>();
+        var settings = new List<ImportSettings>();
         foreach (var preview in previews)
         {
-            settings.Add(new(() => new ImportSettings(preview, GridWidth, GridHeight, ScaleChoice.Sampler(preview.Source.Image.Value.Size()), StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm))));
+            settings.Add(new ImportSettings(preview, GridWidth, GridHeight, new(() => ScaleChoice.Sampler(preview.Source.Image.Value.Size())), StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm)));
         }
         OnConfirmed?.Invoke(this, settings);
     }
@@ -316,6 +313,6 @@ public class PreviewImage : ObservableObject
     }
 }
 
-public record ImportSettings(PreviewImage Preview, int Width, int Height, IResampler Sampler, ResizeMode ResizeMode, Rgba32 BackgroundColor, ProcessSettings ProcessSettings);
+public record ImportSettings(PreviewImage Preview, int Width, int Height, Lazy<IResampler> Sampler, ResizeMode ResizeMode, Rgba32 BackgroundColor, ProcessSettings ProcessSettings);
 
 public record ProcessSettings(IDither? Dither, IColorAlgorithm Algorithm);

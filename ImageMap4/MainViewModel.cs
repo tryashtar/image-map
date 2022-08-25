@@ -95,10 +95,7 @@ public class MainViewModel : ObservableObject
             UndoHistory.Perform(() =>
             {
                 SelectedWorld.AddMaps(importing.Select(x => x.Item));
-                foreach (var item in importing)
-                {
-                    Insert(item, ExistingMaps);
-                }
+                InsertRange(importing, ExistingMaps, Sorter);
                 RemoveRange(overwritten, ExistingMaps);
                 ImportingMaps.Clear();
             }, () =>
@@ -106,11 +103,8 @@ public class MainViewModel : ObservableObject
                 SelectedWorld.RemoveMaps(importing.Select(x => x.Item.ID));
                 SelectedWorld.AddMaps(overwritten.Select(x => x.Item));
                 RemoveRange(importing, ExistingMaps);
-                foreach (var item in overwritten)
-                {
-                    Insert(item, ExistingMaps);
-                }
-                ImportingMaps.AddRange(importing);
+                InsertRange(overwritten, ExistingMaps, Sorter);
+                InsertRange(importing, ImportingMaps, Sorter);
             });
         });
         UndoCommand = new RelayCommand(() => UndoHistory.Undo());
@@ -123,10 +117,7 @@ public class MainViewModel : ObservableObject
                 RemoveRange(maps, x);
             }, () =>
             {
-                foreach (var map in maps)
-                {
-                    Insert(map, x);
-                }
+                InsertRange(maps, x, Sorter);
             });
         });
         DeleteCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
@@ -138,10 +129,7 @@ public class MainViewModel : ObservableObject
                 SelectedWorld?.RemoveMaps(maps.Select(x => x.Item.ID));
             }, () =>
             {
-                foreach (var map in maps)
-                {
-                    Insert(map, x);
-                }
+                InsertRange(maps, x, Sorter);
                 SelectedWorld?.AddMaps(maps.Select(x => x.Item));
             });
         });
@@ -184,7 +172,7 @@ public class MainViewModel : ObservableObject
             Application.Current.Dispatcher.Invoke(() =>
             {
                 if (!token.IsCancellationRequested)
-                    Insert(selectable, ExistingMaps);
+                    Insert(selectable, ExistingMaps, Sorter);
             });
         });
     }
@@ -195,6 +183,7 @@ public class MainViewModel : ObservableObject
         var changing = maps.Select(x => (from: x.Item.ID, to: id++, map: x.Item)).ToList();
         var new_ids = changing.Select(x => x.to).ToHashSet();
         var replaced = source.Except(maps).Where(x => new_ids.Contains(x.Item.ID)).ToList();
+        var affected = maps.ToList();
         UndoHistory.Perform(() =>
         {
             foreach (var (_, to, map) in changing)
@@ -202,6 +191,8 @@ public class MainViewModel : ObservableObject
                 map.ID = to;
             }
             RemoveRange(replaced, source);
+            RemoveRange(affected, source);
+            InsertRange(affected, source, Sorter);
             if (source == ExistingMaps && SelectedWorld != null)
             {
                 SelectedWorld.RemoveMaps(changing.Select(x => x.from));
@@ -213,10 +204,9 @@ public class MainViewModel : ObservableObject
             {
                 map.ID = from;
             }
-            foreach (var item in replaced)
-            {
-                Insert(item, source);
-            }
+            InsertRange(replaced, source, Sorter);
+            RemoveRange(affected, source);
+            InsertRange(affected, source, Sorter);
             if (source == ExistingMaps && SelectedWorld != null)
             {
                 SelectedWorld.RemoveMaps(new_ids);
@@ -231,12 +221,20 @@ public class MainViewModel : ObservableObject
         ChangeIDs(source, maps, NextFreeID());
     }
 
-    private void Insert(Selectable<Map> item, IList<Selectable<Map>> list)
+    private void Insert<T>(T item, IList<T> list, IComparer<T> sorter)
     {
-        int index = list.BinarySearch(item, Sorter);
+        int index = ListUtils.BinarySearch<T>(list, item, sorter);
         if (index < 0)
             index = ~index;
         list.Insert(index, item);
+    }
+
+    private void InsertRange<T>(IEnumerable<T> items, IList<T> list, IComparer<T> sorter)
+    {
+        foreach (var item in items)
+        {
+            Insert(item, list, sorter);
+        }
     }
 
     private void RemoveRange<T>(IEnumerable<T> items, IList<T> list) where T : class
@@ -297,41 +295,46 @@ public class MainViewModel : ObservableObject
         return ImportingMaps.Concat(ExistingMaps).Select(x => x.Item.ID).Append(-1).Max() + 1;
     }
 
-    public async Task AddImports(IList<Lazy<ImportSettings>> settings)
+    public async Task AddImports(IList<ImportSettings> settings)
     {
         if (SelectedWorld == null)
             return;
-        long id = NextFreeID();
+        long curent_id = NextFreeID();
+        var settings_list = new List<(ImportSettings settings, long first_id)>();
+        foreach (var item in settings)
+        {
+            settings_list.Add((item, curent_id));
+            curent_id += item.Width * item.Height;
+        }
         var action = (CancellationToken token) =>
         {
             var added_maps = new List<Selectable<Map>>();
             var added_structures = new List<StructureGrid>();
-            var processed = new HashSet<ImportSettings>();
-            Parallel.ForEach(settings.ToList(), (setting, state) =>
+            Parallel.ForEach(settings_list.ToList(), (stuff, state) =>
             {
                 if (token.IsCancellationRequested)
                     state.Break();
                 else
                 {
-                    var map_data = SelectedWorld.MakeMaps(setting.Value);
+                    var (setting, id) = stuff;
+                    var map_data = SelectedWorld.MakeMaps(setting);
                     var maps = Map2D(map_data, x => new Map(id++, x));
                     var import = Flatten(maps).Select(x => new Selectable<Map>(x)).ToList();
-                    var structure = new StructureGrid("imagemap:" + MakeSafe(setting.Value.Preview.Source.Name), maps)
+                    var structure = new StructureGrid("imagemap:" + MakeSafe(setting.Preview.Source.Name), maps)
                     {
                         GlowingFrames = Properties.Settings.Default.GlowingFrames,
                         InvisibleFrames = Properties.Settings.Default.InvisibleFrames
                     };
-                    lock (processed)
+                    lock (settings)
                     {
                         added_maps.AddRange(import);
                         added_structures.Add(structure);
                         Application.Current.Dispatcher.BeginInvoke(() =>
                         {
                             if (!token.IsCancellationRequested)
-                                ImportingMaps.AddRange(import);
+                                InsertRange(import, ImportingMaps, Sorter);
                         });
                         ImportingStructures.Add(structure);
-                        processed.Add(setting.Value);
                         settings.Remove(setting);
                     }
                 }
@@ -346,7 +349,7 @@ public class MainViewModel : ObservableObject
             {
                 maps.AddRange(context.Value.done_maps);
                 structures.AddRange(context.Value.done_structures);
-                ImportingMaps.AddRange(maps);
+                InsertRange(maps, ImportingMaps, Sorter);
                 ImportingStructures.AddRange(structures);
             }
             var source = new CancellationTokenSource();

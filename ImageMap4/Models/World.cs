@@ -42,7 +42,7 @@ public abstract class World
             x.Resize(new ResizeOptions()
             {
                 Size = new(128 * settings.Width, 128 * settings.Height),
-                Sampler = settings.Sampler,
+                Sampler = settings.Sampler.Value,
                 Mode = settings.ResizeMode
             });
             // uniform scale crops to content, so we need to re-add transparency to get correct size
