@@ -27,15 +27,20 @@ public class JavaWorld : World
         AccessDate = File.GetLastWriteTime(leveldat.FileName);
     }
 
-    public override void AddStructure(StructureGrid structure, IInventory inventory)
+    public override void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
     {
-        var nbt = Version.CreateStructureFile(structure);
-        var path = Version.StructureFileLocation(Folder, structure.Identifier);
-        var file = new NbtFile(nbt) { BigEndian = true };
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
-        file.SaveToFile(path, NbtCompression.GZip);
-        var item = Version.MakeStructureItem(structure);
-        inventory.AddItem(item);
+        var items = new List<NbtCompound>();
+        foreach (var structure in structures)
+        {
+            var nbt = Version.CreateStructureFile(structure);
+            var path = Version.StructureFileLocation(Folder, structure.Identifier);
+            var file = new NbtFile(nbt) { BigEndian = true };
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            file.SaveToFile(path, NbtCompression.GZip);
+            var item = Version.MakeStructureItem(structure);
+            items.Add(item);
+        }
+        inventory.AddItems(items);
     }
 
     public override IEnumerable<IInventory> GetInventories()

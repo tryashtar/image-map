@@ -1,4 +1,5 @@
 ﻿using fNbt;
+using LevelDBWrapper;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,14 +17,14 @@ namespace ImageMap4;
 public interface IInventory
 {
     string Name { get; }
-    void AddItem(NbtCompound item);
+    void AddItems(IEnumerable<NbtCompound> items);
 }
 
 // I would prefer if we just used null for this, but we need something to show up for "Name" in the combobox
 public class NoInventory : IInventory
 {
     public string Name => "None";
-    public void AddItem(NbtCompound item) { }
+    public void AddItems(IEnumerable<NbtCompound> items) { }
 }
 
 public class JavaInventory : IInventory, INotifyPropertyChanged
@@ -84,18 +85,21 @@ public class JavaInventory : IInventory, INotifyPropertyChanged
     private static readonly HttpClient Client = new();
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public void AddItem(NbtCompound item)
+    public void AddItems(IEnumerable<NbtCompound> items)
     {
         var file = new NbtFile(FilePath);
-        var items = DataPath.Traverse(file.GetRootTag<NbtCompound>()).First() as NbtList;
-        var occupied_slots = items.Cast<NbtCompound>().Select(x => x.Get<NbtByte>("Slot").Value).ToHashSet();
-        for (byte i = 0; i < 36; i++)
+        var inventory = DataPath.Traverse(file.GetRootTag<NbtCompound>()).First() as NbtList;
+        var occupied_slots = inventory.Cast<NbtCompound>().Select(x => x.Get<NbtByte>("Slot").Value).ToHashSet();
+        foreach (var item in items)
         {
-            if (!occupied_slots.Contains(i))
+            for (byte i = 0; i < 36; i++)
             {
-                item.Add(new NbtByte("Slot", i));
-                items.Add(item);
-                break;
+                if (!occupied_slots.Contains(i))
+                {
+                    item.Add(new NbtByte("Slot", i));
+                    inventory.Add(item);
+                    break;
+                }
             }
         }
         file.SaveToFile(FilePath, file.FileCompression);
@@ -115,22 +119,25 @@ public class BedrockInventory : IInventory
         Key = key;
     }
 
-    public void AddItem(NbtCompound item)
+    public void AddItems(IEnumerable<NbtCompound> items)
     {
-        using var db = World.OpenDB();
+        var db = World.OpenDB();
         var bytes = db.Get(Key);
         var file = new NbtFile() { BigEndian = false };
         file.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
-        var items = file.GetRootTag<NbtCompound>().Get<NbtList>("Inventory");
+        var inventory = file.GetRootTag<NbtCompound>().Get<NbtList>("Inventory");
         // remember bedrock saves empty slots
-        foreach (NbtCompound slot in items.ToList())
+        foreach (var item in items)
         {
-            if (slot.Get<NbtByte>("Count").Value == 0)
+            foreach (NbtCompound slot in inventory.ToList())
             {
-                items.Remove(slot);
-                item.Add((NbtByte)slot.Get<NbtByte>("Slot").Clone());
-                items.Add(item);
-                break;
+                if (slot.Get<NbtByte>("Count").Value == 0)
+                {
+                    inventory.Remove(slot);
+                    item.Add((NbtByte)slot.Get<NbtByte>("Slot").Clone());
+                    inventory.Add(item);
+                    break;
+                }
             }
         }
         bytes = file.SaveToBuffer(NbtCompression.None);

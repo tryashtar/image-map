@@ -85,29 +85,22 @@ public class MainViewModel : ObservableObject
                 return;
             var overwritten = ExistingMaps.Where(x => ConflictingIDs.Contains(x.Item.ID)).ToList();
             var importing = ImportingMaps.ToList();
-            var structures = ImportingStructures.ToList();
             int index = Properties.Settings.Default.InventoryChoice;
             if (index < 0 || index >= PlayerList.Count)
                 index = 1;
             var inventory = PlayerList[index];
-            bool send_structures = CreateStructures;
+            if (CreateStructures)
+                SelectedWorld.AddStructures(ImportingStructures, inventory);
+            ImportingStructures.Clear();
             UndoHistory.Perform(() =>
             {
                 SelectedWorld.AddMaps(importing.Select(x => x.Item));
-                if (send_structures)
-                {
-                    foreach (var structure in structures)
-                    {
-                        SelectedWorld.AddStructure(structure, inventory);
-                    }
-                }
                 foreach (var item in importing)
                 {
                     Insert(item, ExistingMaps);
                 }
                 RemoveRange(overwritten, ExistingMaps);
                 ImportingMaps.Clear();
-                ImportingStructures.Clear();
             }, () =>
             {
                 SelectedWorld.RemoveMaps(importing.Select(x => x.Item.ID));
@@ -118,7 +111,6 @@ public class MainViewModel : ObservableObject
                     Insert(item, ExistingMaps);
                 }
                 ImportingMaps.AddRange(importing);
-                ImportingStructures.AddRange(structures);
             });
         });
         UndoCommand = new RelayCommand(() => UndoHistory.Undo());
