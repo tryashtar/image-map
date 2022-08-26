@@ -1,5 +1,5 @@
 ﻿using fNbt;
-using LevelDBWrapper;
+using LevelDB;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -122,7 +122,7 @@ public class BedrockInventory : IInventory
     public void AddItems(IEnumerable<NbtCompound> items)
     {
         var db = World.OpenDB();
-        var bytes = db.Get(Key);
+        var bytes = db.GetBytes(Key);
         var file = new NbtFile() { BigEndian = false };
         file.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
         var inventory = file.GetRootTag<NbtCompound>().Get<NbtList>("Inventory");

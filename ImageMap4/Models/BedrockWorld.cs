@@ -1,5 +1,5 @@
 ﻿using fNbt;
-using LevelDBWrapper;
+using LevelDB;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -13,8 +13,8 @@ namespace ImageMap4;
 
 public class BedrockWorld : World
 {
-    private LevelDB DBAccess;
-    private object DBLock = new();
+    private DB? DBAccess;
+    private readonly object DBLock = new();
     public IBedrockVersion Version { get; }
     public override string Name { get; }
     public override string WorldIcon { get; }
@@ -102,6 +102,7 @@ public class BedrockWorld : World
                 new NbtCompound("tag") {
                     new NbtInt("data", 2),
                     new NbtString("structureName", structure.Identifier),
+                    new NbtFloat("integrity", 100),
                     new NbtInt("xStructureOffset", 0),
                     new NbtInt("yStructureOffset", 0),
                     new NbtInt("zStructureOffset", 0),
@@ -125,7 +126,7 @@ public class BedrockWorld : World
         var db = OpenDB();
         using var iterator = db.CreateIterator();
         iterator.Seek("player_server_");
-        while (iterator.IsValid())
+        while (iterator.Valid())
         {
             var name = iterator.StringKey();
             if (name.StartsWith("player_server_"))
@@ -141,7 +142,7 @@ public class BedrockWorld : World
         var db = OpenDB();
         using var iterator = db.CreateIterator();
         iterator.Seek("map_");
-        while (iterator.IsValid())
+        while (iterator.Valid())
         {
             var name = iterator.StringKey();
             if (name.StartsWith("map_"))
@@ -185,10 +186,12 @@ public class BedrockWorld : World
     public override void RemoveMaps(IEnumerable<long> ids)
     {
         var db = OpenDB();
+        using var batch = new WriteBatch();
         foreach (var id in ids)
         {
-            db.Delete($"map_{id}");
+            batch.Delete($"map_{id}");
         }
+        db.Write(batch);
     }
 
     protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
@@ -207,13 +210,12 @@ public class BedrockWorld : World
     // it's nice to open on demand and dispose it when you're done
     // but that's not very threadsafe (e.g. GetMapsAsync)
     // seems to work ok for now, but could be worth taking another look at
-    public LevelDB OpenDB()
+    public DB OpenDB()
     {
         lock (DBLock)
         {
-            Debug.WriteLine($"Opening {Name}");
-            if (DBAccess == null || DBAccess.Disposed)
-                DBAccess = new LevelDB(Path.Combine(Folder, "db"));
+            if (DBAccess == null || DBAccess.IsDisposed)
+                DBAccess = new DB(Path.Combine(Folder, "db"), new Options { CompressionLevel = CompressionLevel.ZlibRawCompression });
             return DBAccess;
         }
     }

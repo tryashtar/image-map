@@ -64,7 +64,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\fNbt\fNbt\fNbt.csproj" />
-    <ProjectReference Include="..\level-db-wrapper\LevelDBWrapper.csproj" />
+    <ProjectReference Include="..\leveldb-mcpe.net\LevelDB-mcpe.Net\LevelDB-mcpe.Net.csproj" />
     <ProjectReference Include="..\utils.nbt\TryashtarUtils.Nbt.csproj" />
     <ProjectReference Include="..\utils.utility\TryashtarUtils.Utility.csproj" />
   </ItemGroup>
@@ -113,12 +113,4 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win_amd64.dll&quot; &quot;$(ProjectDir)$(OutDir)&quot;&#xD;&#xA;xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win32.dll&quot; &quot;$(ProjectDir)$(OutDir)&quot;" />
-  </Target>
-  <Target Name="Test" AfterTargets="Publish">
-    <Exec Command="xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win_amd64.dll&quot; &quot;$(ProjectDir)bin\Publish&quot;&#xD;&#xA;xcopy /y &quot;$(SolutionDir)leveldb_mcpe_win32.dll&quot; &quot;$(ProjectDir)bin\Publish&quot;&#xD;&#xA;powershell Compress-Archive -Path '$(ProjectDir)bin\Publish\*.dll', '$(ProjectDir)bin\Publish\*.exe' -DestinationPath '$(ProjectDir)bin\Publish\ImageMap4.zip' -Force" />
-  </Target>
-
 </Project>
