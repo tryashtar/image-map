@@ -32,14 +32,13 @@ public class MainViewModel : ObservableObject
     {
         get { return CollectionViewSource.GetDefaultView(ExistingMaps); }
     }
+    private readonly UndoHistory UndoHistory = new();
     private World? _selectedWorld;
     public World? SelectedWorld
     {
         get => _selectedWorld;
         set
         {
-            if (_selectedWorld is BedrockWorld w)
-                w.CloseDB();
             _selectedWorld = value;
             UndoHistory.Clear();
             OnPropertyChanged();
@@ -49,7 +48,10 @@ public class MainViewModel : ObservableObject
             {
                 MapCTS = new();
                 _ = RefreshMaps(MapCTS.Token);
-                var players = _selectedWorld.GetInventories().ToList();
+                var inventories = _selectedWorld.GetInventories();
+                if (_selectedWorld is JavaWorld)
+                    inventories = inventories.Select(x => new DisplayJavaInventory(x));
+                var players = inventories.ToList();
                 players.Insert(0, new NoInventory());
                 PlayerList = players.AsReadOnly();
                 OnPropertyChanged(nameof(PlayerList));
@@ -318,9 +320,9 @@ public class MainViewModel : ObservableObject
                 {
                     var (setting, id) = stuff;
                     var map_data = SelectedWorld.MakeMaps(setting);
-                    var maps = Map2D(map_data, x => new Map(id++, x));
-                    var import = Flatten(maps).Select(x => new Selectable<Map>(x)).ToList();
-                    var structure = new StructureGrid("imagemap:" + MakeSafe(setting.Preview.Source.Name), maps)
+                    var maps = ListUtils.Map2D(map_data, x => new Map(id++, x));
+                    var import = ListUtils.Flatten(maps).Select(x => new Selectable<Map>(x)).ToList();
+                    var structure = new StructureGrid("imagemap:" + setting.Preview.Source.Name, maps)
                     {
                         GlowingFrames = Properties.Settings.Default.GlowingFrames,
                         InvisibleFrames = Properties.Settings.Default.InvisibleFrames
@@ -367,35 +369,5 @@ public class MainViewModel : ObservableObject
             RemoveRange(done_structures, ImportingStructures);
             return (done_maps, done_structures);
         });
-    }
-
-    private static string MakeSafe(string input)
-    {
-        input = Path.GetFileNameWithoutExtension(input);
-        input = input.ToLower();
-        input = input.Replace(' ', '_');
-        return input;
-    }
-    private static IEnumerable<T> Flatten<T>(T[,] stuff)
-    {
-        for (int y = 0; y < stuff.GetLength(1); y++)
-        {
-            for (int x = 0; x < stuff.GetLength(0); x++)
-            {
-                yield return stuff[x, y];
-            }
-        }
-    }
-    private static TTo[,] Map2D<TFrom, TTo>(TFrom[,] stuff, Func<TFrom, TTo> func)
-    {
-        var result = new TTo[stuff.GetLength(0), stuff.GetLength(1)];
-        for (int y = 0; y < stuff.GetLength(1); y++)
-        {
-            for (int x = 0; x < stuff.GetLength(0); x++)
-            {
-                result[x, y] = func(stuff[x, y]);
-            }
-        }
-        return result;
     }
 }

@@ -27,6 +27,11 @@ public class JavaWorld : World
         AccessDate = File.GetLastWriteTime(leveldat.FileName);
     }
 
+    public override bool IsIdTaken(long id)
+    {
+        return File.Exists(Path.Combine(Folder, "data", $"map_{id}.dat"));
+    }
+
     public override void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
     {
         var items = new List<NbtCompound>();

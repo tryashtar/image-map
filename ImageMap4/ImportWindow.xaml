@@ -94,7 +94,7 @@
             <local:SquareGrid.Inside>
                 <Grid>
                     <Rectangle Fill="{Binding BackgroundColorChoice.Brush}" />
-                    <Image Source="{Binding CurrentImage.Source.Source.Value}"
+                    <Image Source="{Binding CurrentImage.Source.Image.Value, Converter={StaticResource ImageSharpConverter}}"
                            Stretch="{Binding StretchChoice.Stretch}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center"
@@ -294,7 +294,7 @@
                                     Background="LightGray"
                                     Height="64"
                                     Width="64">
-                                <Image Source="{Binding Source.Source.Value}"
+                                <Image Source="{Binding Source.Image.Value, Converter={StaticResource ImageSharpConverter}}"
                                        RenderOptions.BitmapScalingMode="HighQuality">
                                     <Image.LayoutTransform>
                                         <TransformGroup>

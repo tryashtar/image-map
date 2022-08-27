@@ -36,6 +36,12 @@ public class BedrockWorld : World
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 
+    public override bool IsIdTaken(long id)
+    {
+        var db = OpenDB();
+        return db.GetBytes($"map_{id}") != null;
+    }
+
     public override void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
     {
         var db = OpenDB();

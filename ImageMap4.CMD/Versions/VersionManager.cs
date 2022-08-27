@@ -26,7 +26,7 @@ public class VersionManager
             .WithTypeConverter(new YamlNbtConverter())
             .WithTypeConverter(new YamlNbtPathConverter())
             .Build();
-        var updates = deserializer.Deserialize<UpdateLists>(Properties.Resources.versions);
+        var updates = deserializer.Deserialize<UpdateLists>(ImageMap4.CMD.Properties.Resources.versions);
         var java = new JavaVersionBuilder();
         foreach (var update in updates.Java)
         {

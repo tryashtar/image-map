@@ -4,6 +4,7 @@
     <local:EqualityConverter x:Key="EqualityConverter" />
     <local:GreaterThanConverter x:Key="GreaterThanConverter" />
     <local:TypeConverter x:Key="TypeConverter" />
+    <local:ImageSharpConverter x:Key="ImageSharpConverter" />
     <BitmapImage x:Key="ItemFrame"
                  UriSource="../Icons/item_frame.png" />
     <BitmapImage x:Key="GlowItemFrame"

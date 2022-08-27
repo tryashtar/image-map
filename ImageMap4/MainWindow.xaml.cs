@@ -20,6 +20,10 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using fNbt;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace ImageMap4;
 /// <summary>
@@ -53,13 +57,13 @@ public partial class MainWindow : Window, IDropTarget
                 stream.Position = 0;
                 OpenImages(new[]
                 {
-                    new PendingSource(new(source), () => SixLabors.ImageSharp.Image.Load<Rgba32>(stream), "Pasted image")
+                    new PendingSource(() => SixLabors.ImageSharp.Image.Load<Rgba32>(stream), "Pasted image")
                 });
             }
         });
         OpenWorldFolderCommand = new RelayCommand<World>(x =>
         {
-            Process.Start("explorer.exe", x.Folder);
+            Process.Start("explorer.exe", $"\"{x.Folder}\"");
         });
         OpenMapFileCommand = new RelayCommand<Map>(x =>
         {
@@ -109,6 +113,19 @@ public partial class MainWindow : Window, IDropTarget
                 ViewModel.DeleteCommand.Execute(ViewModel.ExistingMaps);
         });
         InitializeComponent();
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        var args = Environment.GetCommandLineArgs();
+        if (args.Length > 1)
+        {
+            if (TryOpenWorldFolder(args[1]))
+                TabList.SelectedItem = MapsTab;
+            if (args.Length > 2)
+                OpenImages(args.Skip(2).Select(PendingSource.FromPath));
+        }
     }
 
     private void Window_Closing(object sender, CancelEventArgs e)
@@ -221,18 +238,25 @@ public partial class MainWindow : Window, IDropTarget
                 return () =>
                 {
                     var file = ((IEnumerable<string>)data.GetData(DataFormats.FileDrop)).First();
-                    if (Directory.Exists(file) && File.Exists(Path.Combine(file, "level.dat")))
-                    {
-                        if (Directory.Exists(Path.Combine(file, "db")))
-                            TryOpenWorld(new BedrockWorld(file));
-                        else
-                            TryOpenWorld(new JavaWorld(file));
+                    if (TryOpenWorldFolder(file))
                         TabList.SelectedItem = MapsTab;
-                    }
                 };
             }
         }
         return () => { };
+    }
+
+    private bool TryOpenWorldFolder(string folder)
+    {
+        if (Directory.Exists(folder) && File.Exists(Path.Combine(folder, "level.dat")))
+        {
+            if (Directory.Exists(Path.Combine(folder, "db")))
+                TryOpenWorld(new BedrockWorld(folder));
+            else
+                TryOpenWorld(new JavaWorld(folder));
+            return true;
+        }
+        return false;
     }
 
     private void TryOpenWorld(World world)
@@ -283,5 +307,81 @@ public class ConflictChecker : IMultiValueConverter
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
+    }
+}
+
+public class ImageSharpConverter : OneWayConverter<Image<Rgba32>, ImageSource>
+{
+    private static readonly ConditionalWeakTable<Image<Rgba32>, ImageSource> Cache = new();
+
+    public override ImageSource Convert(Image<Rgba32> value)
+    {
+        return Cache.GetValue(value, x =>
+        {
+            var source = new ImageSharpImageSource<Rgba32>(x);
+            source.Freeze();
+            return source;
+        });
+    }
+}
+
+public class DisplayJavaInventory : IInventory, INotifyPropertyChanged
+{
+    private readonly IInventory Wrapped;
+    private static readonly HttpClient Client = new();
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public string Name { get; private set; }
+    public DisplayJavaInventory(IInventory wrapped)
+    {
+        Name = wrapped.Name;
+        if (Name.Length == 36)
+        {
+            // convert UUIDs to playernames
+            // first check in cache, which is like a slow dictionary where keys are in even places and values in odd
+            bool found = false;
+            if (Properties.Settings.Default.UsernameCache == null)
+                Properties.Settings.Default.UsernameCache = new();
+            for (int i = 0; i < Properties.Settings.Default.UsernameCache.Count; i += 2)
+            {
+                if (Properties.Settings.Default.UsernameCache[i] == Name)
+                {
+                    Name = Properties.Settings.Default.UsernameCache[i + 1];
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                // get name from Mojang's API
+                // if it fails, just ignore
+                // if it succeeds, cache it forever
+                Debug.WriteLine($"Looking up UUID {Name}");
+                var result = Client.GetAsync($"https://api.mojang.com/user/profiles/{Name}/names");
+                result.ContinueWith(x =>
+                {
+                    if (x.IsCompletedSuccessfully)
+                    {
+                        var response = x.Result.Content.ReadAsStringAsync().Result;
+                        var json = JsonDocument.Parse(response);
+                        if (json.RootElement.ValueKind == JsonValueKind.Array)
+                        {
+                            string newname = json.RootElement[json.RootElement.GetArrayLength() - 1].GetProperty("name").GetString();
+                            lock (Properties.Settings.Default.UsernameCache)
+                            {
+                                Properties.Settings.Default.UsernameCache.Add(Name);
+                                Properties.Settings.Default.UsernameCache.Add(newname);
+                            }
+                            this.Name = newname;
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    public void AddItems(IEnumerable<NbtCompound> items)
+    {
+        Wrapped.AddItems(items);
     }
 }

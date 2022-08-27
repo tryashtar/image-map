@@ -29,7 +29,7 @@
                       dd:DragDrop.DropHandler="{Binding Path=., RelativeSource={RelativeSource AncestorType=local:GridMaker}}"
                       Background="Transparent">
                     <Image RenderOptions.BitmapScalingMode="NearestNeighbor"
-                           Source="{Binding Data.ImageSource}" />
+                           Source="{Binding Data.Image, Converter={StaticResource ImageSharpConverter}}" />
                 </Grid>
             </DataTemplate>
         </ResourceDictionary>

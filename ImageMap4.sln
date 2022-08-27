@@ -12,6 +12,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TryashtarUtils.Utility", "u
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LevelDB-mcpe.Net", "leveldb-mcpe.Net\LevelDB-mcpe.Net\LevelDB-mcpe.Net.csproj", "{592FA309-052B-4728-87D9-CCDFF3E4A803}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageMap4.CMD", "ImageMap4.CMD\ImageMap4.CMD.csproj", "{EE5D4343-55C6-4CA2-8345-45E3933836C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,18 @@ Global
 		{592FA309-052B-4728-87D9-CCDFF3E4A803}.Release|x64.Build.0 = Release|x64
 		{592FA309-052B-4728-87D9-CCDFF3E4A803}.Release|x86.ActiveCfg = Release|x86
 		{592FA309-052B-4728-87D9-CCDFF3E4A803}.Release|x86.Build.0 = Release|x86
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Debug|x64.Build.0 = Debug|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Debug|x86.Build.0 = Debug|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Release|x64.ActiveCfg = Release|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Release|x64.Build.0 = Release|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Release|x86.ActiveCfg = Release|Any CPU
+		{EE5D4343-55C6-4CA2-8345-45E3933836C8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

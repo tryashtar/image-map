@@ -1,6 +1,8 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Dithering;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,6 +24,7 @@ public abstract class World
         Folder = folder;
     }
 
+    public abstract bool IsIdTaken(long id);
     public abstract IAsyncEnumerable<Map> GetMapsAsync();
     public abstract void AddMaps(IEnumerable<Map> maps);
     public abstract void RemoveMaps(IEnumerable<long> ids);
@@ -92,3 +95,6 @@ public abstract class World
         return result;
     }
 }
+
+public record ImportSettings(PreviewImage Preview, int Width, int Height, Lazy<IResampler> Sampler, ResizeMode ResizeMode, Rgba32 BackgroundColor, ProcessSettings ProcessSettings);
+public record ProcessSettings(IDither? Dither, IColorAlgorithm Algorithm);

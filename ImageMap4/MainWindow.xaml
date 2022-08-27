@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageMap4"
+        xmlns:data="clr-namespace:ImageMap4;assembly=ImageMap-cmd"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d"
@@ -63,7 +64,7 @@
                                     Value="False" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding DataContext.SelectedWorld, Source={x:Reference This}, Converter={StaticResource TypeConverter}}"
-                                             Value="{x:Type local:JavaWorld}">
+                                             Value="{x:Type data:JavaWorld}">
                                     <Setter Property="IsEnabled"
                                             Value="True" />
                                 </DataTrigger>

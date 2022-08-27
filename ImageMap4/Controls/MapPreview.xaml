@@ -22,12 +22,12 @@
             <Image.Style>
                 <Style TargetType="Image">
                     <Setter Property="Source"
-                            Value="{Binding ImageSource}" />
+                            Value="{Binding Image, Converter={StaticResource ImageSharpConverter}}" />
                     <Style.Triggers>
                         <Trigger Property="IsMouseOver"
                                  Value="True">
                             <Setter Property="Source"
-                                    Value="{Binding OriginalSource}" />
+                                    Value="{Binding Original, Converter={StaticResource ImageSharpConverter}}" />
                         </Trigger>
                     </Style.Triggers>
                 </Style>

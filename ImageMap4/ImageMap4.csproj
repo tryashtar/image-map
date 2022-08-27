@@ -1,116 +1,123 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
-	<PublishSingleFile>true</PublishSingleFile>
-	<SelfContained>false</SelfContained>
-	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-	<RootNamespace>ImageMap4</RootNamespace>
-	<AssemblyName>ImageMap</AssemblyName>
-	<Authors>tryashtar</Authors>
-	<Company />
-	<Product>Image Map</Product>
-	<Description>Converts images to maps for Minecraft</Description>
-	<Copyright>Copyright © 2022 tryashtar</Copyright>
-	<PackageProjectUrl>https://github.com/tryashtar/image-map</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/tryashtar/image-map</RepositoryUrl>
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
-    <FileVersion>4.1.0.0</FileVersion>
-    <Version>4.1.0</Version>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
+		<PublishSingleFile>true</PublishSingleFile>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<SelfContained>false</SelfContained>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<RootNamespace>ImageMap4</RootNamespace>
+		<AssemblyName>ImageMap</AssemblyName>
+		<Authors>tryashtar</Authors>
+		<Company />
+		<Product>Image Map</Product>
+		<Description>Converts images to maps for Minecraft</Description>
+		<Copyright>Copyright © 2022 tryashtar</Copyright>
+		<PackageProjectUrl>https://github.com/tryashtar/image-map</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/tryashtar/image-map</RepositoryUrl>
+		<AssemblyVersion>4.1.0.0</AssemblyVersion>
+		<FileVersion>4.1.0.0</FileVersion>
+		<Version>4.1.0</Version>
+		<SignAssembly>false</SignAssembly>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Icons\checkmark.png" />
-    <None Remove="Icons\glow_item_frame.png" />
-    <None Remove="Icons\item_frame.png" />
-    <None Remove="Icons\map.png" />
-    <None Remove="Icons\map_background.png" />
-    <None Remove="Icons\warning.png" />
-    <None Remove="Icons\world.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Icons\checkmark.png" />
+		<None Remove="Icons\glow_item_frame.png" />
+		<None Remove="Icons\item_frame.png" />
+		<None Remove="Icons\map.png" />
+		<None Remove="Icons\map_background.png" />
+		<None Remove="Icons\warning.png" />
+		<None Remove="Icons\world.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="icon.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="icon.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="Icons\checkmark.png" />
-    <Resource Include="Icons\glow_item_frame.png" />
-    <Resource Include="Icons\item_frame.png" />
-    <Resource Include="Icons\map.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<Resource Include="Icons\checkmark.png" />
+		<Resource Include="Icons\glow_item_frame.png" />
+		<Resource Include="Icons\item_frame.png" />
+		<Resource Include="Icons\map.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="Icons\map_background.png" />
-    <Resource Include="Icons\warning.png" />
-    <Resource Include="Icons\world.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<Resource Include="Icons\map_background.png" />
+		<Resource Include="Icons\warning.png" />
+		<Resource Include="Icons\world.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="colourful" Version="3.1.0" />
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.4.0" />
-    <PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
-    <PackageReference Include="VirtualizingWrapPanel" Version="1.5.7" />
-    <PackageReference Include="YamlDotNet" Version="12.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="colourful" Version="3.1.0" />
+		<PackageReference Include="Extended.Wpf.Toolkit" Version="4.4.0" />
+		<PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
+		<PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+		<PackageReference Include="VirtualizingWrapPanel" Version="1.5.7" />
+		<PackageReference Include="YamlDotNet" Version="12.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\fNbt\fNbt\fNbt.csproj" />
-    <ProjectReference Include="..\leveldb-mcpe.net\LevelDB-mcpe.Net\LevelDB-mcpe.Net.csproj" />
-    <ProjectReference Include="..\utils.nbt\TryashtarUtils.Nbt.csproj" />
-    <ProjectReference Include="..\utils.utility\TryashtarUtils.Utility.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\fNbt\fNbt\fNbt.csproj" />
+		<ProjectReference Include="..\ImageMap4.CMD\ImageMap4.CMD.csproj" />
+		<ProjectReference Include="..\leveldb-mcpe.net\LevelDB-mcpe.Net\LevelDB-mcpe.Net.csproj" />
+		<ProjectReference Include="..\utils.nbt\TryashtarUtils.Nbt.csproj" />
+		<ProjectReference Include="..\utils.utility\TryashtarUtils.Utility.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Update="ImageWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+		<Compile Update="ImageWindow.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="Properties\Settings.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Page Update="Shared.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="ImportWindow.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="ImageWindow.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
+	<ItemGroup>
+		<Page Update="Shared.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="ImportWindow.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="ImageWindow.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+	</ItemGroup>
+
+	<Target Name="PostPublish" AfterTargets="Publish">
+		<Exec Command="dotnet publish -o &quot;$(ProjectDir)bin\Publish&quot; &quot;$(SolutionDir)ImageMap4.CMD" />
+		<Exec Command="powershell Compress-Archive -Path '$(ProjectDir)bin\Publish\*.dll', '$(ProjectDir)bin\Publish\*.exe' -DestinationPath '$(ProjectDir)bin\Publish\ImageMap4.zip' -Force" />
+	</Target>
 </Project>

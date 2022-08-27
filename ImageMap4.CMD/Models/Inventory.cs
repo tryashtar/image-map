@@ -27,7 +27,7 @@ public class NoInventory : IInventory
     public void AddItems(IEnumerable<NbtCompound> items) { }
 }
 
-public class JavaInventory : IInventory, INotifyPropertyChanged
+public class JavaInventory : IInventory
 {
     public string Name { get; private set; }
     public readonly string FilePath;
@@ -37,53 +37,7 @@ public class JavaInventory : IInventory, INotifyPropertyChanged
         Name = name;
         FilePath = file;
         DataPath = path;
-        if (Name.Length == 36)
-        {
-            // convert UUIDs to playernames
-            // first check in cache, which is like a slow dictionary where keys are in even places and values in odd
-            bool found = false;
-            if (Properties.Settings.Default.UsernameCache == null)
-                Properties.Settings.Default.UsernameCache = new();
-            for (int i = 0; i < Properties.Settings.Default.UsernameCache.Count; i += 2)
-            {
-                if (Properties.Settings.Default.UsernameCache[i] == Name)
-                {
-                    Name = Properties.Settings.Default.UsernameCache[i + 1];
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                // get name from Mojang's API
-                // if it fails, just ignore
-                // if it succeeds, cache it forever
-                Debug.WriteLine($"Looking up UUID {Name}");
-                var result = Client.GetAsync($"https://api.mojang.com/user/profiles/{Name}/names");
-                result.ContinueWith(x =>
-                {
-                    if (x.IsCompletedSuccessfully)
-                    {
-                        var response = x.Result.Content.ReadAsStringAsync().Result;
-                        var json = JsonDocument.Parse(response);
-                        if (json.RootElement.ValueKind == JsonValueKind.Array)
-                        {
-                            string newname = json.RootElement[json.RootElement.GetArrayLength() - 1].GetProperty("name").GetString();
-                            lock (Properties.Settings.Default.UsernameCache)
-                            {
-                                Properties.Settings.Default.UsernameCache.Add(Name);
-                                Properties.Settings.Default.UsernameCache.Add(newname);
-                            }
-                            this.Name = newname;
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
-                        }
-                    }
-                });
-            }
-        }
     }
-    private static readonly HttpClient Client = new();
-    public event PropertyChangedEventHandler? PropertyChanged;
 
     public void AddItems(IEnumerable<NbtCompound> items)
     {

@@ -20,7 +20,7 @@ public class StructureGrid
     public bool InvisibleFrames { get; init; }
     public StructureGrid(string identifier, Map?[,] tiles)
     {
-        Identifier = identifier;
+        Identifier = MakeSafeIdentifier(identifier);
         Tiles = tiles;
     }
     public StructureGrid(Map?[,] tiles)
@@ -46,6 +46,13 @@ public class StructureGrid
         name.Append('-');
         name.Append(last_id);
         Identifier = name.ToString();
+    }
+    public static string MakeSafeIdentifier(string input)
+    {
+        input = Path.GetFileNameWithoutExtension(input);
+        input = input.ToLower();
+        input = input.Replace(' ', '_');
+        return input;
     }
     public long?[,] ToIDGrid()
     {

@@ -10,21 +10,21 @@ using System.Text;
 
 namespace ImageMap4;
 
-public static class UndoHistory
+public class UndoHistory
 {
-    private static readonly Stack<Undoable> Undos = new();
-    private static readonly Stack<Undoable> Redos = new();
-    public static void Perform(Action action, Action undo)
+    private readonly Stack<Undoable> Undos = new();
+    private readonly Stack<Undoable> Redos = new();
+    public void Perform(Action action, Action undo)
     {
         action();
         Undos.Push(new(action, undo) { Context = null });
     }
-    public static void PerformContext<TActionContext, TUndoContext>(Func<TUndoContext?, TActionContext?> action, Func<TActionContext?, TUndoContext?> undo)
+    public void PerformContext<TActionContext, TUndoContext>(Func<TUndoContext?, TActionContext?> action, Func<TActionContext?, TUndoContext?> undo)
     {
         var result = action(default);
         Undos.Push(new(x => action((TUndoContext)x), x => undo((TActionContext)x)) { Context = result });
     }
-    public static void Undo()
+    public void Undo()
     {
         if (CanUndo)
         {
@@ -33,7 +33,7 @@ public static class UndoHistory
             Redos.Push(action);
         }
     }
-    public static void Redo()
+    public void Redo()
     {
         if (CanRedo)
         {
@@ -42,13 +42,13 @@ public static class UndoHistory
             Undos.Push(action);
         }
     }
-    public static void Clear()
+    public void Clear()
     {
         Undos.Clear();
         Redos.Clear();
     }
-    public static bool CanUndo => Undos.Count > 0;
-    public static bool CanRedo => Redos.Count > 0;
+    public bool CanUndo => Undos.Count > 0;
+    public bool CanRedo => Redos.Count > 0;
 
     private class Undoable
     {

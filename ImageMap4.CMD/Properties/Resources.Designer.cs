@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ImageMap4.Properties {
+namespace ImageMap4.CMD.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace ImageMap4.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ImageMap4.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ImageMap4.CMD.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,45 @@ namespace ImageMap4.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to bedrock:
+        ///- name: &quot;&quot;
+        ///  check:
+        ///    version: [1,2]
+        ///  map_data:
+        ///    mapId: &apos;@id&apos;
+        ///    parentMapId: -1L
+        ///    colors: &apos;@colors&apos;
+        ///    mapLocked: 1b
+        ///    scale: 4b
+        ///    dimension: 0b
+        ///    fullyExplored: 1b
+        ///    unlimitedTracking: 0b
+        ///    xCenter: 2147483647
+        ///    zCenter: 2147483647
+        ///    height: 128s
+        ///    width: 128s
+        ///
+        ///java:
+        ///- name: Beta 1.8
+        ///  check:
+        ///    path: MapFeatures
+        ///  multipliers: [180, 220, 255, 220]
+        ///  set_base_colors:
+        ///  - transparent
+        ///  - 7fb238
+        ///  - f7e9a3
+        ///  - a7a7a7
+        ///  - ff0000
+        ///  - a0a0ff
+        ///   [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string versions {
+            get {
+                return ResourceManager.GetString("versions", resourceCulture);
             }
         }
     }
