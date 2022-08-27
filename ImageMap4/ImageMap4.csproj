@@ -8,7 +8,6 @@
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<PublishSingleFile>true</PublishSingleFile>
-		<PublishReadyToRun>true</PublishReadyToRun>
 		<SelfContained>false</SelfContained>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<RootNamespace>ImageMap4</RootNamespace>
