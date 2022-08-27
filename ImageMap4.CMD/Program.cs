@@ -15,7 +15,7 @@ if (args.Length == 0)
 
 Actions:
   --inventory <name>
-  --import <image file> <options...>
+  --import <image file/folder> <options...>
     Options:
      --size <width>,<height>
      --scaling pixel|bicubic
@@ -132,7 +132,7 @@ for (int i = 1; i < args.Length; i++)
                 Console.Error.WriteLine("Expected an file path after --import");
                 break;
             }
-            string file = Path.GetFullPath(args[i]);
+            string import = Path.GetFullPath(args[i]);
             var size = (width: 1, height: 1);
             IResampler scaling = KnownResamplers.NearestNeighbor;
             ResizeMode fill = ResizeMode.Max;
@@ -253,9 +253,18 @@ for (int i = 1; i < args.Length; i++)
                 }
             }
             process:
-            if (!File.Exists(file))
-                Console.WriteLine($"Image file '{file}' not found");
+            var files = new List<string>();
+            if (File.Exists(import))
+                files.Add(import);
+            else if (Directory.Exists(import))
+            {
+                var children = Directory.GetFiles(import);
+                Console.WriteLine($"Found {children.Length} files in folder");
+                files.AddRange(children);
+            }
             else
+                Console.WriteLine($"Image file '{import}' not found");
+            foreach (var file in files)
             {
                 var settings = new ImportSettings(
                     new PreviewImage(PendingSource.FromPath(file)),
