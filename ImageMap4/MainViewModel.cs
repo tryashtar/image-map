@@ -258,36 +258,44 @@ public class MainViewModel : ObservableObject
     {
         JavaWorlds.Clear();
         BedrockWorlds.Clear();
-        var java_dir = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.JavaFolder);
-        if (Directory.Exists(java_dir))
+        Properties.Settings.Default.JavaFolders ??= new();
+        foreach (var raw_dir in Properties.Settings.Default.JavaFolders)
         {
-            IEnumerable<JavaWorld> get_worlds()
+            string java_dir = Environment.ExpandEnvironmentVariables(raw_dir);
+            if (Directory.Exists(java_dir))
             {
-                foreach (var dir in Directory.GetDirectories(java_dir))
+                IEnumerable<JavaWorld> get_worlds()
                 {
-                    if (File.Exists(Path.Combine(dir, "level.dat")))
-                        yield return new JavaWorld(dir);
+                    foreach (var dir in Directory.GetDirectories(java_dir))
+                    {
+                        if (File.Exists(Path.Combine(dir, "level.dat")))
+                            yield return new JavaWorld(dir);
+                    }
                 }
-            }
-            foreach (var world in get_worlds().OrderByDescending(x => x.AccessDate))
-            {
-                JavaWorlds.Add(world);
+                foreach (var world in get_worlds().OrderByDescending(x => x.AccessDate))
+                {
+                    JavaWorlds.Add(world);
+                }
             }
         }
-        var bedrock_dir = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.BedrockFolder);
-        if (Directory.Exists(bedrock_dir))
+        Properties.Settings.Default.BedrockFolders ??= new();
+        foreach (var raw_dir in Properties.Settings.Default.BedrockFolders)
         {
-            IEnumerable<BedrockWorld> get_worlds()
+            string bedrock_dir = Environment.ExpandEnvironmentVariables(raw_dir);
+            if (Directory.Exists(bedrock_dir))
             {
-                foreach (var dir in Directory.GetDirectories(bedrock_dir))
+                IEnumerable<BedrockWorld> get_worlds()
                 {
-                    if (File.Exists(Path.Combine(dir, "level.dat")) && Directory.Exists(Path.Combine(dir, "db")))
-                        yield return new BedrockWorld(dir);
+                    foreach (var dir in Directory.GetDirectories(bedrock_dir))
+                    {
+                        if (File.Exists(Path.Combine(dir, "level.dat")) && Directory.Exists(Path.Combine(dir, "db")))
+                            yield return new BedrockWorld(dir);
+                    }
                 }
-            }
-            foreach (var world in get_worlds().OrderByDescending(x => x.AccessDate))
-            {
-                BedrockWorlds.Add(world);
+                foreach (var world in get_worlds().OrderByDescending(x => x.AccessDate))
+                {
+                    BedrockWorlds.Add(world);
+                }
             }
         }
     }

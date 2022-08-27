@@ -25,26 +25,30 @@ namespace ImageMap4.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("%appdata%\\.minecraft\\saves")]
-        public string JavaFolder {
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n  <s" +
+            "tring>%appdata%\\.minecraft\\saves</string>\r\n</ArrayOfString>")]
+        public global::System.Collections.Specialized.StringCollection JavaFolders {
             get {
-                return ((string)(this["JavaFolder"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["JavaFolders"]));
             }
             set {
-                this["JavaFolder"] = value;
+                this["JavaFolders"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("%localappdata%\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com" +
-            ".mojang\\minecraftWorlds")]
-        public string BedrockFolder {
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<ArrayOfString xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+  <string>%localappdata%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds</string>
+</ArrayOfString>")]
+        public global::System.Collections.Specialized.StringCollection BedrockFolders {
             get {
-                return ((string)(this["BedrockFolder"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["BedrockFolders"]));
             }
             set {
-                this["BedrockFolder"] = value;
+                this["BedrockFolders"] = value;
             }
         }
         

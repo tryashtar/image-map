@@ -135,13 +135,18 @@ public partial class MainWindow : Window, IDropTarget
 
     private void JavaFolder_Click(object sender, RoutedEventArgs e)
     {
+        Properties.Settings.Default.JavaFolders ??= new();
+        bool adding = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
         var dialog = new VistaFolderBrowserDialog();
-        dialog.Description = "Select the folder where your Java worlds are saved";
+        dialog.Description = adding ? "Add a Java world folder to the list" : "Select the folder where your Java worlds are saved";
         dialog.UseDescriptionForTitle = true;
-        dialog.SelectedPath = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.JavaFolder);
+        if (Properties.Settings.Default.JavaFolders.Count > 0)
+            dialog.SelectedPath = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.JavaFolders[0]);
         if (dialog.ShowDialog() == true)
         {
-            Properties.Settings.Default.JavaFolder = dialog.SelectedPath;
+            if (!adding)
+                Properties.Settings.Default.JavaFolders.Clear();
+            Properties.Settings.Default.JavaFolders.Add(dialog.SelectedPath);
             Properties.Settings.Default.Save();
             ((MainViewModel)this.DataContext).RefreshWorlds();
         }
@@ -149,13 +154,18 @@ public partial class MainWindow : Window, IDropTarget
 
     private void BedrockFolder_Click(object sender, RoutedEventArgs e)
     {
+        Properties.Settings.Default.BedrockFolders ??= new();
+        bool adding = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
         var dialog = new VistaFolderBrowserDialog();
-        dialog.Description = "Select the folder where your Bedrock worlds are saved";
+        dialog.Description = adding ? "Add a Bedrock world folder to the list" : "Select the folder where your Bedrock worlds are saved";
         dialog.UseDescriptionForTitle = true;
-        dialog.SelectedPath = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.BedrockFolder);
+        if (Properties.Settings.Default.BedrockFolders.Count > 0)
+            dialog.SelectedPath = Environment.ExpandEnvironmentVariables(Properties.Settings.Default.BedrockFolders[0]);
         if (dialog.ShowDialog() == true)
         {
-            Properties.Settings.Default.BedrockFolder = dialog.SelectedPath;
+            if (!adding)
+                Properties.Settings.Default.BedrockFolders.Clear();
+            Properties.Settings.Default.BedrockFolders.Add(dialog.SelectedPath);
             Properties.Settings.Default.Save();
             ((MainViewModel)this.DataContext).RefreshWorlds();
         }
