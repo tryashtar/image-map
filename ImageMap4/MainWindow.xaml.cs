@@ -205,10 +205,19 @@ public partial class MainWindow : Window, IDropTarget
             StructureWindow = new(new StructureViewModel(new GridMakerViewModel(this.ViewModel, this.ViewModel.ExistingMaps)));
             StructureWindow.Owner = this;
             StructureWindow.ViewModel.JavaMode = ViewModel.SelectedWorld is JavaWorld;
-            StructureWindow.ViewModel.OnConfirmed += (s, e) => ViewModel.SelectedWorld.AddStructures(new[] { e.grid }, e.inventory);
+            StructureWindow.ViewModel.OnConfirmed += (s, e) => Try(() => ViewModel.SelectedWorld.AddStructures(new[] { e.grid }, e.inventory));
         }
         StructureWindow.Show();
         StructureWindow.Activate();
+    }
+
+    private void Try(Action action)
+    {
+        try { action(); }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     void IDropTarget.DragOver(IDropInfo dropInfo)

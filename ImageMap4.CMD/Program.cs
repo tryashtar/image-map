@@ -5,8 +5,10 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Dithering;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using System.Diagnostics;
+using System.Text;
 using TryashtarUtils.Utility;
 
+Console.OutputEncoding = Encoding.UTF8;
 if (args.Length == 0)
 {
     Console.WriteLine(
