@@ -190,10 +190,10 @@ public class BedrockVersionCheck
         {
             for (int i = 0; i < Math.Min(Version.Length, versiontag.Count); i++)
             {
-                if (versiontag[i].IntValue < Version[i])
-                    return false;
+                if (versiontag[i].IntValue == Version[i])
+                    continue;
+                return versiontag[i].IntValue > Version[i];
             }
-            return true;
         }
         return false;
     }
