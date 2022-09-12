@@ -62,7 +62,7 @@ public class BedrockWorld : World
                             new NbtCompound("block_entity_data") {
                                 new NbtString("id", structure.GlowingFrames ? "GlowItemFrame" : "ItemFrame"),
                                 new NbtCompound("Item") {
-                                    new NbtString("Name", "minecraft:filled_map"),
+                                    new NbtShort("id", 358),
                                     new NbtByte("Count", 1),
                                     new NbtCompound("tag") {
                                         new NbtLong("map_uuid", id.Value)
