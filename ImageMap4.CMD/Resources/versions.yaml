@@ -1,7 +1,7 @@
 bedrock:
-- name: ""
+- name: "1.0"
   check:
-    version: [1,2]
+    version: [1,0]
   map_data:
     mapId: '@id'
     parentMapId: -1L
@@ -15,6 +15,27 @@ bedrock:
     zCenter: 2147483647
     height: 128s
     width: 128s
+  map_item:
+    id: 358s
+    Count: 1b
+    tag:
+      map_uuid: '@id'
+- name: "1.6"
+  check:
+    version: [1,6]
+  map_item:
+    id: 'minecraft:map'
+    Count: 1b
+    tag:
+      map_uuid: '@id'
+- name: "1.16+"
+  check:
+    version: [1,16,100]
+  map_item:
+    id: 'minecraft:filled_map'
+    Count: 1b
+    tag:
+      map_uuid: '@id'
 
 java:
 - name: Beta 1.8

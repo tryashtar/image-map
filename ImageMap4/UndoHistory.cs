@@ -18,11 +18,13 @@ public class UndoHistory
     {
         action();
         Undos.Push(new(action, undo) { Context = null });
+        Redos.Clear();
     }
     public void PerformContext<TActionContext, TUndoContext>(Func<TUndoContext?, TActionContext?> action, Func<TActionContext?, TUndoContext?> undo)
     {
         var result = action(default);
         Undos.Push(new(x => action((TUndoContext)x), x => undo((TActionContext)x)) { Context = result });
+        Redos.Clear();
     }
     public void Undo()
     {

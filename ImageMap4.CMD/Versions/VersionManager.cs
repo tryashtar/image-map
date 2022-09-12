@@ -177,6 +177,7 @@ public class BedrockUpdate
     public string Name;
     public BedrockVersionCheck Check;
     public NbtCompound? MapData;
+    public NbtCompound? MapItem;
 }
 
 public class BedrockVersionCheck
