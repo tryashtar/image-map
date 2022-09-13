@@ -58,16 +58,12 @@ public class BedrockWorld : World
                     long? id = mapids[x, structure.GridHeight - y - 1];
                     if (id.HasValue)
                     {
+                        var mapitem = Version.CreateMapItem(id.Value);
+                        mapitem.Name = "Item";
                         blockdata.Add(new NbtCompound((y * structure.GridWidth + x).ToString()) {
                             new NbtCompound("block_entity_data") {
                                 new NbtString("id", structure.GlowingFrames ? "GlowItemFrame" : "ItemFrame"),
-                                new NbtCompound("Item") {
-                                    new NbtString("Name", "minecraft:filled_map"),
-                                    new NbtByte("Count", 1),
-                                    new NbtCompound("tag") {
-                                        new NbtLong("map_uuid", id.Value)
-                                    }
-                                }
+                                mapitem
                             }
                         });
                     }

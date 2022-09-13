@@ -24,7 +24,7 @@ bedrock:
   check:
     version: [1,6]
   map_item:
-    id: 'minecraft:map'
+    Name: 'minecraft:map'
     Count: 1b
     tag:
       map_uuid: '@id'
@@ -32,7 +32,7 @@ bedrock:
   check:
     version: [1,16,100]
   map_item:
-    id: 'minecraft:filled_map'
+    Name: 'minecraft:filled_map'
     Count: 1b
     tag:
       map_uuid: '@id'
