@@ -29,7 +29,7 @@
             <TextBlock Text="map_"
                        DockPanel.Dock="Left"
                        Margin="0,5,5,0" />
-            <tk:IntegerUpDown x:Name="Input"
+            <tk:LongUpDown x:Name="Input"
                               Value="{Binding ID, RelativeSource={RelativeSource AncestorType=Window}}"
                               TextAlignment="Left" />
         </DockPanel>
