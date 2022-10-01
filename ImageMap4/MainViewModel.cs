@@ -269,7 +269,16 @@ public class MainViewModel : ObservableObject
                     foreach (var dir in Directory.GetDirectories(java_dir))
                     {
                         if (File.Exists(Path.Combine(dir, "level.dat")))
-                            yield return new JavaWorld(dir);
+                        {
+                            JavaWorld world = null;
+                            try
+                            {
+                                world = new JavaWorld(dir);
+                            }
+                            catch { }
+                            if (world != null)
+                                yield return world;
+                        }
                     }
                 }
                 foreach (var world in get_worlds().OrderByDescending(x => x.AccessDate))
@@ -289,7 +298,16 @@ public class MainViewModel : ObservableObject
                     foreach (var dir in Directory.GetDirectories(bedrock_dir))
                     {
                         if (File.Exists(Path.Combine(dir, "level.dat")) && Directory.Exists(Path.Combine(dir, "db")))
-                            yield return new BedrockWorld(dir);
+                        {
+                            BedrockWorld world = null;
+                            try
+                            {
+                                world = new BedrockWorld(dir);
+                            }
+                            catch { }
+                            if (world != null)
+                                yield return world;
+                        }
                     }
                 }
                 foreach (var world in get_worlds().OrderByDescending(x => x.AccessDate))

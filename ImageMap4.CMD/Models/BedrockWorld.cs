@@ -33,6 +33,8 @@ public class BedrockWorld : World
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromStream(leveldat, NbtCompression.None);
         Version = VersionManager.DetermineBedrockVersion(nbt.GetRootTag<NbtCompound>());
+        if (Version == null)
+            throw new InvalidDataException("Could not determine version of world");
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 

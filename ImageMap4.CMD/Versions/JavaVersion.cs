@@ -27,10 +27,10 @@ public class JavaVersionBuilder
 {
     public readonly List<Rgba32> BaseColors = new();
     public byte[]? Multipliers;
-    public NbtCompound? MapEntity;
-    public NbtCompound? MapData;
-    public NbtCompound? MapItem;
-    public NbtCompound? StructureItem;
+    public NbtTemplate? MapEntity;
+    public NbtTemplate? MapData;
+    public NbtTemplate? MapItem;
+    public NbtTemplate? StructureItem;
     public bool StructuresSupported = false;
     public string? StructureFolder;
     public string? Name;
@@ -44,92 +44,27 @@ public class JavaVersionBuilder
         if (update.AddBaseColors != null)
             this.BaseColors.AddRange(update.AddBaseColors);
         this.Multipliers = update.Multipliers ?? this.Multipliers;
-        this.MapEntity = update.MapEntity ?? this.MapEntity;
-        this.MapData = update.MapData ?? this.MapData;
-        this.MapItem = update.MapItem ?? this.MapItem;
-        this.StructureItem = update.StructureItem ?? this.StructureItem;
+        if (update.MapEntity != null)
+            this.MapEntity = new(update.MapEntity);
+        if (update.MapData != null)
+            this.MapData = new(update.MapData);
+        if (update.MapItem != null)
+            this.MapItem = new(update.MapItem);
+        if (update.StructureItem != null)
+            this.StructureItem = new(update.StructureItem);
         this.Name = update.Name ?? this.Name;
         this.StructureFolder = update.StructureFolder ?? this.StructureFolder;
         this.StructuresSupported |= update.StructuresSupported ?? false;
     }
     public IJavaVersion Build()
     {
-        var mp = MapItem;
-        NbtCompound item_maker(long id)
-        {
-            var compound = (NbtCompound)mp.Clone();
-            foreach (var item in compound.GetAllTags().OfType<NbtString>())
-            {
-                if (item.Value == "@s")
-                    item.Parent[item.Name] = new NbtShort((short)id);
-                else if (item.Value == "@i")
-                    item.Parent[item.Name] = new NbtInt((int)id);
-            }
-            return compound;
-        }
-        var si = StructureItem;
-        var sf = StructureFolder;
-        NbtCompound structure_maker(StructureGrid structure)
-        {
-            var compound = (NbtCompound)si.Clone();
-            foreach (var item in compound.GetAllTags().OfType<NbtString>())
-            {
-                string identifier = structure.Identifier;
-                if (sf == "structures")
-                    identifier = identifier.Replace(':', '_');
-                if (item.Value == "@id")
-                    item.Parent[item.Name] = new NbtString(identifier);
-                else if (item.Value == "@old_name")
-                    item.Parent[item.Name] = new NbtString($"§r§d{identifier}§r");
-                else if (item.Value == "@name")
-                    item.Parent[item.Name] = new NbtString($"{{\"text\":\"{identifier}\",\"italic\":false}}");
-                else if (item.Value == "@x")
-                    item.Parent[item.Name] = new NbtInt(1);
-                else if (item.Value == "@y")
-                    item.Parent[item.Name] = new NbtInt(structure.GridHeight);
-                else if (item.Value == "@z")
-                    item.Parent[item.Name] = new NbtInt(structure.GridWidth);
-            }
-            return compound;
-        }
-        var me = MapEntity;
-        NbtCompound frame_maker(bool glowing, bool invisible)
-        {
-            var compound = (NbtCompound)me.Clone();
-            foreach (var item in compound.GetAllTags().OfType<NbtString>())
-            {
-                if (item.Value == "@id")
-                    item.Parent[item.Name] = new NbtString(glowing ? "minecraft:glow_item_frame" : "minecraft:item_frame");
-                else if (item.Value == "@invisible")
-                    item.Parent[item.Name] = new NbtByte(invisible);
-            }
-            return compound;
-        }
-        var md = MapData;
-        NbtCompound data_maker(MapData data)
-        {
-            var compound = (NbtCompound)md.Clone();
-            foreach (var item in compound.GetAllTags().OfType<NbtString>())
-            {
-                if (item.Value == "@colors")
-                    item.Parent[item.Name] = new NbtByteArray(data.Colors);
-            }
-            return compound;
-        }
-        string structure_folder(string world, string identifier)
-        {
-            if (sf == "structures")
-                return Path.Combine(world, "structures", identifier.Replace(':', '_') + ".nbt");
-            int colon = identifier.IndexOf(':');
-            return Path.Combine(world, sf, identifier[..colon], "structures", identifier[(colon + 1)..] + ".nbt");
-        }
         return new JavaVersion(Name, GetPalette())
         {
-            MapMaker = item_maker,
-            FrameMaker = frame_maker,
-            DataMaker = data_maker,
-            StructureMaker = structure_maker,
-            StructurePath = structure_folder,
+            MapMaker = MapItem,
+            FrameMaker = MapEntity,
+            DataMaker = MapData,
+            StructureMaker = StructureItem,
+            StructureFolder = StructureFolder,
             StructuresSupported = StructuresSupported
         };
     }
@@ -157,22 +92,16 @@ public class JavaVersionBuilder
     }
 }
 
-public delegate NbtCompound MapDataMaker(MapData data);
-public delegate NbtCompound MapItemMaker(long id);
-public delegate NbtCompound StructureItemMaker(StructureGrid structure);
-public delegate NbtCompound ItemFrameMaker(bool glowing, bool invisible);
-public delegate string StructurePathGetter(string world, string identifier);
-
 public class JavaVersion : IJavaVersion
 {
     private readonly Color[] Palette;
     private readonly Dictionary<byte, Rgba32> ColorMap = new();
     private readonly Dictionary<Color, byte> ReverseColorMap = new();
-    public MapItemMaker MapMaker { get; init; }
-    public StructureItemMaker StructureMaker { get; init; }
-    public ItemFrameMaker FrameMaker { get; init; }
-    public MapDataMaker DataMaker { get; init; }
-    public StructurePathGetter StructurePath { get; init; }
+    public NbtTemplate MapMaker { get; init; }
+    public NbtTemplate StructureMaker { get; init; }
+    public NbtTemplate FrameMaker { get; init; }
+    public NbtTemplate DataMaker { get; init; }
+    public string StructureFolder { get; init; }
     public string Name { get; init; }
     public bool StructuresSupported { get; init; }
     public JavaVersion(string name, IEnumerable<Color> palette)
@@ -230,9 +159,12 @@ public class JavaVersion : IJavaVersion
                 long? val = mapids[x, y];
                 if (val.HasValue)
                 {
-                    var frame = FrameMaker(structure.GlowingFrames, structure.InvisibleFrames);
+                    var frame = FrameMaker.Create(
+                         ("id", () => new NbtString(structure.GlowingFrames ? "minecraft:glow_item_frame" : "minecraft:item_frame")),
+                         ("invisible", () => new NbtByte(structure.InvisibleFrames))
+                     );
                     frame.Name = "nbt";
-                    var item = MapMaker(val.Value);
+                    var item = MakeMapItem(val.Value);
                     item.Name = "Item";
                     frame.Add(item);
                     entities.Add(new NbtCompound()
@@ -263,8 +195,30 @@ public class JavaVersion : IJavaVersion
         };
     }
 
-    public NbtCompound CreateMapCompound(MapData map) => DataMaker(map);
-    public NbtCompound MakeMapItem(long id) => MapMaker(id);
-    public NbtCompound MakeStructureItem(StructureGrid structure) => StructureMaker(structure);
-    public string StructureFileLocation(string world_folder, string identifier) => StructurePath(world_folder, identifier);
+    public NbtCompound CreateMapCompound(MapData map) => DataMaker.Create(("colors", () => new NbtByteArray(map.Colors)));
+    public NbtCompound MakeMapItem(long id) => MapMaker.Create(
+        ("s", () => new NbtShort((short)id)),
+        ("i", () => new NbtInt((int)id))
+    );
+    public NbtCompound MakeStructureItem(StructureGrid structure)
+    {
+        string identifier = structure.Identifier;
+        if (StructureFolder == "structures")
+            identifier = identifier.Replace(':', '_');
+        return StructureMaker.Create(
+            ("id", () => new NbtString(structure.Identifier)),
+            ("old_name", () => new NbtString($"§r§d{structure.Identifier}§r")),
+            ("name", () => new NbtString($"{{\"text\":\"{structure.Identifier}\",\"italic\":false}}")),
+            ("x", () => new NbtInt(1)),
+            ("y", () => new NbtInt(structure.GridHeight)),
+            ("z", () => new NbtInt(structure.GridWidth))
+        );
+    }
+    public string StructureFileLocation(string world_folder, string identifier)
+    {
+        if (StructureFolder == "structures")
+            return Path.Combine(world_folder, "structures", identifier.Replace(':', '_') + ".nbt");
+        int colon = identifier.IndexOf(':');
+        return Path.Combine(world_folder, StructureFolder, identifier[..colon], "structures", identifier[(colon + 1)..] + ".nbt");
+    }
 }

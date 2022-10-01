@@ -41,14 +41,14 @@ public class VersionManager
         }
     }
 
-    public static IJavaVersion DetermineJavaVersion(NbtCompound leveldat)
+    public static IJavaVersion? DetermineJavaVersion(NbtCompound leveldat)
     {
-        return JavaVersions.Last(x => x.check.Passes(leveldat)).version;
+        return JavaVersions.LastOrDefault(x => x.check.Passes(leveldat)).version;
     }
 
-    public static IBedrockVersion DetermineBedrockVersion(NbtCompound leveldat)
+    public static IBedrockVersion? DetermineBedrockVersion(NbtCompound leveldat)
     {
-        return BedrockVersions.Last(x => x.check.Passes(leveldat)).version;
+        return BedrockVersions.LastOrDefault(x => x.check.Passes(leveldat)).version;
     }
 }
 

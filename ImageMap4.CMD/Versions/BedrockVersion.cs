@@ -17,57 +17,37 @@ public interface IBedrockVersion
 public class BedrockVersionBuilder
 {
     public string? Name;
-    public NbtCompound? MapItem;
-    public NbtCompound? MapData;
+    public NbtTemplate? MapData;
+    public NbtTemplate? MapItem;
     public void Add(BedrockUpdate update)
     {
         this.Name = update.Name ?? this.Name;
-        this.MapData = update.MapData ?? this.MapData;
-        this.MapItem = update.MapItem ?? this.MapItem;
+        if (update.MapItem != null)
+            this.MapItem = new(update.MapItem);
+        if (update.MapData != null)
+            this.MapData = new(update.MapData);
     }
     public IBedrockVersion Build()
     {
-        NbtCompound data_maker(Map map)
-        {
-            var compound = (NbtCompound)MapData.Clone();
-            foreach (var item in compound.GetAllTags().OfType<NbtString>())
-            {
-                if (item.Value == "@colors")
-                    item.Parent[item.Name] = new NbtByteArray(map.Data.Colors);
-                else if (item.Value == "@id")
-                    item.Parent[item.Name] = new NbtLong(map.ID);
-            }
-            return compound;
-        }
-        NbtCompound item_maker(long id)
-        {
-            var compound = (NbtCompound)MapItem.Clone();
-            foreach (var item in compound.GetAllTags().OfType<NbtString>())
-            {
-                if (item.Value == "@id")
-                    item.Parent[item.Name] = new NbtLong(id);
-            }
-            return compound;
-        }
-        return new BedrockVersion(Name, data_maker, item_maker);
+        return new BedrockVersion(Name, MapData, MapItem);
     }
 }
 
-public delegate NbtCompound MapMaker(Map map);
-public delegate NbtCompound ItemMaker(long id);
-
 public class BedrockVersion : IBedrockVersion
 {
-    private readonly MapMaker DataMaker;
-    private readonly ItemMaker ItemMaker;
+    private readonly NbtTemplate DataMaker;
+    private readonly NbtTemplate ItemMaker;
     public string Name { get; }
-    public BedrockVersion(string name, MapMaker data, ItemMaker item)
+    public BedrockVersion(string name, NbtTemplate data, NbtTemplate item)
     {
         Name = name;
         DataMaker = data;
         ItemMaker = item;
     }
 
-    public NbtCompound CreateMapCompound(Map map) => DataMaker(map);
-    public NbtCompound CreateMapItem(long id) => ItemMaker(id);
+    public NbtCompound CreateMapCompound(Map map) => DataMaker.Create(
+        ("colors", () => new NbtByteArray(map.Data.Colors)),
+        ("id", () => new NbtLong(map.ID))
+    );
+    public NbtCompound CreateMapItem(long id) => ItemMaker.Create(("id", () => new NbtLong(id)));
 }
