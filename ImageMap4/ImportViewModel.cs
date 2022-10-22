@@ -111,7 +111,8 @@ public class ImportViewModel : ObservableObject
         new AlgorithmOption("Euclidean", new EuclideanAlgorithm()),
         new AlgorithmOption("CIEDE2000", new Ciede2000Algorithm()),
         new AlgorithmOption("CIE76", new Cie76Algorithm()),
-        new AlgorithmOption("CMC", new CmcAlgorithm())
+        new AlgorithmOption("CMC", new CmcAlgorithm()),
+        new AlgorithmOption("Oklab", new OkLabAlgorithm())
     }.AsReadOnly();
 
     public record BackgroundColorOption(Brush Brush, Rgba32 Pixel);

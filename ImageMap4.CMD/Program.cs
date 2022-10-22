@@ -207,6 +207,8 @@ for (int i = 1; i < args.Length; i++)
                             algorithm = new Cie76Algorithm();
                         else if (args[i] == "cmc")
                             algorithm = new CmcAlgorithm();
+                        else if (args[i] == "oklab")
+                            algorithm = new OkLabAlgorithm();
                         else
                             Console.Error.WriteLine($"Unexpected algorithm '{args[i]}', expected good, euclidean, ciede2000, cie76, or cmc");
                         break;
