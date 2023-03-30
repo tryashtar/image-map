@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishSingleFile>true</PublishSingleFile>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>false</SelfContained>
 	<AssemblyName>ImageMap-cmd</AssemblyName>
   </PropertyGroup>
@@ -20,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\fNbt\fNbt\fNbt.csproj" />
-    <ProjectReference Include="..\leveldb-mcpe.Net\LevelDB-mcpe.Net\LevelDB-mcpe.Net.csproj" />
+    <ProjectReference Include="..\leveldb-mcpe.net\LevelDB-mcpe.Net\LevelDB-mcpe.Net.csproj" />
     <ProjectReference Include="..\utils.nbt\TryashtarUtils.Nbt.csproj" />
   </ItemGroup>
 
