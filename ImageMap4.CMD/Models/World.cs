@@ -17,7 +17,7 @@ public abstract class World
     public string Folder { get; }
     public string FolderName => Path.GetFileName(Folder);
     public abstract string Name { get; }
-    public abstract string WorldIcon { get; }
+    public abstract Image<Rgba32>? WorldIcon { get; }
     public abstract DateTime AccessDate { get; }
     public World(string folder)
     {

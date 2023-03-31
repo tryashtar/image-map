@@ -15,7 +15,7 @@ public class JavaWorld : World
 {
     public IJavaVersion Version { get; }
     public override string Name { get; }
-    public override string WorldIcon { get; }
+    public override Image<Rgba32>? WorldIcon { get; }
     public override DateTime AccessDate { get; }
 
     public JavaWorld(string folder) : base(folder)
@@ -25,7 +25,7 @@ public class JavaWorld : World
         if (Version == null)
             throw new InvalidDataException("Could not determine version of world");
         Name = leveldat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
-        WorldIcon = Path.Combine(Folder, "icon.png");
+        WorldIcon = Image.Load<Rgba32>(Path.Combine(Folder, "icon.png"));
         AccessDate = File.GetLastWriteTime(leveldat.FileName);
     }
 

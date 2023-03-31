@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageMap4"
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        xmlns:imageMap4="clr-namespace:ImageMap4;assembly=ImageMap-cmd"
         mc:Ignorable="d"
         x:Class="ImageMap4.MainWindow"
         Height="540" Width="940" FontSize="18">
@@ -11,10 +12,33 @@
         <local:MainViewModel />
     </Window.DataContext>
     <Window.Resources>
-        <DataTemplate x:Key="WorldCard">
-            <TextBlock>hi</TextBlock>
-        </DataTemplate>
         <local:GreaterThanConverter x:Key="GreaterThanConverter" />
+        <local:ImageSharpConverter x:Key="ImageSharpConverter" />
+        <DataTemplate x:Key="WorldCard" DataType="imageMap4:World">
+            <Border Height="60"
+                    CornerRadius="4"
+                    Margin="2,2,2,2">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{Binding WorldIcon, Converter={StaticResource ImageSharpConverter}}"
+                           Height="60" />
+                    <StackPanel>
+                        <TextBlock Text="{Binding Name}"
+                                   Foreground="Black"
+                                   FontWeight="Medium"
+                                   FontSize="17"
+                                   Margin="4,0,0,0" />
+                        <TextBlock Text="{Binding FolderName}"
+                                   Foreground="Gray"
+                                   FontSize="13"
+                                   Margin="4,0,0,0" />
+                        <TextBlock Text="{Binding Version.Name, StringFormat={}{0}}"
+                                   Foreground="Gray"
+                                   FontSize="13"
+                                   Margin="4,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
     <TabControl x:Name="TabList">
         <TabItem x:Name="WorldsTab">
