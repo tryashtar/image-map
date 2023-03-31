@@ -1,0 +1,48 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using Avalonia.Data.Converters;
+
+namespace ImageMap4;
+
+public class EqualityConverter : IMultiValueConverter
+{
+    public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (values.Count == 0)
+            return false;
+        for (int i = 1; i < values.Count; i++)
+        {
+            if (values[0] != values[i])
+                return false;
+        }
+        return true;
+    }
+}
+
+public class MultiplyConverter : ParameterConverter<double, double, double>
+{
+    public override double Convert(double value, double parameter)
+    {
+        return value * parameter;
+    }
+
+    public static readonly MultiplyConverter Instance = new();
+}
+
+public class GreaterThanConverter : ParameterConverter<int, bool, int>
+{
+    public override bool Convert(int value, int parameter)
+    {
+        return value > parameter;
+    }
+}
+
+public class TypeConverter : OneWayConverter<object, Type>
+{
+    public override Type? Convert(object? value)
+    {
+        return value?.GetType();
+    }
+}

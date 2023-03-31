@@ -2,8 +2,159 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="ImageMap4Avalonia.MainWindow"
-        Title="ImageMap4Avalonia">
-    Welcome to Avalonia! asdf
+        xmlns:local="clr-namespace:ImageMap4"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        mc:Ignorable="d"
+        x:Class="ImageMap4.MainWindow"
+        Height="540" Width="940" FontSize="18">
+    <Window.DataContext>
+        <local:MainViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <DataTemplate x:Key="WorldCard">
+            <TextBlock>hi</TextBlock>
+        </DataTemplate>
+        <local:GreaterThanConverter x:Key="GreaterThanConverter" />
+    </Window.Resources>
+    <TabControl x:Name="TabList">
+        <TabItem x:Name="WorldsTab">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Icons/world.png"
+                           Height="18"
+                           RenderOptions.BitmapInterpolationMode="Default" />
+                    <TextBlock Text="Worlds"
+                               Margin="10,0,0,0" />
+                </StackPanel>
+            </TabItem.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Button x:Name="JavaWorldsButton"
+                        Grid.Column="0"
+                        Grid.Row="1"
+                        Padding="5"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Click="JavaWorldsButton_OnClick">
+                    <StackPanel Orientation="Horizontal">
+                        <ContentPresenter Height="18"
+                                          Width="24" />
+                        <TextBlock Text="Java Worlds"
+                                   Margin="5,0,0,0" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BedrockWorldsButton"
+                        Grid.Column="1"
+                        Grid.Row="1"
+                        Padding="5"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Click="BedrockWorldsButton_OnClick">
+                    <StackPanel Orientation="Horizontal">
+                        <ContentPresenter Height="18"
+                                          Width="24" />
+                        <TextBlock Text="Bedrock Worlds"
+                                   Margin="5,0,0,0" />
+                    </StackPanel>
+                </Button>
+                <ListBox x:Name="JavaWorldList"
+                         Grid.Column="0" Grid.Row="0"
+                         Items="{Binding JavaWorlds}"
+                         ItemTemplate="{StaticResource WorldCard}">
+                </ListBox>
+                <TextBlock Grid.Column="0"
+                           Grid.Row="0"
+                           Text="Click the button below to select your Java Minecraft 'saves' folder"
+                           Margin="20"
+                           Foreground="Gray"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <Classes.Hidden>
+                        <Binding Path="JavaWorlds.Count"
+                                 Converter="{StaticResource GreaterThanConverter}">
+                            <Binding.ConverterParameter>
+                                <system:Int32>0</system:Int32>
+                            </Binding.ConverterParameter>
+                        </Binding>
+                    </Classes.Hidden>
+                    <TextBlock.Styles>
+                        <Style Selector="TextBlock">
+                            <Style.Setters>
+                                <Setter Property="IsVisible" Value="True" />
+                            </Style.Setters>
+                        </Style>
+                        <Style Selector="TextBlock.Hidden">
+                            <Style.Setters>
+                                <Setter Property="IsVisible" Value="False" />
+                            </Style.Setters>
+                        </Style>
+                    </TextBlock.Styles>
+                </TextBlock>
+                <ListBox x:Name="BedrockWorldList"
+                         Grid.Column="1" Grid.Row="0">
+                </ListBox>
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Text="Click the button below to select your Bedrock 'minecraftWorlds' folder"
+                           Margin="20"
+                           Foreground="Gray"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <Classes.Hidden>
+                        <Binding Path="BedrockWorlds.Count"
+                                 Converter="{StaticResource GreaterThanConverter}">
+                            <Binding.ConverterParameter>
+                                <system:Int32>0</system:Int32>
+                            </Binding.ConverterParameter>
+                        </Binding>
+                    </Classes.Hidden>
+                    <TextBlock.Styles>
+                        <Style Selector="TextBlock">
+                            <Style.Setters>
+                                <Setter Property="IsVisible" Value="True" />
+                            </Style.Setters>
+                        </Style>
+                        <Style Selector="TextBlock.Hidden">
+                            <Style.Setters>
+                                <Setter Property="IsVisible" Value="False" />
+                            </Style.Setters>
+                        </Style>
+                    </TextBlock.Styles>
+                </TextBlock>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="MapsTab">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Icons/map.png"
+                           Height="18"
+                           RenderOptions.BitmapInterpolationMode="Default" />
+                    <TextBlock Text="Maps"
+                               Margin="10,0,0,0" />
+                </StackPanel>
+            </TabItem.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>

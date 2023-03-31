@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace ImageMap4Avalonia;
+namespace ImageMap4;
 
 class Program
 {
