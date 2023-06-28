@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Avalonia;
@@ -20,6 +21,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
+
+    public MainViewModel ViewModel => (MainViewModel)DataContext;
 
     private async void JavaWorldsButton_OnClick(object? sender, RoutedEventArgs e)
     {
@@ -61,6 +64,46 @@ public partial class MainWindow : Window
             Properties.Settings.Default.Save();
             ((MainViewModel)this.DataContext).RefreshWorlds();
         }
+    }
+
+    private void JavaWorldList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (JavaWorldList.SelectedIndex != -1)
+        {
+            BedrockWorldList.SelectedIndex = -1;
+            TryOpenWorld((IWorld)JavaWorldList.SelectedItem);
+        }
+    }
+
+    private void BedrockWorldList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (BedrockWorldList.SelectedIndex != -1)
+        {
+            JavaWorldList.SelectedIndex = -1;
+            TryOpenWorld((IWorld)BedrockWorldList.SelectedItem);
+        }
+    }
+    
+    private void TryOpenWorld(IWorld world)
+    {
+        try
+        {
+            ViewModel.SelectedWorld = world;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.ToString());
+        }
+    }
+}
+
+public class TitleConverter : OneWayConverter<IWorld, string>
+{
+    public override string Convert(IWorld value)
+    {
+        if (value == null)
+            return "Image Map";
+        return $"{value.Name} – Image Map";
     }
 }
 

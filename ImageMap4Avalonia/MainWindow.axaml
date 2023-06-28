@@ -12,6 +12,7 @@
         <local:MainViewModel />
     </Window.DataContext>
     <Window.Resources>
+        <local:TitleConverter x:Key="TitleConverter" />
         <local:GreaterThanConverter x:Key="GreaterThanConverter" />
         <local:ImageSharpConverter x:Key="ImageSharpConverter" />
         <DataTemplate x:Key="WorldCard" DataType="imageMap4:IWorld">
@@ -40,6 +41,10 @@
             </Border>
         </DataTemplate>
     </Window.Resources>
+    <Window.Title>
+        <Binding Path="SelectedWorld"
+                 Converter="{StaticResource TitleConverter}" />
+    </Window.Title>
     <TabControl x:Name="TabList">
         <TabItem x:Name="WorldsTab">
             <TabItem.Header>
@@ -91,6 +96,7 @@
                 <ListBox x:Name="JavaWorldList"
                          Grid.Column="0" Grid.Row="0"
                          Items="{Binding JavaWorlds}"
+                         SelectionChanged="JavaWorldList_OnSelectionChanged"
                          ItemTemplate="{StaticResource WorldCard}">
                 </ListBox>
                 <TextBlock Grid.Column="0"
@@ -124,7 +130,10 @@
                     </TextBlock.Styles>
                 </TextBlock>
                 <ListBox x:Name="BedrockWorldList"
-                         Grid.Column="1" Grid.Row="0">
+                         Grid.Column="1" Grid.Row="0"
+                         Items="{Binding BedrockWorlds}"
+                         SelectionChanged="BedrockWorldList_OnSelectionChanged"
+                         ItemTemplate="{StaticResource WorldCard}">
                 </ListBox>
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
@@ -158,7 +167,7 @@
                 </TextBlock>
             </Grid>
         </TabItem>
-        <TabItem x:Name="MapsTab">
+        <TabItem x:Name="MapsTab" IsVisible="{Binding !!SelectedWorld}">
             <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
                     <Image Source="/Icons/map.png"

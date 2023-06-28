@@ -6,10 +6,21 @@ using System.Linq;
 
 namespace ImageMap4;
 
-public class MainViewModel
+public class MainViewModel : ObservableObject
 {
     public ObservableCollection<JavaWorld> JavaWorlds { get; } = new();
     public ObservableCollection<BedrockWorld> BedrockWorlds { get; } = new();
+    
+    private IWorld? _selectedWorld;
+    public IWorld? SelectedWorld
+    {
+        get => _selectedWorld;
+        set
+        {
+            _selectedWorld = value;
+            OnPropertyChanged();
+        }
+    }
 
     public MainViewModel()
     {
