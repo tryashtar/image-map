@@ -33,7 +33,7 @@ Actions:
 }
 
 string folder = Path.GetFullPath(args[0]);
-World world;
+IWorld world;
 IInventory? inventory = null;
 if (!Directory.Exists(folder))
 {

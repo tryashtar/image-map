@@ -11,15 +11,17 @@ using TryashtarUtils.Nbt;
 
 namespace ImageMap4;
 
-public class JavaWorld : World
+public class JavaWorld : IWorld
 {
     public IJavaVersion Version { get; }
-    public override string Name { get; }
-    public override Image<Rgba32>? WorldIcon { get; }
-    public override DateTime AccessDate { get; }
+    public string Name { get; }
+    public string Folder { get; }
+    public Image<Rgba32>? WorldIcon { get; }
+    public DateTime AccessDate { get; }
 
-    public JavaWorld(string folder) : base(folder)
+    public JavaWorld(string folder)
     {
+        Folder = folder;
         var leveldat = new NbtFile(Path.Combine(Folder, "level.dat"));
         Version = VersionManager.DetermineJavaVersion(leveldat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
         if (Version == null)
@@ -29,12 +31,12 @@ public class JavaWorld : World
         AccessDate = File.GetLastWriteTime(leveldat.FileName);
     }
 
-    public override bool IsIdTaken(long id)
+    public bool IsIdTaken(long id)
     {
         return File.Exists(Path.Combine(Folder, "data", $"map_{id}.dat"));
     }
 
-    public override void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
+    public void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
     {
         var items = new List<NbtCompound>();
         foreach (var structure in structures)
@@ -50,7 +52,7 @@ public class JavaWorld : World
         inventory.AddItems(items);
     }
 
-    public override IEnumerable<IInventory> GetInventories()
+    public IEnumerable<IInventory> GetInventories()
     {
         yield return new JavaInventory("Local player", Path.Combine(Folder, "level.dat"), NbtPath.Parse("Data.Player.Inventory"));
         var playerdata = Path.Combine(Folder, "playerdata");
@@ -65,7 +67,7 @@ public class JavaWorld : World
         }
     }
 
-    public override async IAsyncEnumerable<Map> GetMapsAsync()
+    public async IAsyncEnumerable<Map> GetMapsAsync()
     {
         var maps = Path.Combine(Folder, "data");
         if (Directory.Exists(maps))
@@ -91,7 +93,7 @@ public class JavaWorld : World
         return new Map(id, new MapData(image, colors, full_data));
     }
 
-    public override void AddMaps(IEnumerable<Map> maps)
+    public void AddMaps(IEnumerable<Map> maps)
     {
         foreach (var map in maps)
         {
@@ -105,7 +107,7 @@ public class JavaWorld : World
         }
     }
 
-    public override void RemoveMaps(IEnumerable<long> ids)
+    public void RemoveMaps(IEnumerable<long> ids)
     {
         foreach (var id in ids)
         {
@@ -115,12 +117,12 @@ public class JavaWorld : World
         }
     }
 
-    protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
+    public void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
         var palette = Version.GetPalette();
         var quantizer = new CustomQuantizer(new QuantizerOptions() { Dither = settings.Dither }, palette, settings.Algorithm);
         image.Mutate(x => x.Quantize(quantizer));
     }
 
-    protected override byte[] EncodeColors(Image<Rgba32> image) => Version.EncodeColors(image);
+    public byte[] EncodeColors(Image<Rgba32> image) => Version.EncodeColors(image);
 }

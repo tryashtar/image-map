@@ -14,7 +14,7 @@
     <Window.Resources>
         <local:GreaterThanConverter x:Key="GreaterThanConverter" />
         <local:ImageSharpConverter x:Key="ImageSharpConverter" />
-        <DataTemplate x:Key="WorldCard" DataType="imageMap4:World">
+        <DataTemplate x:Key="WorldCard" DataType="imageMap4:IWorld">
             <Border Height="60"
                     CornerRadius="4"
                     Margin="2,2,2,2">

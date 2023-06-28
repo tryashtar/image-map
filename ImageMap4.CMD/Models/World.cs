@@ -12,27 +12,27 @@ using System.Text;
 
 namespace ImageMap4;
 
-public abstract class World
+public interface IWorld
 {
-    public string Folder { get; }
-    public string FolderName => Path.GetFileName(Folder);
-    public abstract string Name { get; }
-    public abstract Image<Rgba32>? WorldIcon { get; }
-    public abstract DateTime AccessDate { get; }
-    public World(string folder)
-    {
-        Folder = folder;
-    }
+    string Folder { get; }
+    string FolderName => Path.GetFileName(Folder);
+    string Name { get; }
+    Image<Rgba32>? WorldIcon { get; }
+    DateTime AccessDate { get; }
 
-    public abstract bool IsIdTaken(long id);
-    public abstract IAsyncEnumerable<Map> GetMapsAsync();
-    public abstract void AddMaps(IEnumerable<Map> maps);
-    public abstract void RemoveMaps(IEnumerable<long> ids);
-    public abstract void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory);
-    public abstract IEnumerable<IInventory> GetInventories();
-    protected abstract void ProcessImage(Image<Rgba32> image, ProcessSettings settings);
-    protected abstract byte[] EncodeColors(Image<Rgba32> image);
-    public MapData[,] MakeMaps(ImportSettings settings)
+    bool IsIdTaken(long id);
+    IAsyncEnumerable<Map> GetMapsAsync();
+    void AddMaps(IEnumerable<Map> maps);
+    void RemoveMaps(IEnumerable<long> ids);
+    void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory);
+    IEnumerable<IInventory> GetInventories();
+    byte[] EncodeColors(Image<Rgba32> image);
+    void ProcessImage(Image<Rgba32> image, ProcessSettings settings);
+}
+
+public static class WorldExtensions
+{
+    public static MapData[,] MakeMaps(this IWorld world, ImportSettings settings)
     {
         using var image = settings.Preview.Source.Image.Value;
         image.Mutate(x =>
@@ -57,20 +57,20 @@ public abstract class World
             x.BackgroundColor(settings.BackgroundColor);
         });
         var original = Split(image, settings.Width, settings.Height);
-        ProcessImage(image, settings.ProcessSettings);
+        world.ProcessImage(image, settings.ProcessSettings);
         var finished = Split(image, settings.Width, settings.Height);
         var result = new MapData[settings.Width, settings.Height];
         for (int y = 0; y < settings.Height; y++)
         {
             for (int x = 0; x < settings.Width; x++)
             {
-                result[x, y] = new MapData(finished[x, y], original[x, y], EncodeColors(finished[x, y]));
+                result[x, y] = new MapData(finished[x, y], original[x, y], world.EncodeColors(finished[x, y]));
             }
         }
         return result;
     }
 
-    private static Image<Rgba32>[,] Split(Image<Rgba32> source, int columns, int rows)
+    public static Image<Rgba32>[,] Split(Image<Rgba32> source, int columns, int rows)
     {
         var result = new Image<Rgba32>[columns, rows];
         int width = source.Width / columns;

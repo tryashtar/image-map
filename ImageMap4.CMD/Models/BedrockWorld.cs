@@ -11,17 +11,19 @@ using System.Threading.Tasks;
 
 namespace ImageMap4;
 
-public class BedrockWorld : World
+public class BedrockWorld : IWorld
 {
     private DB? DBAccess;
     private readonly object DBLock = new();
     public IBedrockVersion Version { get; }
-    public override string Name { get; }
-    public override Image<Rgba32>? WorldIcon { get; }
-    public override DateTime AccessDate { get; }
+    public string Name { get; }
+    public string Folder { get; }
+    public Image<Rgba32>? WorldIcon { get; }
+    public DateTime AccessDate { get; }
 
-    public BedrockWorld(string folder) : base(folder)
+    public BedrockWorld(string folder)
     {
+        Folder = folder;
         string file = Path.Combine(folder, "levelname.txt");
         if (File.Exists(file))
             Name = File.ReadLines(file).FirstOrDefault() ?? "";
@@ -37,13 +39,13 @@ public class BedrockWorld : World
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 
-    public override bool IsIdTaken(long id)
+    public bool IsIdTaken(long id)
     {
         var db = OpenDB();
         return db.GetBytes($"map_{id}") != null;
     }
 
-    public override void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
+    public void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
     {
         var db = OpenDB();
         using var batch = new WriteBatch();
@@ -123,7 +125,7 @@ public class BedrockWorld : World
         inventory.AddItems(items);
     }
 
-    public override IEnumerable<IInventory> GetInventories()
+    public IEnumerable<IInventory> GetInventories()
     {
         yield return new BedrockInventory("Local player", this, "~local_player");
         var db = OpenDB();
@@ -140,7 +142,7 @@ public class BedrockWorld : World
         }
     }
 
-    public override async IAsyncEnumerable<Map> GetMapsAsync()
+    public async IAsyncEnumerable<Map> GetMapsAsync()
     {
         var db = OpenDB();
         using var iterator = db.CreateIterator();
@@ -169,7 +171,7 @@ public class BedrockWorld : World
         return new Map(id, new MapData(image, colors, full_data));
     }
 
-    public override void AddMaps(IEnumerable<Map> maps)
+    public void AddMaps(IEnumerable<Map> maps)
     {
         var db = OpenDB();
         using var batch = new WriteBatch();
@@ -186,7 +188,7 @@ public class BedrockWorld : World
         db.Write(batch);
     }
 
-    public override void RemoveMaps(IEnumerable<long> ids)
+    public void RemoveMaps(IEnumerable<long> ids)
     {
         var db = OpenDB();
         using var batch = new WriteBatch();
@@ -197,12 +199,12 @@ public class BedrockWorld : World
         db.Write(batch);
     }
 
-    protected override void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
+    public void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
         // no quantization needed, Bedrock supports all colors
     }
 
-    protected override byte[] EncodeColors(Image<Rgba32> image)
+    public byte[] EncodeColors(Image<Rgba32> image)
     {
         var result = new byte[128 * 128 * 4];
         image.CopyPixelDataTo(result);
