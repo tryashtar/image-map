@@ -187,6 +187,14 @@
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <local:MapList x:Name="ImportList"
+                               Grid.Column="0"
+                               Grid.Row="1"
+                               DataContext="{Binding ImportingMaps}"/>
+                <local:MapList x:Name="ExistingList"
+                               Grid.Column="1"
+                               Grid.Row="1"
+                               DataContext="{Binding ExistingMaps}"/>
             </Grid>
         </TabItem>
     </TabControl>

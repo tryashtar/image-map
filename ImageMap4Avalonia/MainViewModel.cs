@@ -131,7 +131,7 @@ public class MainViewModel : ObservableObject
         {
             token.ThrowIfCancellationRequested();
             var selectable = new Selectable<Map>(item);
-            Dispatcher.UIThread.InvokeAsync(() =>
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 if (!token.IsCancellationRequested)
                     Insert(selectable, ExistingMaps, Sorter);
