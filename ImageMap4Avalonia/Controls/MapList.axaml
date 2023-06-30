@@ -9,20 +9,25 @@
         <DataTemplate x:Key="MapCard">
             <StackPanel Margin="3">
                 <imageMap4:MapPreview DataContext="{Binding Item.Data}"
-                                  Width="128"
-                                  Height="128"
-                                  Margin="4" />
+                                      Width="128"
+                                      Height="128"
+                                      Margin="4" />
                 <DockPanel>
                     <TextBlock Text="{Binding Item.ID, StringFormat=map_{0}}"
                                Foreground="Black"
                                FontWeight="Medium"
                                FontSize="13"
                                Margin="4,0,0,4" />
-                    <ContentPresenter ContentTemplate="{Binding Status, ElementName=This}" />
                 </DockPanel>
             </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
-    <ListBox Items="{Binding}"
-             ItemTemplate="{StaticResource MapCard}" />
+    <ScrollViewer>
+        <ItemsRepeater Items="{Binding}"
+                       ItemTemplate="{StaticResource MapCard}">
+            <ItemsRepeater.Layout>
+                <WrapLayout Orientation="Horizontal" />
+            </ItemsRepeater.Layout>
+        </ItemsRepeater>
+    </ScrollViewer>
 </UserControl>
