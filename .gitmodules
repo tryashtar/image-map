@@ -7,6 +7,6 @@
 [submodule "utils.utility"]
 	path = utils.utility
 	url = https://github.com/tryashtar/utils.utility
-[submodule "leveldb-mcpe.net"]
-	path = leveldb-mcpe.net
-	url = https://github.com/tryashtar/leveldb-mcpe.net
+[submodule "level-db-wrapper"]
+	path = level-db-wrapper
+	url = https://github.com/tryashtar/level-db-wrapper

@@ -1,19 +1,11 @@
 using fNbt;
-using LevelDB;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using LevelDBWrapper;
 
 namespace ImageMap4;
 
 public class BedrockWorld : IWorld
 {
-    private DB? DBAccess;
+    private LevelDB? DBAccess;
     private readonly object DBLock = new();
     public IBedrockVersion Version { get; }
     public string Name { get; }
@@ -42,7 +34,7 @@ public class BedrockWorld : IWorld
     public bool IsIdTaken(long id)
     {
         var db = OpenDB();
-        return db.GetBytes($"map_{id}") != null;
+        return db.Get($"map_{id}") != null;
     }
 
     public void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
@@ -131,7 +123,7 @@ public class BedrockWorld : IWorld
         var db = OpenDB();
         using var iterator = db.CreateIterator();
         iterator.Seek("player_server_");
-        while (iterator.Valid())
+        while (iterator.IsValid())
         {
             var name = iterator.StringKey();
             if (name.StartsWith("player_server_"))
@@ -147,7 +139,7 @@ public class BedrockWorld : IWorld
         var db = OpenDB();
         using var iterator = db.CreateIterator();
         iterator.Seek("map_");
-        while (iterator.Valid())
+        while (iterator.IsValid())
         {
             var name = iterator.StringKey();
             if (name.StartsWith("map_"))
@@ -215,12 +207,12 @@ public class BedrockWorld : IWorld
     // it's nice to open on demand and dispose it when you're done
     // but that's not very threadsafe (e.g. GetMapsAsync)
     // seems to work ok for now, but could be worth taking another look at
-    public DB OpenDB()
+    public LevelDB OpenDB()
     {
         lock (DBLock)
         {
-            if (DBAccess == null || DBAccess.IsDisposed)
-                DBAccess = new DB(Path.Combine(Folder, "db"), new Options { CompressionLevel = CompressionLevel.ZlibRawCompression });
+            if (DBAccess == null || DBAccess.Disposed)
+                DBAccess = new LevelDB(Path.Combine(Folder, "db"), new Options { CompressionLevel = LevelDBWrapper.CompressionLevel.ZlibRawCompression });
             return DBAccess;
         }
     }

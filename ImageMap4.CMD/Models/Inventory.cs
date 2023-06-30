@@ -1,15 +1,5 @@
 ﻿using fNbt;
-using LevelDB;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using LevelDBWrapper;
 using TryashtarUtils.Nbt;
 
 namespace ImageMap4;
@@ -76,7 +66,7 @@ public class BedrockInventory : IInventory
     public void AddItems(IEnumerable<NbtCompound> items)
     {
         var db = World.OpenDB();
-        var bytes = db.GetBytes(Key);
+        var bytes = db.Get(Key);
         var file = new NbtFile() { BigEndian = false };
         file.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
         var inventory = file.GetRootTag<NbtCompound>().Get<NbtList>("Inventory");
