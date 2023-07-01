@@ -9,6 +9,7 @@ public class BedrockWorld : IWorld
     private readonly object DBLock = new();
     public IBedrockVersion Version { get; }
     public string Name { get; }
+    public string VersionName { get; }
     public string Folder { get; }
     public Image<Rgba32>? WorldIcon { get; }
     public DateTime AccessDate { get; }
@@ -21,13 +22,20 @@ public class BedrockWorld : IWorld
             Name = File.ReadLines(file).FirstOrDefault() ?? "";
         else
             Name = "";
-        WorldIcon = Image.Load<Rgba32>(Path.Combine(Folder, "world_icon.jpeg"));
+        string icon = Path.Combine(Folder, "world_icon.jpeg");
+        if (File.Exists(icon))
+            WorldIcon = Image.Load<Rgba32>(icon);
         using var leveldat = File.OpenRead(Path.Combine(folder, "level.dat"));
         leveldat.Position = 8;
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromStream(leveldat, NbtCompression.None);
-        Version = VersionManager.DetermineBedrockVersion(nbt.GetRootTag<NbtCompound>()) ??
+        var root = nbt.GetRootTag<NbtCompound>();
+        Version = VersionManager.DetermineBedrockVersion(root) ??
                   throw new InvalidDataException("Could not determine version of world");
+        var versiontag = root.Get<NbtList>("lastOpenedWithVersion");
+        VersionName = versiontag != null
+            ? String.Join('.', versiontag.Select(x => x.IntValue.ToString()))
+            : Version.ToString();
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 
@@ -55,8 +63,10 @@ public class BedrockWorld : IWorld
                     {
                         var mapitem = Version.CreateMapItem(id.Value);
                         mapitem.Name = "Item";
-                        blockdata.Add(new NbtCompound((y * structure.GridWidth + x).ToString()) {
-                            new NbtCompound("block_entity_data") {
+                        blockdata.Add(new NbtCompound((y * structure.GridWidth + x).ToString())
+                        {
+                            new NbtCompound("block_entity_data")
+                            {
                                 new NbtString("id", structure.GlowingFrames ? "GlowItemFrame" : "ItemFrame"),
                                 mapitem
                             }
@@ -64,21 +74,34 @@ public class BedrockWorld : IWorld
                     }
                 }
             }
-            var nbt = new NbtCompound("") {
+
+            var nbt = new NbtCompound("")
+            {
                 new NbtInt("format_version", 1),
-                new NbtList("size") { new NbtInt(1), new NbtInt(structure.GridHeight), new NbtInt(structure.GridWidth) },
-                new NbtCompound("structure") {
-                    new NbtList("block_indices") {
-                        new NbtList(Enumerable.Repeat(0, structure.GridHeight * structure.GridWidth).Select(x => new NbtInt(x))),
-                        new NbtList(Enumerable.Repeat(-1, structure.GridHeight * structure.GridWidth).Select(x => new NbtInt(x)))
+                new NbtList("size")
+                    { new NbtInt(1), new NbtInt(structure.GridHeight), new NbtInt(structure.GridWidth) },
+                new NbtCompound("structure")
+                {
+                    new NbtList("block_indices")
+                    {
+                        new NbtList(Enumerable.Repeat(0, structure.GridHeight * structure.GridWidth)
+                            .Select(x => new NbtInt(x))),
+                        new NbtList(Enumerable.Repeat(-1, structure.GridHeight * structure.GridWidth)
+                            .Select(x => new NbtInt(x)))
                     },
                     new NbtList("entities"),
-                    new NbtCompound("palette") {
-                        new NbtCompound("default") {
-                            new NbtList("block_palette") {
-                                new NbtCompound() {
-                                    new NbtString("name", structure.GlowingFrames ? "minecraft:glow_frame" : "minecraft:frame"),
-                                    new NbtCompound("states") {
+                    new NbtCompound("palette")
+                    {
+                        new NbtCompound("default")
+                        {
+                            new NbtList("block_palette")
+                            {
+                                new NbtCompound()
+                                {
+                                    new NbtString("name",
+                                        structure.GlowingFrames ? "minecraft:glow_frame" : "minecraft:frame"),
+                                    new NbtCompound("states")
+                                    {
                                         new NbtInt("facing_direction", 4),
                                         new NbtByte("item_frame_map_bit", 1)
                                     }
@@ -93,10 +116,12 @@ public class BedrockWorld : IWorld
             var key = "structuretemplate_" + structure.Identifier;
             var file = new NbtFile(nbt) { BigEndian = false };
             batch.Put(key, file.SaveToBuffer(NbtCompression.None));
-            var item = new NbtCompound {
+            var item = new NbtCompound
+            {
                 new NbtString("Name", "minecraft:structure_block"),
                 new NbtByte("Count", 1),
-                new NbtCompound("tag") {
+                new NbtCompound("tag")
+                {
                     new NbtInt("data", 2),
                     new NbtString("structureName", structure.Identifier),
                     new NbtFloat("integrity", 100),
@@ -106,13 +131,15 @@ public class BedrockWorld : IWorld
                     new NbtInt("xStructureSize", 1),
                     new NbtInt("yStructureSize", structure.GridHeight),
                     new NbtInt("zStructureSize", structure.GridWidth),
-                    new NbtCompound("display") {
+                    new NbtCompound("display")
+                    {
                         new NbtString("Name", $"§r§d{structure.Identifier}§r")
                     }
                 }
             };
             items.Add(item);
         }
+
         db.Write(batch);
         inventory.AddItems(items);
     }
@@ -177,6 +204,7 @@ public class BedrockWorld : IWorld
             var bytes = nbt.SaveToBuffer(NbtCompression.None);
             batch.Put($"map_{map.ID}", bytes);
         }
+
         db.Write(batch);
     }
 
@@ -188,6 +216,7 @@ public class BedrockWorld : IWorld
         {
             batch.Delete($"map_{id}");
         }
+
         db.Write(batch);
     }
 
@@ -212,7 +241,8 @@ public class BedrockWorld : IWorld
         lock (DBLock)
         {
             if (DBAccess == null || DBAccess.Disposed)
-                DBAccess = new LevelDB(Path.Combine(Folder, "db"), new Options { CompressionLevel = LevelDBWrapper.CompressionLevel.ZlibRawCompression });
+                DBAccess = new LevelDB(Path.Combine(Folder, "db"),
+                    new Options { CompressionLevel = LevelDBWrapper.CompressionLevel.ZlibRawCompression });
             return DBAccess;
         }
     }

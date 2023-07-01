@@ -15,8 +15,8 @@ namespace ImageMap4;
 public interface IWorld
 {
     string Folder { get; }
-    string FolderName => Path.GetFileName(Folder);
     string Name { get; }
+    string VersionName { get; }
     Image<Rgba32>? WorldIcon { get; }
     DateTime AccessDate { get; }
 

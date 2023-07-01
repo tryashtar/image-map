@@ -88,7 +88,7 @@ public partial class MainWindow : Window
             TryOpenWorld((IWorld)BedrockWorldList.SelectedItem);
         }
     }
-    
+
     private void TryOpenWorld(IWorld world)
     {
         try
@@ -112,12 +112,22 @@ public class TitleConverter : OneWayConverter<IWorld, string>
     }
 }
 
+public class FileNameConverter : OneWayConverter<string, string>
+{
+    public override string Convert(string value)
+    {
+        return Path.GetFileName(value);
+    }
+}
+
 public class ImageSharpConverter : OneWayConverter<Image<Rgba32>, IImage>
 {
     private static readonly ConditionalWeakTable<Image<Rgba32>, IImage> Cache = new();
 
     public override IImage Convert(Image<Rgba32> value)
     {
+        if (value == null)
+            return null;
         return Cache.GetValue(value, x =>
         {
             using var ms = new MemoryStream();
@@ -134,6 +144,7 @@ public class DisplayJavaInventory : IInventory, INotifyPropertyChanged
     private static readonly HttpClient Client = new();
     public event PropertyChangedEventHandler? PropertyChanged;
     public string Name { get; private set; }
+
     public DisplayJavaInventory(IInventory wrapped)
     {
         Name = wrapped.Name;
@@ -153,6 +164,7 @@ public class DisplayJavaInventory : IInventory, INotifyPropertyChanged
                     break;
                 }
             }
+
             if (!found)
             {
                 // get name from Mojang's API
@@ -168,12 +180,14 @@ public class DisplayJavaInventory : IInventory, INotifyPropertyChanged
                         var json = JsonDocument.Parse(response);
                         if (json.RootElement.ValueKind == JsonValueKind.Array)
                         {
-                            string newname = json.RootElement[json.RootElement.GetArrayLength() - 1].GetProperty("name").GetString();
+                            string newname = json.RootElement[json.RootElement.GetArrayLength() - 1].GetProperty("name")
+                                .GetString();
                             lock (Properties.Settings.Default.UsernameCache)
                             {
                                 Properties.Settings.Default.UsernameCache.Add(Name);
                                 Properties.Settings.Default.UsernameCache.Add(newname);
                             }
+
                             this.Name = newname;
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
                         }

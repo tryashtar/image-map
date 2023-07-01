@@ -7,45 +7,85 @@
         xmlns:imageMap4="clr-namespace:ImageMap4;assembly=ImageMap-cmd"
         mc:Ignorable="d"
         x:Class="ImageMap4.MainWindow"
-        Height="540" Width="940" FontSize="18">
+        Height="540" Width="940"
+        FontSize="18">
     <Window.DataContext>
         <local:MainViewModel />
     </Window.DataContext>
     <Window.Resources>
         <local:TitleConverter x:Key="TitleConverter" />
+        <local:FileNameConverter x:Key="FileNameConverter" />
         <local:GreaterThanConverter x:Key="GreaterThanConverter" />
         <local:ImageSharpConverter x:Key="ImageSharpConverter" />
-        <DataTemplate x:Key="WorldCard" DataType="imageMap4:IWorld">
-            <Border Height="60"
-                    CornerRadius="4"
-                    Margin="2,2,2,2">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="{Binding WorldIcon, Converter={StaticResource ImageSharpConverter}}"
-                           Height="60" />
-                    <StackPanel>
-                        <TextBlock Text="{Binding Name}"
-                                   Foreground="Black"
-                                   FontWeight="Medium"
-                                   FontSize="17"
-                                   Margin="4,0,0,0" />
-                        <TextBlock Text="{Binding FolderName}"
-                                   Foreground="Gray"
-                                   FontSize="13"
-                                   Margin="4,0,0,0" />
-                        <TextBlock Text="{Binding Version.Name, StringFormat={}{0}}"
-                                   Foreground="Gray"
-                                   FontSize="13"
-                                   Margin="4,0,0,0" />
-                    </StackPanel>
+        <DataTemplate x:Key="WorldCard"
+                      DataType="imageMap4:IWorld">
+            <StackPanel Orientation="Horizontal"
+                        Height="60">
+                <Image Source="{Binding WorldIcon, Converter={StaticResource ImageSharpConverter}}" />
+                <StackPanel>
+                    <TextBlock Text="{Binding Name}"
+                               Foreground="Black"
+                               FontWeight="Medium"
+                               FontSize="17"
+                               Margin="4,0,0,0" />
+                    <TextBlock Text="{Binding Folder, Converter={StaticResource FileNameConverter}}"
+                               Foreground="Gray"
+                               FontSize="13"
+                               Margin="4,0,0,0" />
+                    <TextBlock Text="{Binding VersionName}"
+                               Foreground="Gray"
+                               FontSize="13"
+                               Margin="4,0,0,0" />
                 </StackPanel>
-            </Border>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="FolderIcon">
+            <Image>
+                <Image.Resources>
+                    <SolidColorBrush x:Key="canvas" Opacity="0" />
+                    <SolidColorBrush x:Key="light-yellow-10" Color="#996f00" Opacity="0.1" />
+                    <SolidColorBrush x:Key="light-yellow-25" Color="#996f00" Opacity="0.25" />
+                    <SolidColorBrush x:Key="light-yellow" Color="#996f00" Opacity="1" />
+                </Image.Resources>
+                <Image.Source>
+                    <DrawingImage>
+                        <DrawingImage.Drawing>
+                            <DrawingGroup>
+                                <DrawingGroup>
+                                    <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                                </DrawingGroup>
+                                <DrawingGroup>
+                                    <GeometryDrawing Brush="{DynamicResource light-yellow-10}"
+                                                     Geometry="F1M13.5,3.5v2h-5l-1,1h-5l-2,6V2.5h5l1,1Z" />
+                                    <GeometryDrawing Brush="{DynamicResource light-yellow-25}"
+                                                     Geometry="F1M8.5,5.5h7l-2,7H.5l2-6h5Z" />
+                                    <GeometryDrawing Brush="{DynamicResource light-yellow}"
+                                                     Geometry="F1M15.408,5H14V3.5L13.5,3H6.707l-.853-.854L5.5,2H.5L0,2.5v10l.5.5H13.541l.483-.371,1.868-7ZM1,3H5.293l.853.854L6.5,4H13V5H8.475l-.354.146L7.268,6H2.475L2,6.342,1,9.421Zm12.157,9H1.168L2.835,7h4.64l.353-.146L8.682,6h6.076Z" />
+                                    <GeometryDrawing Brush="{DynamicResource light-yellow-25}"
+                                                     Geometry="F1M14,12.5H13V6h1Z" />
+                                </DrawingGroup>
+                            </DrawingGroup>
+                        </DrawingImage.Drawing>
+                    </DrawingImage>
+                </Image.Source>
+            </Image>
         </DataTemplate>
     </Window.Resources>
     <Window.Title>
         <Binding Path="SelectedWorld"
                  Converter="{StaticResource TitleConverter}" />
     </Window.Title>
-    <TabControl x:Name="TabList">
+    <TabControl x:Name="TabList"
+                Background="#D0D0D0"
+                Padding="0">
+        <TabControl.Styles>
+            <Style Selector="TabItem:selected">
+                <Setter Property="Background" Value="#F0F0F0" />
+            </Style>
+            <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot">
+                <Setter Property="Background" Value="#F0F0F0" />
+            </Style>
+        </TabControl.Styles>
         <TabItem x:Name="WorldsTab">
             <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
@@ -53,10 +93,11 @@
                            Height="18"
                            RenderOptions.BitmapInterpolationMode="Default" />
                     <TextBlock Text="Worlds"
+                               FontSize="20"
                                Margin="10,0,0,0" />
                 </StackPanel>
             </TabItem.Header>
-            <Grid>
+            <Grid Background="White">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
@@ -69,13 +110,15 @@
                         Grid.Column="0"
                         Grid.Row="1"
                         Padding="5"
+                        Background="DarkGray"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         Click="JavaWorldsButton_OnClick">
                     <StackPanel Orientation="Horizontal">
-                        <ContentPresenter Height="18"
-                                          Width="24" />
+                        <ContentPresenter Width="24"
+                                          ContentTemplate="{StaticResource FolderIcon}" />
                         <TextBlock Text="Java Worlds"
+                                   FontSize="18"
                                    Margin="5,0,0,0" />
                     </StackPanel>
                 </Button>
@@ -83,21 +126,32 @@
                         Grid.Column="1"
                         Grid.Row="1"
                         Padding="5"
+                        Background="DarkGray"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         Click="BedrockWorldsButton_OnClick">
                     <StackPanel Orientation="Horizontal">
-                        <ContentPresenter Height="18"
-                                          Width="24" />
+                        <ContentPresenter Width="24"
+                                          ContentTemplate="{StaticResource FolderIcon}" />
                         <TextBlock Text="Bedrock Worlds"
+                                   FontSize="18"
                                    Margin="5,0,0,0" />
                     </StackPanel>
                 </Button>
                 <ListBox x:Name="JavaWorldList"
                          Grid.Column="0" Grid.Row="0"
+                         Background="White"
                          Items="{Binding JavaWorlds}"
                          SelectionChanged="JavaWorldList_OnSelectionChanged"
                          ItemTemplate="{StaticResource WorldCard}">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="2" />
+                            <Setter Property="Margin" Value="2" />
+                            <Setter Property="CornerRadius" Value="4" />
+                            <Setter Property="Background" Value="#F5F5F5" />
+                        </Style>
+                    </ListBox.Styles>
                 </ListBox>
                 <TextBlock Grid.Column="0"
                            Grid.Row="0"
@@ -131,9 +185,18 @@
                 </TextBlock>
                 <ListBox x:Name="BedrockWorldList"
                          Grid.Column="1" Grid.Row="0"
+                         Background="White"
                          Items="{Binding BedrockWorlds}"
                          SelectionChanged="BedrockWorldList_OnSelectionChanged"
                          ItemTemplate="{StaticResource WorldCard}">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="2" />
+                            <Setter Property="Margin" Value="2" />
+                            <Setter Property="CornerRadius" Value="4" />
+                            <Setter Property="Background" Value="#F5F5F5" />
+                        </Style>
+                    </ListBox.Styles>
                 </ListBox>
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
@@ -174,10 +237,11 @@
                            Height="18"
                            RenderOptions.BitmapInterpolationMode="Default" />
                     <TextBlock Text="Maps"
+                               FontSize="20"
                                Margin="10,0,0,0" />
                 </StackPanel>
             </TabItem.Header>
-            <Grid>
+            <Grid Background="White">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
@@ -190,11 +254,11 @@
                 <local:MapList x:Name="ImportList"
                                Grid.Column="0"
                                Grid.Row="1"
-                               DataContext="{Binding ImportingMaps}"/>
+                               DataContext="{Binding ImportingMaps}" />
                 <local:MapList x:Name="ExistingList"
                                Grid.Column="1"
                                Grid.Row="1"
-                               DataContext="{Binding ExistingMaps}"/>
+                               DataContext="{Binding ExistingMaps}" />
             </Grid>
         </TabItem>
     </TabControl>

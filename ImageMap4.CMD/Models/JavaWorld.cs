@@ -15,6 +15,7 @@ public class JavaWorld : IWorld
 {
     public IJavaVersion Version { get; }
     public string Name { get; }
+    public string VersionName { get; }
     public string Folder { get; }
     public Image<Rgba32>? WorldIcon { get; }
     public DateTime AccessDate { get; }
@@ -23,11 +24,13 @@ public class JavaWorld : IWorld
     {
         Folder = folder;
         var leveldat = new NbtFile(Path.Combine(Folder, "level.dat"));
-        Version = VersionManager.DetermineJavaVersion(leveldat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
-        if (Version == null)
-            throw new InvalidDataException("Could not determine version of world");
-        Name = leveldat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
-        WorldIcon = Image.Load<Rgba32>(Path.Combine(Folder, "icon.png"));
+        var data = leveldat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data");
+        Version = VersionManager.DetermineJavaVersion(data) ?? throw new InvalidDataException("Could not determine version of world");
+        Name = data?["LevelName"]?.StringValue ?? "";
+        VersionName = data?["Version"]?["Name"]?.StringValue ?? Version.ToString();
+        string icon = Path.Combine(Folder, "icon.png");
+        if (File.Exists(icon))
+            WorldIcon = Image.Load<Rgba32>(icon);
         AccessDate = File.GetLastWriteTime(leveldat.FileName);
     }
 
@@ -49,12 +52,14 @@ public class JavaWorld : IWorld
             var item = Version.MakeStructureItem(structure);
             items.Add(item);
         }
+
         inventory.AddItems(items);
     }
 
     public IEnumerable<IInventory> GetInventories()
     {
-        yield return new JavaInventory("Local player", Path.Combine(Folder, "level.dat"), NbtPath.Parse("Data.Player.Inventory"));
+        yield return new JavaInventory("Local player", Path.Combine(Folder, "level.dat"),
+            NbtPath.Parse("Data.Player.Inventory"));
         var playerdata = Path.Combine(Folder, "playerdata");
         if (Directory.Exists(playerdata))
         {
@@ -120,7 +125,8 @@ public class JavaWorld : IWorld
     public void ProcessImage(Image<Rgba32> image, ProcessSettings settings)
     {
         var palette = Version.GetPalette();
-        var quantizer = new CustomQuantizer(new QuantizerOptions() { Dither = settings.Dither }, palette, settings.Algorithm);
+        var quantizer = new CustomQuantizer(new QuantizerOptions() { Dither = settings.Dither }, palette,
+            settings.Algorithm);
         image.Mutate(x => x.Quantize(quantizer));
     }
 
