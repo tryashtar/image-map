@@ -352,6 +352,7 @@ public class DisplayJavaInventory : IInventory, INotifyPropertyChanged
     public string Name { get; private set; }
     public DisplayJavaInventory(IInventory wrapped)
     {
+        Wrapped = wrapped;
         Name = wrapped.Name;
         if (Name.Length == 36)
         {

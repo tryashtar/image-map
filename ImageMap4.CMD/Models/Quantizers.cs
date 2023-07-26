@@ -1,6 +1,6 @@
 ﻿using Colourful;
 using fNbt;
-using LevelDB;
+using LevelDBWrapper;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.PixelFormats;
