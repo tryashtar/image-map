@@ -96,7 +96,13 @@ public class JavaWorld : World
         foreach (var map in maps)
         {
             var nbt = new NbtFile { BigEndian = true };
-            var data = map.Data.FullData ?? Version.CreateMapCompound(map.Data);
+            var data = map.Data.FullData;
+            if (data == null)
+            {
+                data = Version.CreateMapCompound(map.Data);
+                if (Version.DataVersion != null)
+                    data.Add(new NbtInt("DataVersion", Version.DataVersion.Value));
+            }
             data.Name = "";
             nbt.RootTag = data;
             var folder = Path.Combine(Folder, "data");

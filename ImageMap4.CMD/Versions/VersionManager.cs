@@ -30,7 +30,7 @@ public class VersionManager
         var java = new JavaVersionBuilder();
         foreach (var update in updates.Java)
         {
-            java.Add(update);
+            java.Add(update, update.Check.DataVersion);
             JavaVersions.Add((update.Check, java.Build()));
         }
         var bedrock = new BedrockVersionBuilder();

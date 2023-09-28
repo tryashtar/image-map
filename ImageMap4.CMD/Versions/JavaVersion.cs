@@ -21,6 +21,7 @@ public interface IJavaVersion
     bool StructuresSupported { get; }
     NbtCompound CreateStructureFile(StructureGrid structure);
     string StructureFileLocation(string world_folder, string identifier);
+    int? DataVersion { get; }
 }
 
 public class JavaVersionBuilder
@@ -34,7 +35,8 @@ public class JavaVersionBuilder
     public bool StructuresSupported = false;
     public string? StructureFolder;
     public string? Name;
-    public void Add(JavaUpdate update)
+    public int? DataVersion;
+    public void Add(JavaUpdate update, int? data_version)
     {
         if (update.SetBaseColors != null)
         {
@@ -55,6 +57,8 @@ public class JavaVersionBuilder
         this.Name = update.Name ?? this.Name;
         this.StructureFolder = update.StructureFolder ?? this.StructureFolder;
         this.StructuresSupported |= update.StructuresSupported ?? false;
+        if (data_version != null)
+            this.DataVersion = data_version;
     }
     public IJavaVersion Build()
     {
@@ -65,7 +69,8 @@ public class JavaVersionBuilder
             DataMaker = MapData,
             StructureMaker = StructureItem,
             StructureFolder = StructureFolder,
-            StructuresSupported = StructuresSupported
+            StructuresSupported = StructuresSupported,
+            DataVersion = DataVersion
         };
     }
 
@@ -104,6 +109,7 @@ public class JavaVersion : IJavaVersion
     public string StructureFolder { get; init; }
     public string Name { get; init; }
     public bool StructuresSupported { get; init; }
+    public int? DataVersion { get; init; }
     public JavaVersion(string name, IEnumerable<Color> palette)
     {
         Name = name;
