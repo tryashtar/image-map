@@ -169,7 +169,8 @@ public class JavaUpdate
     public NbtCompound? MapData;
     public NbtCompound? MapEntity;
     public bool? StructuresSupported;
-    public string? StructureFolder;
+    public bool? StructuresNamespace;
+    public string? StructureFile;
 }
 
 public class BedrockUpdate

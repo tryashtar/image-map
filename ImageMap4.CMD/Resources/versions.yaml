@@ -154,7 +154,8 @@ java:
   check:
     data_version: 503
   structures_supported: true
-  structure_folder: structures
+  structures_namespace: false
+  structure_file: 'structures/@flat.nbt'
   structure_item:
     id: minecraft:structure_block
     Count: 1b
@@ -209,7 +210,8 @@ java:
 - name: 17w47a
   check:
     data_version: 1451
-  structure_folder: generated
+  structures_namespace: true
+  structure_file: 'generated/@namespace/structures/@body.nbt'
   map_item:
     id: minecraft:filled_map
     Count: 1b
@@ -267,8 +269,34 @@ java:
   add_base_colors:
   - 646464
   - d8af93
-- name: 1.17+ # 21w16a
+- name: 1.17 # 21w16a
   check:
     data_version: 2711
   add_base_colors:
   - 7fa796
+- name: 1.20.5 # 24w09a
+  check:
+    data_version: 3819
+  map_item:
+    id: minecraft:filled_map
+    count: 1
+    components:
+      "minecraft:map_id": '@i'
+  structure_item:
+    id: minecraft:structure_block
+    count: 1
+    components:
+      "minecraft:block_entity_data":
+        id: minecraft:structure_block
+        mode: LOAD
+        name: '@id'
+        ignoreEntities: 0b
+        posX: 0
+        posY: 0
+        posZ: 0
+        sizeX: '@x'
+        sizeY: '@y'
+        sizeZ: '@z'
+      "minecraft:block_state":
+        mode: load
+      "minecraft:custom_name": '@name'

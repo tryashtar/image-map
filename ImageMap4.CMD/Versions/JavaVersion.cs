@@ -19,6 +19,7 @@ public interface IJavaVersion
     NbtCompound MakeMapItem(long id);
     NbtCompound MakeStructureItem(StructureGrid structure);
     bool StructuresSupported { get; }
+    bool StructuresNamespace { get; }
     NbtCompound CreateStructureFile(StructureGrid structure);
     string StructureFileLocation(string world_folder, string identifier);
     int? DataVersion { get; }
@@ -33,7 +34,8 @@ public class JavaVersionBuilder
     public NbtTemplate? MapItem;
     public NbtTemplate? StructureItem;
     public bool StructuresSupported = false;
-    public string? StructureFolder;
+    public bool StructuresNamespace = false;
+    public string? StructureFile;
     public string? Name;
     public int? DataVersion;
     public void Add(JavaUpdate update, int? data_version)
@@ -55,8 +57,9 @@ public class JavaVersionBuilder
         if (update.StructureItem != null)
             this.StructureItem = new(update.StructureItem);
         this.Name = update.Name ?? this.Name;
-        this.StructureFolder = update.StructureFolder ?? this.StructureFolder;
+        this.StructureFile = update.StructureFile ?? this.StructureFile;
         this.StructuresSupported |= update.StructuresSupported ?? false;
+        this.StructuresNamespace |= update.StructuresNamespace ?? false;
         if (data_version != null)
             this.DataVersion = data_version;
     }
@@ -68,8 +71,9 @@ public class JavaVersionBuilder
             FrameMaker = MapEntity,
             DataMaker = MapData,
             StructureMaker = StructureItem,
-            StructureFolder = StructureFolder,
+            StructureFile = StructureFile,
             StructuresSupported = StructuresSupported,
+            StructuresNamespace = StructuresNamespace,
             DataVersion = DataVersion
         };
     }
@@ -106,9 +110,10 @@ public class JavaVersion : IJavaVersion
     public NbtTemplate StructureMaker { get; init; }
     public NbtTemplate FrameMaker { get; init; }
     public NbtTemplate DataMaker { get; init; }
-    public string StructureFolder { get; init; }
+    public string StructureFile { get; init; }
     public string Name { get; init; }
     public bool StructuresSupported { get; init; }
+    public bool StructuresNamespace { get; init; }
     public int? DataVersion { get; init; }
     public JavaVersion(string name, IEnumerable<Color> palette)
     {
@@ -209,12 +214,12 @@ public class JavaVersion : IJavaVersion
     public NbtCompound MakeStructureItem(StructureGrid structure)
     {
         string identifier = structure.Identifier;
-        if (StructureFolder == "structures")
+        if (!StructuresNamespace)
             identifier = identifier.Replace(':', '_');
         return StructureMaker.Create(
-            ("id", () => new NbtString(structure.Identifier)),
-            ("old_name", () => new NbtString($"§r§d{structure.Identifier}§r")),
-            ("name", () => new NbtString($"{{\"text\":\"{structure.Identifier}\",\"italic\":false}}")),
+            ("id", () => new NbtString(identifier)),
+            ("old_name", () => new NbtString($"§r§d{identifier}§r")),
+            ("name", () => new NbtString($"{{\"text\":\"{identifier}\",\"italic\":false}}")),
             ("x", () => new NbtInt(1)),
             ("y", () => new NbtInt(structure.GridHeight)),
             ("z", () => new NbtInt(structure.GridWidth))
@@ -222,9 +227,11 @@ public class JavaVersion : IJavaVersion
     }
     public string StructureFileLocation(string world_folder, string identifier)
     {
-        if (StructureFolder == "structures")
-            return Path.Combine(world_folder, "structures", identifier.Replace(':', '_') + ".nbt");
+        string flat = identifier.Replace(':', '_');
         int colon = identifier.IndexOf(':');
-        return Path.Combine(world_folder, StructureFolder, identifier[..colon], "structures", identifier[(colon + 1)..] + ".nbt");
+        string nspace = identifier[..colon];
+        string body = identifier[(colon + 1)..];
+        string path = StructureFile.Replace("@flat", flat).Replace("@namespace", nspace).Replace("@body", body);
+        return Path.Combine(world_folder, path);
     }
 }
