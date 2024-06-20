@@ -84,7 +84,7 @@ public class ImportViewModel : ObservableObject
         new ScalingOption("Pixel Art", x => BitmapScalingMode.NearestNeighbor, x => KnownResamplers.NearestNeighbor),
         new ScalingOption("Bicubic", x => BitmapScalingMode.HighQuality, x => KnownResamplers.Bicubic)
     }.AsReadOnly();
-    public BitmapScalingMode CurrentMode => CurrentImage == null ? BitmapScalingMode.NearestNeighbor : ScaleChoice.Mode(CurrentImage.Source.Image.Value.Size());
+    public BitmapScalingMode CurrentMode => CurrentImage == null ? BitmapScalingMode.NearestNeighbor : ScaleChoice.Mode(CurrentImage.Source.Image.Value.Size);
 
     public record DitherOption(string Name, IDither? Dither);
     public DitherOption DitherChoice
@@ -209,7 +209,7 @@ public class ImportViewModel : ObservableObject
         var settings = new List<ImportSettings>();
         foreach (var preview in previews)
         {
-            settings.Add(new ImportSettings(preview, GridWidth, GridHeight, new(() => ScaleChoice.Sampler(preview.Source.Image.Value.Size())), StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm)));
+            settings.Add(new ImportSettings(preview, GridWidth, GridHeight, new(() => ScaleChoice.Sampler(preview.Source.Image.Value.Size)), StretchChoice.Mode, BackgroundColorChoice.Pixel, new ProcessSettings(DitherChoice.Dither, AlgorithmChoice.Algorithm)));
         }
         OnConfirmed?.Invoke(this, settings);
     }

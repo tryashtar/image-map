@@ -41,7 +41,7 @@ public class CustomQuantizer : IQuantizer
     {
         int length = Math.Min(this.colorPalette.Length, options.MaxColors);
         var palette = new TPixel[length];
-        Color.ToPixel(configuration, this.colorPalette.Span, palette.AsSpan());
+        Color.ToPixel(this.colorPalette.Span, palette.AsSpan());
         return new CustomQuantizer<TPixel>(configuration, options, new PixelMap<TPixel>(configuration, palette, colorAlgorithm));
     }
 }
