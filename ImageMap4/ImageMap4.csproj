@@ -115,9 +115,4 @@
 			<SubType>Designer</SubType>
 		</Page>
 	</ItemGroup>
-
-	<Target Name="PostPublish" AfterTargets="Publish">
-		<Exec Command="dotnet publish -o &quot;$(ProjectDir)bin\Publish&quot; &quot;$(SolutionDir)ImageMap4.CMD" />
-		<Exec Command="powershell Compress-Archive -Path '$(ProjectDir)bin\Publish\*.dll', '$(ProjectDir)bin\Publish\*.exe' -DestinationPath '$(ProjectDir)bin\Publish\ImageMap4.zip' -Force" />
-	</Target>
 </Project>
