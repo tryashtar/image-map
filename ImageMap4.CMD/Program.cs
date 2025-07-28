@@ -98,7 +98,7 @@ for (int i = 1; i < args.Length; i++)
             while (i < args.Length - 1 && !args[i + 1].StartsWith("--"))
             {
                 i++;
-                var split = args[i].Split(',', 1);
+                var split = args[i].Split(',', 2);
                 if (split.Length != 2 || !long.TryParse(split[0], out long id))
                 {
                     Console.Error.WriteLine($"Expected map ID and file path separated by a comma, instead got '{args[i]}'");
@@ -161,7 +161,7 @@ for (int i = 1; i < args.Length; i++)
             while (i < args.Length - 1 && !args[i + 1].StartsWith("--"))
             {
                 i++;
-                var split = args[i].Split(',', 1);
+                var split = args[i].Split(',', 2);
                 if (split.Length != 2 || !long.TryParse(split[0], out long from) ||
                     !long.TryParse(split[1], out long to))
                 {
@@ -217,7 +217,7 @@ for (int i = 1; i < args.Length; i++)
                             break;
                         }
 
-                        var split = args[i].Split(',', 1);
+                        var split = args[i].Split(',', 2);
                         if (split.Length != 2 || !int.TryParse(split[0], out int width) ||
                             !int.TryParse(split[1], out int height))
                         {
