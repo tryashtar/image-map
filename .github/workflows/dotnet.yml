@@ -22,7 +22,7 @@ jobs:
     - name: Build (Linux CMD)
       run: dotnet publish "ImageMap4.CMD" --runtime linux-x64 -p:PublishSingleFile=true /p:DebugType=None /p:DebugSymbols=false --configuration Release --self-contained false
     - name: Zip (Windows)
-      run: powershell Compress-Archive -Path "ImageMap4/bin/Release/net6.0-windows/win-x64/publish/ImageMap.exe", "ImageMap4.CMD/bin/Release/net6.0/linux-x64/publish/ImageMap-cmd", "ImageMap4/bin/Release/net6.0-windows/win-x64/publish/leveldb_mcpe_win_amd64.dll", "ImageMap4/bin/Release/net6.0-windows/win-x64/publish/leveldb_mcpe_win32.dll" -DestinationPath "ImageMap4-Windows.zip"
+      run: powershell Compress-Archive -Path "ImageMap4/bin/Release/net6.0-windows/win-x64/publish/ImageMap.exe", "ImageMap4.CMD/bin/Release/net6.0/win-x64/publish/ImageMap-cmd.exe", "ImageMap4/bin/Release/net6.0-windows/win-x64/publish/leveldb_mcpe_win_amd64.dll", "ImageMap4/bin/Release/net6.0-windows/win-x64/publish/leveldb_mcpe_win32.dll" -DestinationPath "ImageMap4-Windows.zip"
     - name: Zip (Linux)
       run: powershell Compress-Archive -Path "ImageMap4.CMD/bin/Release/net6.0/linux-x64/publish/ImageMap-cmd", "ImageMap4.CMD/bin/Release/net6.0/linux-x64/publish/leveldb_mcpe_linux_x86_64.so" -DestinationPath "ImageMap4-Linux.zip"
     - name: Create Release
