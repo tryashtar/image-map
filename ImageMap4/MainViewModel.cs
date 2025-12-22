@@ -288,6 +288,21 @@ public class MainViewModel : ObservableObject
             }
         }
         Properties.Settings.Default.BedrockFolders ??= new();
+        if (Properties.Settings.Default.BedrockFolders.Count == 0)
+        {
+            var users_folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Minecraft Bedrock", "Users");
+            if (Directory.Exists(users_folder))
+            {
+                foreach (var item in Directory.EnumerateDirectories(users_folder))
+                {
+                    if (Path.GetFileName(item) != "shared")
+                    {
+                        Properties.Settings.Default.BedrockFolders.Add(Path.Combine(item, "games", "com.mojang", "minecraftWorlds"));
+                        break;
+                    }
+                }
+            }
+        }
         foreach (var raw_dir in Properties.Settings.Default.BedrockFolders)
         {
             string bedrock_dir = Environment.ExpandEnvironmentVariables(raw_dir);
