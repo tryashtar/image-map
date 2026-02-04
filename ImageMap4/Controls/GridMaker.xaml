@@ -39,7 +39,31 @@
                               dd:DragDrop.IsDragSource="True"
                               dd:DragDrop.UseDefaultDragAdorner="True"
                               dd:DragDrop.DropHandler="{Binding Path=., RelativeSource={RelativeSource AncestorType=local:GridMaker}}">
-                            <local:MapPreview DataContext="{Binding Data}" />
+                            <Grid>
+                                <Image RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Source"
+                                                    Value="{StaticResource ItemFrame}" />
+                                            <Setter Property="Visibility"
+                                                    Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.GlowingFrames, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                             Value="True">
+                                                    <Setter Property="Source"
+                                                            Value="{StaticResource GlowItemFrame}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding DataContext.InvisibleFrames, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                             Value="True">
+                                                    <Setter Property="Visibility"
+                                                            Value="Hidden" />
+                                                 </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <local:MapPreview DataContext="{Binding Data}" />
+                            </Grid>
                         </Grid>
                     </DataTemplate>
                 </local:SquareGrid.CellContentsTemplate>
