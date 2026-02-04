@@ -67,12 +67,6 @@ public class MainViewModel : ObservableObject
         set { Properties.Settings.Default.ShowEmptyMaps = value; OnPropertyChanged(); ExistingMapsView.Refresh(); }
     }
 
-    public bool CreateStructures
-    {
-        get { return Properties.Settings.Default.CreateStructures; }
-        set { Properties.Settings.Default.CreateStructures = value; OnPropertyChanged(); }
-    }
-
     public MainViewModel()
     {
         ExistingMapsView.Filter = x => ShowEmptyMaps || !((Selectable<Map>)x).Item.Data.IsEmpty;
@@ -82,17 +76,10 @@ public class MainViewModel : ObservableObject
         ExistingMaps.CollectionChanged += Maps_CollectionChanged;
         TransferAllCommand = new RelayCommand(() =>
         {
-            if (SelectedWorld == null || PlayerList == null)
+            if (SelectedWorld == null)
                 return;
             var overwritten = ExistingMaps.Where(x => ConflictingIDs.Contains(x.Item.ID)).ToList();
             var importing = ImportingMaps.ToList();
-            int index = Properties.Settings.Default.InventoryChoice;
-            if (index < 0 || index >= PlayerList.Count)
-                index = 1;
-            var inventory = PlayerList[index];
-            if (CreateStructures)
-                SelectedWorld.AddStructures(ImportingStructures, inventory);
-            ImportingStructures.Clear();
             UndoHistory.Perform(() =>
             {
                 SelectedWorld.AddMaps(importing.Select(x => x.Item));
