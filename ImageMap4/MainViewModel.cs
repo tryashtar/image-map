@@ -85,6 +85,10 @@ public class MainViewModel : ObservableObject
                 SelectedWorld.AddMaps(importing.Select(x => x.Item));
                 InsertRange(importing, ExistingMaps, Sorter);
                 RemoveRange(overwritten, ExistingMaps);
+                foreach (var map in ExistingMaps)
+                {
+                    map.IsSelected = importing.Contains(map);
+                }
                 ImportingMaps.Clear();
             }, () =>
             {

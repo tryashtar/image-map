@@ -312,3 +312,4 @@ java:
   map_file: data/minecraft/maps/@id.dat
   last_id: data/minecraft/maps/last_id.dat
   player_data: players/data/@uuid.dat
+  structure_file: 'generated/@namespace/structure/@body.nbt'

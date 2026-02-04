@@ -66,7 +66,7 @@ public partial class MainWindow : Window, IDropTarget
             if (ViewModel.SelectedWorld is JavaWorld world)
             {
                 string path = world.Version.MapFileLocation(world.Folder, x.ID);
-                Process.Start("explorer.exe", $"/select, \"{path}\"");
+                Process.Start("explorer.exe", $"/select, \"{path.Replace('/', '\\')}\"");
             }
         });
         ChangeIDCommand = new RelayCommand<IList<Selectable<Map>>>(x =>

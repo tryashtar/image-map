@@ -52,10 +52,14 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <local:MapPreview DataContext="{Binding Item.Data}"
+                    <Grid>
+                        <Image Source="{StaticResource ItemFrame}"
+                               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                        <local:MapPreview DataContext="{Binding Item.Data}"
                                       Width="128"
                                       Height="128"
                                       Margin="4" />
+                    </Grid>
                     <DockPanel>
                         <TextBlock Text="{Binding Item.ID, StringFormat=map_{0}}"
                                    Foreground="Black"
