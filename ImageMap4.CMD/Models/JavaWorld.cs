@@ -3,10 +3,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Quantization;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using TryashtarUtils.Nbt;
 
 namespace ImageMap4;
@@ -21,9 +17,10 @@ public class JavaWorld : World
     public JavaWorld(string folder) : base(folder)
     {
         var leveldat = new NbtFile(Path.Combine(Folder, "level.dat"));
-        Version = VersionManager.DetermineJavaVersion(leveldat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
-        if (Version == null)
+        var version = VersionManager.DetermineJavaVersion(leveldat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
+        if (version == null)
             throw new InvalidDataException("Could not determine version of world");
+        Version = version;
         Name = leveldat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
         WorldIcon = Path.Combine(Folder, "icon.png");
         AccessDate = File.GetLastWriteTime(leveldat.FileName);

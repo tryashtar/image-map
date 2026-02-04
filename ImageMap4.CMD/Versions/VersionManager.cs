@@ -1,12 +1,7 @@
 using fNbt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using TryashtarUtils.Nbt;
-using TryashtarUtils.Utility;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -52,7 +47,6 @@ public class VersionManager
     }
 }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 internal class UpdateLists
 {
     public List<JavaUpdate> Java;
@@ -220,4 +214,3 @@ public class JavaVersionCheck
         return false;
     }
 }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

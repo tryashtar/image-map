@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Media;
+﻿using System.Windows;
 using System.ComponentModel;
-using SixLabors.ImageSharp.Processing;
-using System.Globalization;
-using System.Windows.Controls;
 
 namespace ImageMap4;
 /// <summary>

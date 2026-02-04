@@ -1,4 +1,3 @@
-using GongSolutions.Wpf.DragDrop;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,7 +5,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,6 +13,7 @@ using System.Windows.Input;
 using TryashtarUtils.Utility;
 
 namespace ImageMap4;
+
 public class MainViewModel : ObservableObject
 {
     public ICommand TransferAllCommand { get; }
@@ -83,7 +82,7 @@ public class MainViewModel : ObservableObject
         ExistingMaps.CollectionChanged += Maps_CollectionChanged;
         TransferAllCommand = new RelayCommand(() =>
         {
-            if (SelectedWorld == null)
+            if (SelectedWorld == null || PlayerList == null)
                 return;
             var overwritten = ExistingMaps.Where(x => ConflictingIDs.Contains(x.Item.ID)).ToList();
             var importing = ImportingMaps.ToList();
@@ -270,7 +269,7 @@ public class MainViewModel : ObservableObject
                     {
                         if (File.Exists(Path.Combine(dir, "level.dat")))
                         {
-                            JavaWorld world = null;
+                            JavaWorld? world = null;
                             try
                             {
                                 world = new JavaWorld(dir);
@@ -295,7 +294,7 @@ public class MainViewModel : ObservableObject
             {
                 foreach (var item in Directory.EnumerateDirectories(users_folder))
                 {
-                    if (Path.GetFileName(item) != "shared")
+                    if (!String.Equals(Path.GetFileName(item), "shared", StringComparison.OrdinalIgnoreCase))
                     {
                         Properties.Settings.Default.BedrockFolders.Add(Path.Combine(item, "games", "com.mojang", "minecraftWorlds"));
                         break;
@@ -314,7 +313,7 @@ public class MainViewModel : ObservableObject
                     {
                         if (File.Exists(Path.Combine(dir, "level.dat")) && Directory.Exists(Path.Combine(dir, "db")))
                         {
-                            BedrockWorld world = null;
+                            BedrockWorld? world = null;
                             try
                             {
                                 world = new BedrockWorld(dir);

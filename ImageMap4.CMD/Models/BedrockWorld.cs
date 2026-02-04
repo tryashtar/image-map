@@ -2,12 +2,6 @@
 using LevelDBWrapper;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ImageMap4;
 
@@ -32,9 +26,10 @@ public class BedrockWorld : World
         leveldat.Position = 8;
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromStream(leveldat, NbtCompression.None);
-        Version = VersionManager.DetermineBedrockVersion(nbt.GetRootTag<NbtCompound>());
-        if (Version == null)
+        var version = VersionManager.DetermineBedrockVersion(nbt.GetRootTag<NbtCompound>());
+        if (version == null)
             throw new InvalidDataException("Could not determine version of world");
+        Version = version;
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }
 
