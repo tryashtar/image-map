@@ -171,6 +171,9 @@ public class JavaUpdate
     public bool? StructuresSupported;
     public bool? StructuresNamespace;
     public string? StructureFile;
+    public string? MapFile;
+    public string? LastId;
+    public string? PlayerData;
 }
 
 public class BedrockUpdate

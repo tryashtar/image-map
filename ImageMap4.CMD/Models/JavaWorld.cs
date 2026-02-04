@@ -1,4 +1,4 @@
-﻿using fNbt;
+using fNbt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -31,7 +31,8 @@ public class JavaWorld : World
 
     public override bool IsIdTaken(long id)
     {
-        return File.Exists(Path.Combine(Folder, "data", $"map_{id}.dat"));
+        string path = Version.MapFileLocation(this.Folder, id);
+        return File.Exists(path);
     }
 
     public override void AddStructures(IEnumerable<StructureGrid> structures, IInventory inventory)
@@ -105,9 +106,10 @@ public class JavaWorld : World
             }
             data.Name = "";
             nbt.RootTag = data;
-            var folder = Path.Combine(Folder, "data");
+            string file = Version.MapFileLocation(this.Folder, map.ID);
+            string folder = Path.GetDirectoryName(file);
             Directory.CreateDirectory(folder);
-            nbt.SaveToFile(Path.Combine(folder, $"map_{map.ID}.dat"), NbtCompression.GZip);
+            nbt.SaveToFile(file, NbtCompression.GZip);
         }
     }
 
@@ -115,7 +117,7 @@ public class JavaWorld : World
     {
         foreach (var id in ids)
         {
-            var file = Path.Combine(Folder, "data", $"map_{id}.dat");
+            var file = Version.MapFileLocation(this.Folder, id);
             if (File.Exists(file))
                 File.Delete(file);
         }

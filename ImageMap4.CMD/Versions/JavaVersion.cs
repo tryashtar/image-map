@@ -1,4 +1,4 @@
-﻿using fNbt;
+using fNbt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -22,6 +22,9 @@ public interface IJavaVersion
     bool StructuresNamespace { get; }
     NbtCompound CreateStructureFile(StructureGrid structure);
     string StructureFileLocation(string world_folder, string identifier);
+    string MapFileLocation(string world_folder, long id);
+    string PlayerDataLocation(string world_folder, string uuid);
+    string MapLastIdLocation(string world_folder);
     int? DataVersion { get; }
 }
 
@@ -36,6 +39,9 @@ public class JavaVersionBuilder
     public bool StructuresSupported = false;
     public bool StructuresNamespace = false;
     public string? StructureFile;
+    public string? MapFile;
+    public string? LastId;
+    public string? PlayerData;
     public string? Name;
     public int? DataVersion;
     public void Add(JavaUpdate update, int? data_version)
@@ -56,6 +62,12 @@ public class JavaVersionBuilder
             this.MapItem = new(update.MapItem);
         if (update.StructureItem != null)
             this.StructureItem = new(update.StructureItem);
+        if (update.MapFile != null)
+            this.MapFile = new(update.MapFile);
+        if (update.LastId != null)
+            this.LastId = new(update.LastId);
+        if (update.PlayerData != null)
+            this.PlayerData = new(update.PlayerData);
         this.Name = update.Name ?? this.Name;
         this.StructureFile = update.StructureFile ?? this.StructureFile;
         this.StructuresSupported |= update.StructuresSupported ?? false;
@@ -65,16 +77,20 @@ public class JavaVersionBuilder
     }
     public IJavaVersion Build()
     {
-        return new JavaVersion(Name, GetPalette())
+        var exc = new NullReferenceException();
+        return new JavaVersion(Name ?? throw exc, GetPalette())
         {
-            MapMaker = MapItem,
+            MapMaker = MapItem ?? throw exc,
             FrameMaker = MapEntity,
-            DataMaker = MapData,
+            DataMaker = MapData ?? throw exc,
             StructureMaker = StructureItem,
             StructureFile = StructureFile,
             StructuresSupported = StructuresSupported,
             StructuresNamespace = StructuresNamespace,
-            DataVersion = DataVersion
+            DataVersion = DataVersion,
+            MapFile = MapFile ?? throw exc,
+            LastId = LastId ?? throw exc,
+            PlayerData = PlayerData,
         };
     }
 
@@ -107,10 +123,13 @@ public class JavaVersion : IJavaVersion
     private readonly Dictionary<byte, Rgba32> ColorMap = new();
     private readonly Dictionary<Color, byte> ReverseColorMap = new();
     public NbtTemplate MapMaker { get; init; }
-    public NbtTemplate StructureMaker { get; init; }
-    public NbtTemplate FrameMaker { get; init; }
+    public NbtTemplate? StructureMaker { get; init; }
+    public NbtTemplate? FrameMaker { get; init; }
     public NbtTemplate DataMaker { get; init; }
-    public string StructureFile { get; init; }
+    public string? StructureFile { get; init; }
+    public string MapFile { get; init; }
+    public string LastId { get; init; }
+    public string? PlayerData { get; init; }
     public string Name { get; init; }
     public bool StructuresSupported { get; init; }
     public bool StructuresNamespace { get; init; }
@@ -233,5 +252,19 @@ public class JavaVersion : IJavaVersion
         string body = identifier[(colon + 1)..];
         string path = StructureFile.Replace("@flat", flat).Replace("@namespace", nspace).Replace("@body", body);
         return Path.Combine(world_folder, path);
+    }
+    public string MapFileLocation(string world_folder, long id)
+    {
+        string path = MapFile.Replace("@id", id.ToString());
+        return Path.Combine(world_folder, path);
+    }
+    public string PlayerDataLocation(string world_folder, string uuid)
+    {
+        string path = PlayerData.Replace("@uuid", uuid);
+        return Path.Combine(world_folder, path);
+    }
+    public string MapLastIdLocation(string world_folder)
+    {
+        return Path.Combine(world_folder, LastId);
     }
 }

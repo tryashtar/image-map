@@ -41,6 +41,8 @@ java:
 - name: Beta 1.8
   check:
     path: MapFeatures
+  map_file: data/map_@id.dat
+  last_id: data/idcounts.dat
   multipliers: [180, 220, 255, 220]
   set_base_colors:
   - transparent
@@ -73,6 +75,10 @@ java:
       width: 128
       trackingPosition: 0b
       unlimitedTracking: 0b
+- name: 12w18a
+  check:
+    path: Player.HealF
+  player_data: playerdata/@uuid.dat
 - name: 13w42a
   check:
     path: Player.HealF
@@ -300,3 +306,9 @@ java:
       "minecraft:block_state":
         mode: load
       "minecraft:custom_name": '@name'
+- name: 26.1 # 26.1-snapshot-6
+  check:
+    data_version: 4774
+  map_file: data/minecraft/maps/@id.dat
+  last_id: data/minecraft/maps/last_id.dat
+  player_data: players/data/@uuid.dat

@@ -29,7 +29,8 @@ public class BedrockVersionBuilder
     }
     public IBedrockVersion Build()
     {
-        return new BedrockVersion(Name, MapData, MapItem);
+        var exc = new NullReferenceException();
+        return new BedrockVersion(Name ?? throw exc, MapData ?? throw exc, MapItem ?? throw exc);
     }
 }
 

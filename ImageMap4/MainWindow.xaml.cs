@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -67,7 +67,11 @@ public partial class MainWindow : Window, IDropTarget
         });
         OpenMapFileCommand = new RelayCommand<Map>(x =>
         {
-            Process.Start("explorer.exe", $"/select, \"{Path.Combine(ViewModel.SelectedWorld.Folder, "data", $"map_{x.ID}.dat")}\"");
+            if (ViewModel.SelectedWorld is JavaWorld world)
+            {
+                string path = world.Version.MapFileLocation(world.Folder, x.ID);
+                Process.Start("explorer.exe", $"/select, \"{path}\"");
+            }
         });
         ChangeIDCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
         {
