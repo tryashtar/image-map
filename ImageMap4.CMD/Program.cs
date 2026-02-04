@@ -93,6 +93,7 @@ for (int i = 1; i < args.Length; i++)
                 Console.Error.WriteLine("Expected map IDs after --export");
                 break;
             }
+
             Console.WriteLine("Fetching maps from world");
             var maps = world.GetMapsAsync().ToListAsync().AsTask().Result;
             while (i < args.Length - 1 && !args[i + 1].StartsWith("--"))
@@ -101,7 +102,8 @@ for (int i = 1; i < args.Length; i++)
                 var split = args[i].Split(',', 2);
                 if (split.Length != 2 || !long.TryParse(split[0], out long id))
                 {
-                    Console.Error.WriteLine($"Expected map ID and file path separated by a comma, instead got '{args[i]}'");
+                    Console.Error.WriteLine(
+                        $"Expected map ID and file path separated by a comma, instead got '{args[i]}'");
                     continue;
                 }
 
@@ -111,7 +113,7 @@ for (int i = 1; i < args.Length; i++)
                     Console.Error.WriteLine($"No map with ID {id} found");
                     continue;
                 }
-                
+
                 map.Data.Image.Save(split[1]);
             }
 
@@ -121,7 +123,7 @@ for (int i = 1; i < args.Length; i++)
         {
             Console.WriteLine("Fetching maps from world");
             var maps = world.GetMapsAsync().ToListAsync().AsTask().Result;
-            Console.WriteLine($"Taken map IDs: [{String.Join(", ", maps.Select(x => x.ID))}]");
+            Console.WriteLine($"Taken map IDs: [{String.Join(", ", maps.Select(x => x.ID).OrderBy(x => x))}]");
             break;
         }
         case "--delete":
