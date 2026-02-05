@@ -1,15 +1,4 @@
 ﻿using fNbt;
-using LevelDBWrapper;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using TryashtarUtils.Nbt;
 
 namespace ImageMap4;
@@ -30,20 +19,18 @@ public class NoInventory : IInventory
 public class JavaInventory : IInventory
 {
     public string Name { get; private set; }
-    public readonly string FilePath;
-    public readonly NbtPath DataPath;
-    public JavaInventory(string name, string file, NbtPath path)
+    public readonly NbtFile File;
+    public readonly NbtList Inventory;
+    public JavaInventory(string name, NbtFile file, NbtList inventory)
     {
         Name = name;
-        FilePath = file;
-        DataPath = path;
+        File = file;
+        Inventory = inventory;
     }
 
     public void AddItems(IEnumerable<NbtCompound> items)
     {
-        var file = new NbtFile(FilePath);
-        var inventory = DataPath.Traverse(file.GetRootTag<NbtCompound>()).First() as NbtList;
-        var occupied_slots = inventory.Cast<NbtCompound>().Select(x => x.Get<NbtByte>("Slot").Value).ToHashSet();
+        var occupied_slots = Inventory.Cast<NbtCompound>().Select(x => x.Get<NbtByte>("Slot").Value).ToHashSet();
         foreach (var item in items)
         {
             for (byte i = 0; i < 36; i++)
@@ -51,12 +38,12 @@ public class JavaInventory : IInventory
                 if (!occupied_slots.Contains(i))
                 {
                     item.Add(new NbtByte("Slot", i));
-                    inventory.Add(item);
+                    Inventory.Add(item);
                     break;
                 }
             }
         }
-        file.SaveToFile(FilePath, file.FileCompression);
+        File.SaveToFile(File.FileName, File.FileCompression);
     }
 }
 

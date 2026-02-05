@@ -10,9 +10,9 @@ This is a simple Windows application that converts images to Minecraft maps usin
 
 Here you can see a list of your Java and Bedrock worlds. Click on any one to open it. By default, the program looks in these folders:
 * `%appdata%\.minecraft\saves`
-* `%localappdata%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds`
+* `%appdata%\Minecraft Bedrock\Users\...\games\com.mojang\minecraftWorlds`
 
-If you have worlds saved elsewhere, such as on a server or in Education Edition, you can click the buttons to change where to look.
+If you have worlds saved elsewhere, such as on a server or in Education Edition, you can click the buttons to change where to look. Hold <kbd>Shift</kbd> to add an additional folder.
 
 You can also drag and drop a world folder directly onto the program to open it, no matter where it is.
 
@@ -34,7 +34,7 @@ All Minecraft maps must be 128x128 pixels, and Java Edition has a limited color 
 
 You can split it into multiple maps, change the scaling mode, and choose the color distance and dithering algorithms. See which one you like best.
 
-When you're ready, click "Send All to World" to transfer your maps to the world. If "Create structures" is checked, you'll automatically get a structure block in your inventory that can be used to place the maps on a wall.
+When you're ready, click "Send All to World" to transfer your maps to the world. The maps will be selected on the world side, so you can quickly generate a structure if you'd like to place them right away.
 
 ### Version Palettes
 
@@ -55,4 +55,6 @@ Beta 1.8+
 21w15a  
 <img src="https://i.imgur.com/WW3wsiG.png" height=48>&nbsp;  
 21w16a (1.17)+  
-<img src="https://i.imgur.com/EA39eVT.png" height=48>&nbsp;  
+<img src="https://i.imgur.com/EA39eVT.png" height=48>&nbsp;
+
+As of 1.21.11, no additional map colors have been added to Java Edition.

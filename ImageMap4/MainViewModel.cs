@@ -32,12 +32,17 @@ public class MainViewModel : ObservableObject
         get { return CollectionViewSource.GetDefaultView(ExistingMaps); }
     }
     private readonly UndoHistory UndoHistory = new();
+    private FileStream? _sessionLock;
     private World? _selectedWorld;
     public World? SelectedWorld
     {
         get => _selectedWorld;
         set
         {
+            _sessionLock?.Unlock(0, 1);
+            _sessionLock?.Close();
+            _sessionLock?.Dispose();
+            _sessionLock = null;
             _selectedWorld = value;
             UndoHistory.Clear();
             OnPropertyChanged();
@@ -46,11 +51,18 @@ public class MainViewModel : ObservableObject
             MapCTS = null;
             if (_selectedWorld != null)
             {
+                if (_selectedWorld is JavaWorld java)
+                {
+                    _sessionLock = new FileStream(Path.Combine(java.Folder, "session.lock"), FileMode.OpenOrCreate);
+                    _sessionLock.Lock(0, 1);
+                }
                 MapCTS = new();
                 _ = RefreshMaps(MapCTS.Token);
                 var inventories = _selectedWorld.GetInventories();
                 if (_selectedWorld is JavaWorld)
+                {
                     inventories = inventories.Select(x => new DisplayJavaInventory(x));
+                }
                 var players = inventories.ToList();
                 players.Insert(0, new NoInventory());
                 PlayerList = players.AsReadOnly();

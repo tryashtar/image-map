@@ -107,7 +107,31 @@ public class BedrockWorld : World
 
     public override void AddChest(IEnumerable<long> ids, IInventory inventory)
     {
-        
+        if (Version == null)
+        {
+            return;
+        }
+        var items = new List<NbtCompound>();
+        var idlist = ids.ToList();
+        if (idlist.Count == 1 || !SupportsChests)
+        {
+            items.AddRange(idlist.Select(x => Version.CreateMapItem(x)));
+        }
+        else
+        {
+            var chunks = idlist.Chunk(27);
+            foreach (var chunk in chunks)
+            {
+                var maps = idlist.Select(x => Version.CreateMapItem(x)).ToArray();
+                for (int i = 0; i < maps.Length; i++)
+                {
+                    maps[i].Add(new NbtByte("Slot", (byte)i));
+                }
+                var chest = Version.CreateChestItem($"maps {chunk[0]} - {chunk[chunk.Length - 1]}", maps);
+                items.Add(chest);
+            }
+        }
+        inventory.AddItems(items);
     }
 
     public override IEnumerable<IInventory> GetInventories()
