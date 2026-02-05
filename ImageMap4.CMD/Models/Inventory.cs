@@ -39,6 +39,7 @@ public class JavaInventory : IInventory
                 {
                     item.Add(new NbtByte("Slot", i));
                     Inventory.Add(item);
+                    occupied_slots.Add(i);
                     break;
                 }
             }
