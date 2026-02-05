@@ -11,8 +11,10 @@ public interface IJavaVersion
     byte[] EncodeColors(Image<Rgba32> image);
     NbtCompound CreateMapCompound(MapData map);
     NbtCompound MakeMapItem(long id);
+    bool SupportsChests { get; }
+    bool SupportsStructures { get; }
+    NbtCompound MakeChestItem(string name, NbtCompound[] items);
     NbtCompound MakeStructureItem(StructureGrid structure);
-    bool StructuresSupported { get; }
     bool StructuresNamespace { get; }
     NbtCompound CreateStructureFile(StructureGrid structure);
     string StructureFileLocation(string world_folder, string identifier);
@@ -20,6 +22,8 @@ public interface IJavaVersion
     string PlayerDataLocation(string world_folder, string uuid);
     string MapLastIdLocation(string world_folder);
     int? DataVersion { get; }
+    bool SupportsGlowFrames { get; }
+    bool SupportsInvisibleFrames { get; }
 }
 
 public class JavaVersionBuilder
@@ -30,7 +34,7 @@ public class JavaVersionBuilder
     public NbtTemplate? MapData;
     public NbtTemplate? MapItem;
     public NbtTemplate? StructureItem;
-    public bool StructuresSupported = false;
+    public NbtTemplate? ChestItem;
     public bool StructuresNamespace = false;
     public string? StructureFile;
     public string? MapFile;
@@ -38,6 +42,8 @@ public class JavaVersionBuilder
     public string? PlayerData;
     public string? Name;
     public int? DataVersion;
+    public bool GlowFrames = false;
+    public bool InvisibleFrames = false;
     public void Add(JavaUpdate update, int? data_version)
     {
         if (update.SetBaseColors != null)
@@ -56,6 +62,8 @@ public class JavaVersionBuilder
             this.MapItem = new(update.MapItem);
         if (update.StructureItem != null)
             this.StructureItem = new(update.StructureItem);
+        if (update.ChestItem != null)
+            this.ChestItem = new(update.ChestItem);
         if (update.MapFile != null)
             this.MapFile = new(update.MapFile);
         if (update.LastId != null)
@@ -64,8 +72,9 @@ public class JavaVersionBuilder
             this.PlayerData = new(update.PlayerData);
         this.Name = update.Name ?? this.Name;
         this.StructureFile = update.StructureFile ?? this.StructureFile;
-        this.StructuresSupported |= update.StructuresSupported ?? false;
         this.StructuresNamespace |= update.StructuresNamespace ?? false;
+        this.GlowFrames |= update.GlowFrames ?? false;
+        this.InvisibleFrames |= update.InvisibleFrames ?? false;
         if (data_version != null)
             this.DataVersion = data_version;
     }
@@ -78,13 +87,15 @@ public class JavaVersionBuilder
             FrameMaker = MapEntity,
             DataMaker = MapData ?? throw exc,
             StructureMaker = StructureItem,
+            ChestMaker = ChestItem,
             StructureFile = StructureFile,
-            StructuresSupported = StructuresSupported,
             StructuresNamespace = StructuresNamespace,
             DataVersion = DataVersion,
             MapFile = MapFile ?? throw exc,
             LastId = LastId ?? throw exc,
             PlayerData = PlayerData,
+            SupportsGlowFrames = GlowFrames,
+            SupportsInvisibleFrames = InvisibleFrames
         };
     }
 
@@ -118,6 +129,7 @@ public class JavaVersion : IJavaVersion
     private readonly Dictionary<Color, byte> ReverseColorMap = new();
     public NbtTemplate MapMaker { get; init; }
     public NbtTemplate? StructureMaker { get; init; }
+    public NbtTemplate? ChestMaker { get; init; }
     public NbtTemplate? FrameMaker { get; init; }
     public NbtTemplate DataMaker { get; init; }
     public string? StructureFile { get; init; }
@@ -125,9 +137,10 @@ public class JavaVersion : IJavaVersion
     public string LastId { get; init; }
     public string? PlayerData { get; init; }
     public string Name { get; init; }
-    public bool StructuresSupported { get; init; }
     public bool StructuresNamespace { get; init; }
     public int? DataVersion { get; init; }
+    public bool SupportsGlowFrames { get; init; }
+    public bool SupportsInvisibleFrames { get; init; }
     public JavaVersion(string name, IEnumerable<Color> palette)
     {
         Name = name;
@@ -224,6 +237,12 @@ public class JavaVersion : IJavaVersion
         ("s", () => new NbtShort((short)id)),
         ("i", () => new NbtInt((int)id))
     );
+    public bool SupportsChests => ChestMaker != null;
+    public NbtCompound MakeChestItem(string name, NbtCompound[] items) => ChestMaker.Create(
+        ("name", () => new NbtString(name)),
+        ("items", () => new NbtList(items))
+    );
+    public bool SupportsStructures => StructureMaker != null;
     public NbtCompound MakeStructureItem(StructureGrid structure)
     {
         string identifier = structure.Identifier;
@@ -231,8 +250,6 @@ public class JavaVersion : IJavaVersion
             identifier = identifier.Replace(':', '_');
         return StructureMaker.Create(
             ("id", () => new NbtString(identifier)),
-            ("old_name", () => new NbtString($"§r§d{identifier}§r")),
-            ("name", () => new NbtString($"{{\"text\":\"{identifier}\",\"italic\":false}}")),
             ("x", () => new NbtInt(1)),
             ("y", () => new NbtInt(structure.GridHeight)),
             ("z", () => new NbtInt(structure.GridWidth))

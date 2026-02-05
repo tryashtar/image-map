@@ -160,14 +160,16 @@ public class JavaUpdate
     public List<Rgba32>? AddBaseColors;
     public NbtCompound? MapItem;
     public NbtCompound? StructureItem;
+    public NbtCompound? ChestItem;
     public NbtCompound? MapData;
     public NbtCompound? MapEntity;
-    public bool? StructuresSupported;
     public bool? StructuresNamespace;
     public string? StructureFile;
     public string? MapFile;
     public string? LastId;
     public string? PlayerData;
+    public bool? GlowFrames;
+    public bool? InvisibleFrames;
 }
 
 public class BedrockUpdate
@@ -176,6 +178,9 @@ public class BedrockUpdate
     public BedrockVersionCheck Check;
     public NbtCompound? MapData;
     public NbtCompound? MapItem;
+    public NbtCompound? ChestItem;
+    public NbtCompound? StructureItem;
+    public bool? GlowFrames;
 }
 
 public class BedrockVersionCheck

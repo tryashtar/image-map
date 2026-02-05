@@ -204,7 +204,6 @@ public partial class MainWindow : Window, IDropTarget
         {
             StructureWindow = new(new StructureViewModel(new GridMakerViewModel(this.ViewModel, this.ViewModel.ExistingMaps)));
             StructureWindow.Owner = this;
-            StructureWindow.ViewModel.JavaMode = ViewModel.SelectedWorld is JavaWorld;
             StructureWindow.ViewModel.OnConfirmed += (s, e) => Try(() => ViewModel.SelectedWorld.AddStructures(new[] { e.grid }, e.inventory));
         }
         StructureWindow.Show();

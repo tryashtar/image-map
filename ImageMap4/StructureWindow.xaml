@@ -34,7 +34,23 @@
                     <CheckBox Content="Glowing"
                               IsChecked="{Binding DataContext.GlowingFrames, RelativeSource={RelativeSource AncestorType=Window}}"
                               VerticalContentAlignment="Center"
-                              HorizontalAlignment="Right" />
+                              HorizontalAlignment="Right" >
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox">
+                                <Setter Property="Visibility"
+                                         Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Value="True"
+                                                 Binding="{Binding DataContext.Parent.SelectedWorld.SupportsGlowFrames, RelativeSource={RelativeSource AncestorType=Window}}">
+                                        <DataTrigger.Setters>
+                                            <Setter Property="Visibility"
+                                                    Value="Visible" />
+                                        </DataTrigger.Setters>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
                     <CheckBox Content="Invisible"
                               Margin="10,0,0,0"
                               IsChecked="{Binding DataContext.InvisibleFrames, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -46,7 +62,7 @@
                                         Value="Collapsed" />
                                 <Style.Triggers>
                                     <DataTrigger Value="True"
-                                                 Binding="{Binding DataContext.JavaMode, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                 Binding="{Binding DataContext.Parent.SelectedWorld.SupportsInvisibleFrames, RelativeSource={RelativeSource AncestorType=Window}}">
                                         <DataTrigger.Setters>
                                             <Setter Property="Visibility"
                                                     Value="Visible" />

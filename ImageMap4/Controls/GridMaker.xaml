@@ -48,16 +48,26 @@
                                             <Setter Property="Visibility"
                                                     Value="Visible" />
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DataContext.GlowingFrames, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                             Value="True">
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding DataContext.GlowingFrames, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                   Value="True"/>
+                                                        <Condition Binding="{Binding DataContext.Parent.SelectedWorld.SupportsGlowFrames, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    Value="True"/>
+                                                    </MultiDataTrigger.Conditions>
                                                     <Setter Property="Source"
                                                             Value="{StaticResource GlowItemFrame}" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding DataContext.InvisibleFrames, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                             Value="True">
+                                                </MultiDataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding DataContext.InvisibleFrames, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                   Value="True"/>
+                                                        <Condition Binding="{Binding DataContext.Parent.SelectedWorld.SupportsInvisibleFrames, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                   Value="True"/>
+                                                    </MultiDataTrigger.Conditions>
                                                     <Setter Property="Visibility"
                                                             Value="Hidden" />
-                                                 </DataTrigger>
+                                                </MultiDataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Image.Style>

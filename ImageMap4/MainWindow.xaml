@@ -490,11 +490,16 @@
                                     <Setter Property="Visibility"
                                             Value="Visible" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ExistingMapsView.Count}"
-                                                     Value="0">
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding ExistingMapsView.Count}"
+                                                         Value="0"/>
+                                                <Condition Binding="{Binding SelectedWorld.SupportsStructures}"
+                                                         Value="True"/>
+                                            </MultiDataTrigger.Conditions>
                                             <Setter Property="Visibility"
                                                     Value="Collapsed" />
-                                        </DataTrigger>
+                                        </MultiDataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>

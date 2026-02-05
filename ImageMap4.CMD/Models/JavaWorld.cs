@@ -1,4 +1,4 @@
-using fNbt;
+﻿using fNbt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -13,6 +13,11 @@ public class JavaWorld : World
     public override string Name { get; }
     public override string WorldIcon { get; }
     public override DateTime AccessDate { get; }
+
+    public override bool SupportsInvisibleFrames => Version?.SupportsInvisibleFrames ?? false;
+    public override bool SupportsGlowFrames => Version?.SupportsGlowFrames ?? false;
+    public override bool SupportsChests => Version?.SupportsChests ?? false;
+    public override bool SupportsStructures => Version?.SupportsStructures ?? false;
 
     public JavaWorld(string folder) : base(folder)
     {
@@ -46,8 +51,28 @@ public class JavaWorld : World
         inventory.AddItems(items);
     }
 
+    public override void AddChest(IEnumerable<long> ids, IInventory inventory)
+    {
+        var items = new List<NbtCompound>();
+        var idlist = ids.ToList();
+        if (idlist.Count == 1 || Version.SupportsStructures)
+        {
+            items.Add(Version.MakeMapItem(idlist[0]));
+        }
+        else
+        {
+            // to do: add items 27 at a time to chests
+            // if chests aren't supported, add items directly
+        }
+        inventory.AddItems(items);
+    }
+
     public override IEnumerable<IInventory> GetInventories()
     {
+        // to do: this
+        // to do: write idcount file
+        // to do: refuse to open worlds with session.lock locked (FileStream.Lock it)
+
         yield return new JavaInventory("Local player", Path.Combine(Folder, "level.dat"), NbtPath.Parse("Data.Player.Inventory"));
         var playerdata = Path.Combine(Folder, "playerdata");
         if (Directory.Exists(playerdata))
@@ -63,6 +88,7 @@ public class JavaWorld : World
 
     public override async IAsyncEnumerable<Map> GetMapsAsync()
     {
+        // to do: this
         var maps = Path.Combine(Folder, "data");
         if (Directory.Exists(maps))
         {

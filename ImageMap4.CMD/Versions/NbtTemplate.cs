@@ -19,6 +19,10 @@ public class NbtTemplate
             {
                 if (item.Value == "@" + name)
                     item.Parent[item.Name] = maker();
+                else if (item.Value.Contains("@" + name))
+                {
+                    item.Value = item.Value.Replace("@" + name, maker().StringValue);
+                }
             }
         }
         return compound;

@@ -9,13 +9,6 @@ public class StructureViewModel : ObservableObject
     public event EventHandler? OnClosed;
     public event EventHandler<(StructureGrid grid, IInventory inventory)>? OnConfirmed;
 
-    private bool _javaMode;
-    public bool JavaMode
-    {
-        get { return _javaMode; }
-        set { _javaMode = value; OnPropertyChanged(); }
-    }
-
     public bool GlowingFrames
     {
         get { return Properties.Settings.Default.GlowingFrames; }
