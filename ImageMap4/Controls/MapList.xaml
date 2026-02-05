@@ -52,13 +52,12 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <Grid>
+                    <Grid Width="128"
+                          Height="128"
+                          Margin="4">
                         <Image Source="{StaticResource ItemFrame}"
                                RenderOptions.BitmapScalingMode="NearestNeighbor" />
-                        <local:MapPreview DataContext="{Binding Item.Data}"
-                                      Width="128"
-                                      Height="128"
-                                      Margin="4" />
+                        <local:MapPreview DataContext="{Binding Item.Data}" />
                     </Grid>
                     <DockPanel>
                         <TextBlock Text="{Binding Item.ID, StringFormat=map_{0}}"
