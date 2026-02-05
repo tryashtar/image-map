@@ -78,6 +78,9 @@
                 <MenuItem Header="Export image"
                           Command="{Binding ExportImageCommand, Source={x:Reference This}}"
                           CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
+                <MenuItem Header="Add to inventory"
+                          Command="{Binding AddToInventoryCommand, Source={x:Reference This}}"
+                          CommandParameter="{Binding DataContext.ExistingMaps, Source={x:Reference This}}" />
             </ContextMenu>
             <Style x:Key="WorldCard"
                    TargetType="ListViewItem">

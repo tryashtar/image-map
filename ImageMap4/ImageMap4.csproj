@@ -72,6 +72,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="AddToInventoryWindow.xaml.cs">
+		  <SubType>Code</SubType>
+		</Compile>
 		<Compile Update="Properties\Resources.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>

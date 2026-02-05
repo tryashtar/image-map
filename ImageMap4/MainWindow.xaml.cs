@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -34,6 +34,7 @@ public partial class MainWindow : Window, IDropTarget
     public ICommand OpenMapFileCommand { get; }
     public ICommand ChangeIDCommand { get; }
     public ICommand ExportImageCommand { get; }
+    public ICommand AddToInventoryCommand { get; }
     public MainWindow()
     {
         PasteCommand = new RelayCommand(() =>
@@ -80,6 +81,20 @@ public partial class MainWindow : Window, IDropTarget
                     ViewModel.ChangeIDs(x, selected, window.ID);
                 else if (window.Result == ChangeResult.Auto)
                     ViewModel.AutoIDs(x, selected);
+            }
+        });
+        AddToInventoryCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
+        {
+            var selected = x.Where(x => x.IsSelected);
+            var window = new AddToInventoryWindow(this.ViewModel);
+            window.Owner = this;
+            if (window.ShowDialog() ?? false)
+            {
+                var inventory = window.SelectedInventory;
+                if (inventory != null && ViewModel.SelectedWorld != null)
+                {
+                    ViewModel.SelectedWorld.AddChest(selected.Select(x => x.Item.ID), inventory);
+                }
             }
         });
         ExportImageCommand = new RelayCommand<ObservableList<Selectable<Map>>>(x =>
