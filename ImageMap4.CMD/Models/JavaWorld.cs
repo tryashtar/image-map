@@ -9,7 +9,7 @@ namespace ImageMap4;
 
 public class JavaWorld : World
 {
-    public IJavaVersion Version { get; }
+    public IJavaVersion? Version { get; }
     public override string Name { get; }
     public override string WorldIcon { get; }
     public override DateTime AccessDate { get; }
@@ -18,8 +18,6 @@ public class JavaWorld : World
     {
         var leveldat = new NbtFile(Path.Combine(Folder, "level.dat"));
         var version = VersionManager.DetermineJavaVersion(leveldat.GetRootTag<NbtCompound>().Get<NbtCompound>("Data"));
-        if (version == null)
-            throw new InvalidDataException("Could not determine version of world");
         Version = version;
         Name = leveldat.RootTag["Data"]?["LevelName"]?.StringValue ?? "";
         WorldIcon = Path.Combine(Folder, "icon.png");

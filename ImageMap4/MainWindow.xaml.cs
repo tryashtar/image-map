@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -278,16 +278,29 @@ public partial class MainWindow : Window, IDropTarget
         return false;
     }
 
-    private void TryOpenWorld(World world)
+    private bool TryOpenWorld(World world)
     {
+        if (world is JavaWorld java && java.Version == null)
+        {
+            ViewModel.SelectedWorld = null;
+            return false;
+        }
+        if (world is BedrockWorld bedrock && bedrock.Version == null)
+        {
+            ViewModel.SelectedWorld = null;
+            return false;
+        }
         try
         {
             ViewModel.SelectedWorld = world;
+            return true;
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.ToString());
         }
+        ViewModel.SelectedWorld = null;
+        return false;
     }
 
     private void JavaWorldList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -295,7 +308,11 @@ public partial class MainWindow : Window, IDropTarget
         if (JavaWorldList.SelectedIndex != -1)
         {
             BedrockWorldList.SelectedIndex = -1;
-            TryOpenWorld((World)JavaWorldList.SelectedItem);
+            var success = TryOpenWorld((World)JavaWorldList.SelectedItem);
+            if (!success)
+            {
+                JavaWorldList.SelectedIndex = -1;
+            }
         }
     }
 
@@ -304,13 +321,20 @@ public partial class MainWindow : Window, IDropTarget
         if (BedrockWorldList.SelectedIndex != -1)
         {
             JavaWorldList.SelectedIndex = -1;
-            TryOpenWorld((World)BedrockWorldList.SelectedItem);
+            var success = TryOpenWorld((World)BedrockWorldList.SelectedItem);
+            if (!success)
+            {
+                JavaWorldList.SelectedIndex = -1;
+            }
         }
     }
 
     private void World_DoubleClick(object sender, MouseButtonEventArgs e)
     {
-        TabList.SelectedItem = MapsTab;
+        if (ViewModel.SelectedWorld != null)
+        {
+            TabList.SelectedItem = MapsTab;
+        }
     }
 }
 

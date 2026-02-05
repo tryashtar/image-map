@@ -1,4 +1,4 @@
-﻿using fNbt;
+using fNbt;
 using LevelDBWrapper;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -9,7 +9,7 @@ public class BedrockWorld : World
 {
     private LevelDB? DBAccess;
     private readonly object DBLock = new();
-    public IBedrockVersion Version { get; }
+    public IBedrockVersion? Version { get; }
     public override string Name { get; }
     public override string WorldIcon { get; }
     public override DateTime AccessDate { get; }
@@ -27,8 +27,6 @@ public class BedrockWorld : World
         var nbt = new NbtFile() { BigEndian = false };
         nbt.LoadFromStream(leveldat, NbtCompression.None);
         var version = VersionManager.DetermineBedrockVersion(nbt.GetRootTag<NbtCompound>());
-        if (version == null)
-            throw new InvalidDataException("Could not determine version of world");
         Version = version;
         AccessDate = File.GetLastWriteTime(leveldat.Name);
     }

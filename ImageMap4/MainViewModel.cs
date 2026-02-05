@@ -43,6 +43,7 @@ public class MainViewModel : ObservableObject
             OnPropertyChanged();
             MapCTS?.Cancel();
             MapCTS?.Dispose();
+            MapCTS = null;
             if (_selectedWorld != null)
             {
                 MapCTS = new();
@@ -57,7 +58,7 @@ public class MainViewModel : ObservableObject
             }
         }
     }
-    private CancellationTokenSource MapCTS = new();
+    private CancellationTokenSource? MapCTS;
 
     public HashSet<long> ConflictingIDs { get; } = new();
 
@@ -249,6 +250,11 @@ public class MainViewModel : ObservableObject
         JavaWorlds.Clear();
         BedrockWorlds.Clear();
         Properties.Settings.Default.JavaFolders ??= new();
+        if (Properties.Settings.Default.JavaFolders.Count == 0)
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves");
+            Properties.Settings.Default.JavaFolders.Add(path);
+        }
         foreach (var raw_dir in Properties.Settings.Default.JavaFolders)
         {
             string java_dir = Environment.ExpandEnvironmentVariables(raw_dir);
@@ -265,7 +271,10 @@ public class MainViewModel : ObservableObject
                             {
                                 world = new JavaWorld(dir);
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Error loading world: " + ex.ToString());
+                            }
                             if (world != null)
                                 yield return world;
                         }
