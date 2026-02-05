@@ -95,7 +95,13 @@ public class JavaWorld : World
 
     private static string ToStringUUID(int[] bits)
     {
-        byte[] bytes = bits.SelectMany(BitConverter.GetBytes).ToArray();
+        byte[] bytes = bits.SelectMany(x => BitConverter.GetBytes(x)).ToArray();
+        (bytes[4], bytes[6]) = (bytes[6], bytes[4]);
+        (bytes[5], bytes[7]) = (bytes[7], bytes[5]);
+        (bytes[8], bytes[11]) = (bytes[11], bytes[8]);
+        (bytes[9], bytes[10]) = (bytes[10], bytes[9]);
+        (bytes[12], bytes[15]) = (bytes[15], bytes[12]);
+        (bytes[13], bytes[14]) = (bytes[14], bytes[13]);
         var guid = new Guid(bytes);
         return guid.ToString();
     }
@@ -111,7 +117,7 @@ public class JavaWorld : World
             if (Path.Exists(matching_path))
             {
                 var player_file = new NbtFile(matching_path);
-                var player_inv = LevelDat.GetRootTag<NbtCompound>()?.Get<NbtList>("Inventory");
+                var player_inv = player_file.GetRootTag<NbtCompound>()?.Get<NbtList>("Inventory");
                 if (player_inv != null)
                 {
                     yield return new JavaInventory("Local player", player_file, player_inv);
@@ -134,7 +140,7 @@ public class JavaWorld : World
                 if (uuid.Length == 36)
                 {
                     var player_file = new NbtFile(file);
-                    var player_inv = LevelDat.GetRootTag<NbtCompound>()?.Get<NbtList>("Inventory");
+                    var player_inv = player_file.GetRootTag<NbtCompound>()?.Get<NbtList>("Inventory");
                     if (player_inv != null)
                     {
                         yield return new JavaInventory(uuid, player_file, player_inv);
