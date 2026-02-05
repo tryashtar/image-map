@@ -108,7 +108,6 @@ public class JavaWorld : World
 
     public override IEnumerable<IInventory> GetInventories()
     {
-        var playerdata_folder = Path.GetDirectoryName(Version.PlayerDataLocation(Folder, "A"));
         var singleplayer_uuid = LevelDat.GetRootTag<NbtCompound>()?.Get<NbtCompound>("Data")?.Get<NbtIntArray>("singleplayer_uuid");
         if (singleplayer_uuid != null)
         {
@@ -132,18 +131,22 @@ public class JavaWorld : World
                 yield return new JavaInventory("Local player", LevelDat, singleplayer_inv);
             }
         }
-        if (Directory.Exists(playerdata_folder))
+        if (Version.SupportsPlayerData)
         {
-            foreach (var file in Directory.GetFiles(playerdata_folder, "*.dat"))
+            var playerdata_folder = Path.GetDirectoryName(Version.PlayerDataLocation(Folder, "A"));
+            if (Directory.Exists(playerdata_folder))
             {
-                string uuid = Path.GetFileNameWithoutExtension(file);
-                if (uuid.Length == 36)
+                foreach (var file in Directory.GetFiles(playerdata_folder, "*.dat"))
                 {
-                    var player_file = new NbtFile(file);
-                    var player_inv = player_file.GetRootTag<NbtCompound>()?.Get<NbtList>("Inventory");
-                    if (player_inv != null)
+                    string uuid = Path.GetFileNameWithoutExtension(file);
+                    if (uuid.Length == 36)
                     {
-                        yield return new JavaInventory(uuid, player_file, player_inv);
+                        var player_file = new NbtFile(file);
+                        var player_inv = player_file.GetRootTag<NbtCompound>()?.Get<NbtList>("Inventory");
+                        if (player_inv != null)
+                        {
+                            yield return new JavaInventory(uuid, player_file, player_inv);
+                        }
                     }
                 }
             }
@@ -157,7 +160,8 @@ public class JavaWorld : World
         {
             foreach (var file in Directory.EnumerateFiles(maps_folder, "*.dat"))
             {
-                if (GetMapFileId(file, out _)) {
+                if (GetMapFileId(file, out _))
+                {
                     yield return await Task.Run(() => GetMap(file));
                 }
             }
@@ -231,9 +235,12 @@ public class JavaWorld : World
                 new NbtCompound("data")
                 {
                     new NbtInt("map", (int)biggest_id)
-                },
-                new NbtInt("DataVersion", Version.DataVersion.Value)
+                }
             };
+            if (Version.DataVersion.HasValue)
+            {
+                compound.Add(new NbtInt("DataVersion", Version.DataVersion.Value));
+            }
             var nbtfile = new NbtFile(compound);
             nbtfile.SaveToFile(idcount, NbtCompression.GZip);
         }

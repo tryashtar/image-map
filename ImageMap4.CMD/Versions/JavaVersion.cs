@@ -24,6 +24,7 @@ public interface IJavaVersion
     int? DataVersion { get; }
     bool SupportsGlowFrames { get; }
     bool SupportsInvisibleFrames { get; }
+    bool SupportsPlayerData { get; }
 }
 
 public class JavaVersionBuilder
@@ -278,4 +279,5 @@ public class JavaVersion : IJavaVersion
     {
         return Path.Combine(world_folder, LastId);
     }
+    public bool SupportsPlayerData => PlayerData != null;
 }
