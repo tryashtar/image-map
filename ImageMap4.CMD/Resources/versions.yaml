@@ -61,7 +61,7 @@ bedrock:
       zStructureSize: '@z'
       display:
         Name: '§r§d@id§r'
-        # map locking added
+# map locking added
   map_data:
     mapId: '@id'
     parentMapId: -1L
@@ -114,7 +114,7 @@ java:
   - 4040ff
   - 685332
   map_item:
-    id: 258s
+    id: 358s
     Damage: '@s'
     Count: 1b
   map_data:
@@ -122,11 +122,10 @@ java:
       colors: '@colors'
       scale: 0b
       dimension: 0b
-      locked: 1b
       xCenter: 2147483647
       zCenter: 2147483647
-      height: 128
-      width: 128
+      height: 128s
+      width: 128s
       trackingPosition: 0b
       unlimitedTracking: 0b
 # added LAN multiplayer data
