@@ -480,7 +480,7 @@ for (int i = 1; i < args.Length; i++)
                 {
                     var structure = new StructureGrid("imagemap:" + Path.GetFileNameWithoutExtension(file), data)
                     {
-                        GlowingFrames = glow // <--- ADD THIS LINE
+                        GlowingFrames = glow
                     };
                     Console.WriteLine($"Adding structure {structure.Identifier} to inventory {inventory.Name}");
                     world.AddStructures(new[] { structure }, inventory);
