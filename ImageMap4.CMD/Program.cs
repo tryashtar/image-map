@@ -27,6 +27,7 @@ Actions:
      --dithering none|floyd|burks
      --background <color>
      --id <id>
+     --glow
   --export [<<id>,<path>...>]
   --list
   --delete <ids...>
@@ -205,6 +206,7 @@ for (int i = 1; i < args.Length; i++)
             IDither? dither = null;
             Rgba32 background = Color.Transparent;
             long? startingId = null;
+            bool glow = false;
             while (i < args.Length - 1)
             {
                 i++;
@@ -420,6 +422,11 @@ for (int i = 1; i < args.Length; i++)
                         startingId = id;
                         break;
                     }
+                    case "--glow":
+                    {
+                        glow = true;
+                        break;
+                    }
                     default:
                         goto process;
                 }
@@ -471,7 +478,10 @@ for (int i = 1; i < args.Length; i++)
                 world.AddMaps(maps);
                 if (inventory != null)
                 {
-                    var structure = new StructureGrid("imagemap:" + Path.GetFileNameWithoutExtension(file), data);
+                    var structure = new StructureGrid("imagemap:" + Path.GetFileNameWithoutExtension(file), data)
+                    {
+                        GlowingFrames = glow // <--- ADD THIS LINE
+                    };
                     Console.WriteLine($"Adding structure {structure.Identifier} to inventory {inventory.Name}");
                     world.AddStructures(new[] { structure }, inventory);
                 }
