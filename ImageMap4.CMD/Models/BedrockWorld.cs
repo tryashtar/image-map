@@ -105,7 +105,9 @@ public class BedrockWorld : World
         inventory.AddItems(items);
     }
 
-    public override void AddChest(IEnumerable<long> ids, IInventory inventory)
+    public override void AddChest(IEnumerable<long> ids, IInventory inventory) => AddChest(ids, inventory, true);
+
+    public void AddChest(IEnumerable<long> ids, IInventory inventory, bool packInChests)
     {
         if (Version == null)
         {
@@ -113,7 +115,7 @@ public class BedrockWorld : World
         }
         var items = new List<NbtCompound>();
         var idlist = ids.ToList();
-        if (idlist.Count == 1 || !SupportsChests)
+        if (!packInChests || idlist.Count == 1 || !SupportsChests)
         {
             items.AddRange(idlist.Select(x => Version.CreateMapItem(x)));
         }
@@ -122,7 +124,7 @@ public class BedrockWorld : World
             var chunks = idlist.Chunk(27);
             foreach (var chunk in chunks)
             {
-                var maps = idlist.Select(x => Version.CreateMapItem(x)).ToArray();
+                var maps = chunk.Select(x => Version.CreateMapItem(x)).ToArray();
                 for (int i = 0; i < maps.Length; i++)
                 {
                     maps[i].Add(new NbtByte("Slot", (byte)i));
@@ -136,8 +138,13 @@ public class BedrockWorld : World
 
     public override IEnumerable<IInventory> GetInventories()
     {
-        yield return new BedrockInventory("Local player", this, "~local_player");
         var db = OpenDB();
+        // Editor projects keep their local inventory under a different key.
+        // Prefer it when present, and never offer a nonexistent player record.
+        if (db.Get("~local_player.Editor") != null)
+            yield return new BedrockInventory("Local player (Editor)", this, "~local_player.Editor");
+        if (db.Get("~local_player") != null)
+            yield return new BedrockInventory("Local player", this, "~local_player");
         using var iterator = db.CreateIterator();
         iterator.Seek("player_server_");
         while (iterator.IsValid())

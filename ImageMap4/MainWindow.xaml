@@ -484,7 +484,23 @@
                                   VerticalContentAlignment="Center"
                                   HorizontalAlignment="Right" />
                     </DockPanel>
-                    <StackPanel Orientation="Horizontal">
+                    <WrapPanel>
+                        <Button Content="Add To Inventory"
+                                Padding="15,5,15,5"
+                                Margin="0,0,10,0"
+                                ToolTip="Put the selected maps into a player's inventory."
+                                Command="{Binding AddToInventoryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding ExistingMaps}">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ExistingMapsView.Count}" Value="0">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                         <Button Content="Generate Structure"
                                 Padding="15,5,15,5"
                                 Click="GenerateStructureButton_Click">
@@ -507,7 +523,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                    </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
                 <local:MapList x:Name="ExistingList"
                                Grid.Column="1"
