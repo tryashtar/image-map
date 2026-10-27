@@ -10,13 +10,15 @@ public partial class AddToInventoryWindow : Window
     public ICommand ConfirmCommand { get; }
     public ICommand CancelCommand { get; }
     public MainViewModel Parent { get; }
+    public bool PackInChests { get; set; } = false;
+    public Visibility DirectMapOptionsVisibility => Parent.SelectedWorld is BedrockWorld ? Visibility.Visible : Visibility.Collapsed;
 
     public IInventory SelectedInventory
     {
         get
         {
             if (Properties.Settings.Default.InventoryChoice >= Parent.PlayerList.Count || Properties.Settings.Default.InventoryChoice < 0)
-                Properties.Settings.Default.InventoryChoice = 1;
+                Properties.Settings.Default.InventoryChoice = Parent.PlayerList.Count > 1 ? 1 : 0;
             return Parent.PlayerList[Properties.Settings.Default.InventoryChoice];
         }
         set { Properties.Settings.Default.InventoryChoice = Parent.PlayerList.IndexOf(value); }

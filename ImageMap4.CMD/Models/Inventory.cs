@@ -65,22 +65,32 @@ public class BedrockInventory : IInventory
     {
         var db = World.OpenDB();
         var bytes = db.Get(Key);
+        if (bytes == null)
+            throw new InvalidOperationException($"Player inventory '{Key}' was not found. Reopen the world and select an existing player.");
         var file = new NbtFile() { BigEndian = false };
         file.LoadFromBuffer(bytes, 0, bytes.Length, NbtCompression.None);
         var inventory = file.GetRootTag<NbtCompound>().Get<NbtList>("Inventory");
-        // remember bedrock saves empty slots
-        foreach (var item in items)
+        if (inventory == null)
+            throw new InvalidOperationException($"Player '{Name}' has no inventory.");
+
+        // Bedrock stores empty slots too. Check capacity before changing anything,
+        // and prefer hotbar slots (0-8), followed by the rest of the inventory.
+        var pending = items.ToList();
+        var emptySlots = inventory.Cast<NbtCompound>()
+            .Where(slot => slot.Get<NbtByte>("Count")?.Value == 0 &&
+                           slot.Get<NbtByte>("Slot") is NbtByte index && index.Value < 36)
+            .OrderBy(slot => slot.Get<NbtByte>("Slot").Value)
+            .ToList();
+        if (pending.Count > emptySlots.Count)
+            throw new InvalidOperationException($"Not enough empty inventory slots: need {pending.Count}, available {emptySlots.Count}. No items were added.");
+        for (int i = 0; i < pending.Count; i++)
         {
-            foreach (NbtCompound slot in inventory.ToList())
-            {
-                if (slot.Get<NbtByte>("Count").Value == 0)
-                {
-                    inventory.Remove(slot);
-                    item.Add((NbtByte)slot.Get<NbtByte>("Slot").Clone());
-                    inventory.Add(item);
-                    break;
-                }
-            }
+            var slot = emptySlots[i];
+            var item = (NbtCompound)pending[i].Clone();
+            item.Remove("Slot");
+            item.Add((NbtByte)slot.Get<NbtByte>("Slot").Clone());
+            inventory.Remove(slot);
+            inventory.Add(item);
         }
         bytes = file.SaveToBuffer(NbtCompression.None);
         db.Put(Key, bytes);

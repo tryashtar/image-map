@@ -85,7 +85,12 @@ public partial class MainWindow : Window, IDropTarget
         });
         AddToInventoryCommand = new RelayCommand<IList<Selectable<Map>>>(x =>
         {
-            var selected = x.Where(x => x.IsSelected);
+            var selected = x.Where(x => x.IsSelected).ToList();
+            if (selected.Count == 0)
+            {
+                MessageBox.Show("Select one or more maps in the In World list first.", "Add To Inventory", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             var window = new AddToInventoryWindow(this.ViewModel);
             window.Owner = this;
             if (window.ShowDialog() ?? false)
@@ -93,7 +98,14 @@ public partial class MainWindow : Window, IDropTarget
                 var inventory = window.SelectedInventory;
                 if (inventory != null && ViewModel.SelectedWorld != null)
                 {
-                    ViewModel.SelectedWorld.AddChest(selected.Select(x => x.Item.ID), inventory);
+                    Try(() =>
+                    {
+                        var ids = selected.Select(x => x.Item.ID);
+                        if (ViewModel.SelectedWorld is BedrockWorld bedrock)
+                            bedrock.AddChest(ids, inventory, window.PackInChests);
+                        else
+                            ViewModel.SelectedWorld.AddChest(ids, inventory);
+                    });
                 }
             }
         });
